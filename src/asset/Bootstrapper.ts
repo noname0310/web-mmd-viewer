@@ -7,7 +7,6 @@ import {
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
-    Transform,
     WaitUntil
 } from "the-world-engine";
 import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
@@ -121,7 +120,7 @@ export class Bootstrapper extends BaseBootstrapper {
 
                         const modelFile = "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx";
                         const vmdFiles = [
-                            "mmd/flos/flos_model.vmd", "mmd/flos/flos physics.vmd"
+                            "mmd/flos/flos_model.vmd", "mmd/flos/flos_physics.vmd"
                         ];
                         const cameraFile = "mmd/flos/flos_camera_mod.vmd";
                         const audioFile = "mmd/flos/flos_YuNi.mp3";
@@ -177,12 +176,10 @@ export class Bootstrapper extends BaseBootstrapper {
 
                         loadingText.remove();
                         yield null;
+                        (globalThis as any).threeCamera = threeCamera;
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
                             c.updateWorldMatrix();
-                            const rawCamera = camera.ref!.transform.unsafeGetObject3D().children[1] as THREE.PerspectiveCamera; //todo fix this
-                            Transform.updateRawObject3DWorldMatrixRecursively(rawCamera);
-                            rawCamera.updateProjectionMatrix();
                             yield null;
                         }
                     }
