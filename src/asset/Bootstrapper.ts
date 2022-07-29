@@ -29,26 +29,40 @@ export class Bootstrapper extends BaseBootstrapper {
         const instantiater = this.instantiater;
 
         const camera = new PrefabRef<Camera>();
+        const orbitCamera = new PrefabRef<Camera>();
         const audioListener = new PrefabRef<Object3DContainer<THREE.AudioListener>>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
-        const orbitControls = new PrefabRef<OrbitControls>();
+
+        document.getElementById("switch-camera-button")!.onclick = (): void => {
+            if (orbitCamera.ref === null) return;
+
+            orbitCamera.ref.priority = orbitCamera.ref.priority === -1 ? 1 : -1;
+        };
         
         return this.sceneBuilder
-            .withChild(instantiater.buildGameObject("camera", new THREE.Vector3(0, 0, 40))
+            .withChild(instantiater.buildGameObject("camera")
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
                 })
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.AudioListener())
+                .getComponent(Camera, camera)
+                .getComponent(Object3DContainer, audioListener))
+
+            .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
+                .withComponent(Camera, c => {
+                    c.cameraType = CameraType.Perspective;
+                    c.fov = 60;
+                    c.priority = -1;
+                })
                 .withComponent(OrbitControls, c => {
                     c.enabled = true;
                     c.target = new THREE.Vector3(0, 14, 0);
                     c.minDistance = 20;
                     c.maxDistance = 100;
+                    c.enableDamping = false;
                 })
-                .getComponent(Camera, camera)
-                .getComponent(Object3DContainer, audioListener)
-                .getComponent(OrbitControls, orbitControls))
+                .getComponent(Camera, orbitCamera))
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
@@ -181,7 +195,6 @@ export class Bootstrapper extends BaseBootstrapper {
                         }
 
                         loadingText.remove();
-                        orbitControls.ref!.enabled = false;
                         yield null;
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
