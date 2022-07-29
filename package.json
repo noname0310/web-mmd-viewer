@@ -1,0 +1,33 @@
+{
+    "name": "web-mmd-viewer",
+    "version": "1.0.0",
+    "description": "mmd-viewer for web browser",
+    "scripts": {
+        "start": "webpack serve --mode development",
+        "watch": "webpack --watch",
+        "build": "webpack --mode production",
+        "lint": "eslint --ext .ts src --fix"
+    },
+    "author": "noname0310",
+    "license": "MIT",
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.31.0",
+        "@typescript-eslint/parser": "^5.31.0",
+        "copy-webpack-plugin": "^11.0.0",
+        "eslint": "^8.20.0",
+        "eslint-plugin-simple-import-sort": "^7.0.0",
+        "eslint-webpack-plugin": "^3.2.0",
+        "file-loader": "^6.2.0",
+        "html-webpack-plugin": "^5.5.0",
+        "ts-loader": "^9.3.1",
+        "typescript": "^4.7.4",
+        "webpack": "^5.74.0",
+        "webpack-cli": "^4.10.0",
+        "webpack-dev-server": "^4.9.3"
+    },
+    "dependencies": {
+        "ammojs-typed": "^1.0.6",
+        "html-loader": "^4.1.0",
+        "the-world-engine": "^0.4.23"
+    }
+}

@@ -1,0 +1,64 @@
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const ESLintPlugin = require("eslint-webpack-plugin");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+module.exports = {
+    entry: "./src/index.ts",
+    output: {
+        path: path.join(__dirname, "/dist"),
+        filename: "bundle.js",
+        assetModuleFilename: "assets/[name][ext]"
+    },
+    module: {
+        rules: [{
+                test: /\.tsx?$/,
+                use: [{
+                    loader: "ts-loader"
+                }]
+            },
+            {
+                test: /\.(png|jpg|gif)$/,
+                type: "asset"
+            },
+            {
+                test: /\.(mp3|ogg|wav)$/,
+                loader: "file-loader",
+                options: {
+                    name: "asset/audio/[name].[ext]?[hash]"
+                }
+            },
+            {
+                test: /\.html$/,
+                use: [{
+                    loader: "html-loader"
+                }]
+            }
+        ]
+    },
+    resolve: {
+        modules: [path.join(__dirname, "src"), "node_modules"],
+        extensions: [".ts", ".js"],
+        fallback: {
+            fs: false,
+            'path': false
+        }
+    },
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: "./src/index.html",
+        }),
+        new ESLintPlugin({
+            extensions: "ts",
+        }),
+        new CopyWebpackPlugin({
+            patterns: [{ from: "mmd", to: "mmd" }]
+        })
+    ],
+    devServer: {
+        host: "0.0.0.0",
+        allowedHosts: "all",
+        port: 20310
+    },
+    mode: "development"
+};
