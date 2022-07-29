@@ -31,17 +31,24 @@ export class Bootstrapper extends BaseBootstrapper {
         const camera = new PrefabRef<Camera>();
         const audioListener = new PrefabRef<Object3DContainer<THREE.AudioListener>>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
+        const orbitControls = new PrefabRef<OrbitControls>();
         
         return this.sceneBuilder
             .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => c.cameraType = CameraType.Perspective)
+                .withComponent(Camera, c => {
+                    c.cameraType = CameraType.Perspective;
+                    c.fov = 60;
+                })
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.AudioListener())
                 .withComponent(OrbitControls, c => {
-                    c.enabled = false;
-                    c.target = new THREE.Vector3(0, 10, 0);
+                    c.enabled = true;
+                    c.target = new THREE.Vector3(0, 14, 0);
+                    c.minDistance = 20;
+                    c.maxDistance = 100;
                 })
                 .getComponent(Camera, camera)
-                .getComponent(Object3DContainer, audioListener))
+                .getComponent(Object3DContainer, audioListener)
+                .getComponent(OrbitControls, orbitControls))
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
@@ -133,6 +140,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         yield new WaitUntil(() => model !== null);
                         modelLoadingText.innerText = "model loaded";
 
+                        c.object3D = model;
                         model!.traverse(object => {
                             if ((object as THREE.Mesh).isMesh) {
                                 object.castShadow = true;
@@ -140,7 +148,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         });
 
                         const threeCamera = DuckThreeCamera.createInterface(camera.ref!);
-
+                        
                         let modelAnimation: THREE.AnimationClip|null = null;
                         loader.loadAnimation(vmdFiles as any, model!,
                             object => modelAnimation = object as THREE.AnimationClip, makeProgressUpdate("model animation", modelAnimationLoadingText));
@@ -153,7 +161,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         yield new WaitUntil(() => cameraAnimation !== null);
                         cameraLoadingText.innerText = "camera loaded";
 
-                        const useAudio = false;
+                        const useAudio = true;
                         let audioBuffer: AudioBuffer|null = null;
                         if (useAudio) {
                             new THREE.AudioLoader().load(audioFile, buffer => audioBuffer = buffer, makeProgressUpdate("audio", audioLoadingText));
@@ -161,8 +169,6 @@ export class Bootstrapper extends BaseBootstrapper {
                             audioLoadingText.innerText = "audio loaded";
                         }
                         const audio = new THREE.Audio(audioListener.ref!.object3D!).setBuffer(audioBuffer!);
-
-                        c.object3D = model;
 
                         const helper = new MMDAnimationHelper()
                             .enable("physics", vmdFiles.length < 2)
@@ -175,6 +181,9 @@ export class Bootstrapper extends BaseBootstrapper {
                         }
 
                         loadingText.remove();
+                        orbitControls.ref!.destroy();
+                        camera.ref!.transform.position.set(0, 0, 0);
+                        camera.ref!.transform.rotation.set(0, 0, 0, 1);
                         yield null;
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
