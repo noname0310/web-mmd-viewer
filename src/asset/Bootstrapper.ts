@@ -34,7 +34,7 @@ export class Bootstrapper extends BaseBootstrapper {
         const orbitControls = new PrefabRef<OrbitControls>();
         
         return this.sceneBuilder
-            .withChild(instantiater.buildGameObject("camera")
+            .withChild(instantiater.buildGameObject("camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
@@ -181,9 +181,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         }
 
                         loadingText.remove();
-                        orbitControls.ref!.destroy();
-                        camera.ref!.transform.position.set(0, 0, 0);
-                        camera.ref!.transform.rotation.set(0, 0, 0, 1);
+                        orbitControls.ref!.enabled = false;
                         yield null;
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
