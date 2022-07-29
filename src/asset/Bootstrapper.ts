@@ -176,7 +176,6 @@ export class Bootstrapper extends BaseBootstrapper {
 
                         loadingText.remove();
                         yield null;
-                        (globalThis as any).threeCamera = threeCamera;
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
                             c.updateWorldMatrix();
