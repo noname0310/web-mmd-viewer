@@ -28,6 +28,6 @@
     "dependencies": {
         "ammojs-typed": "^1.0.6",
         "html-loader": "^4.1.0",
-        "the-world-engine": "^0.4.24"
+        "the-world-engine": "^0.4.25"
     }
 }
