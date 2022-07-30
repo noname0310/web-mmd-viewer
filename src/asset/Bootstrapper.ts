@@ -12,6 +12,7 @@ import {
 import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
 import { OutlineEffect } from "three/examples/jsm/effects/OutlineEffect";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
+import { Sky } from "three/examples/jsm/objects/Sky";
 import * as THREE from "three/src/Three";
 
 import { OrbitControls } from "./script/OrbitControls";
@@ -24,6 +25,9 @@ export class Bootstrapper extends BaseBootstrapper {
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // renderer.outputEncoding = THREE.sRGBEncoding;
+        // renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        // renderer.toneMappingExposure = 0.5;
         this.setting.render.webGLRenderer(new OutlineEffect(renderer), renderer.domElement);
 
         const instantiater = this.instantiater;
@@ -45,6 +49,7 @@ export class Bootstrapper extends BaseBootstrapper {
                     c.priority = -2;
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
+                    c.far = 1500;
                 })
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.AudioListener())
                 .getComponent(Camera, camera)
@@ -54,6 +59,7 @@ export class Bootstrapper extends BaseBootstrapper {
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
+                    c.far = 1500;
                     c.priority = -1;
                 })
                 .withComponent(OrbitControls, c => {
@@ -102,13 +108,107 @@ export class Bootstrapper extends BaseBootstrapper {
                 undefined,
                 new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
             )
+                .active(false)
                 .withComponent(Object3DContainer, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
-                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: false, emissive: "rgb(50, 50, 50)" })
+                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(50, 50, 50)" })
                     );
                     mesh.receiveShadow = true;
                     c.object3D = mesh;
+                }))
+
+            
+            .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(1000))
+                .active(false)
+                .withComponent(Object3DContainer, c => {
+                    const sky = new Sky();
+                    
+                    const sun = new THREE.Vector3();
+                    const effectController = {
+                        turbidity: 10,
+                        rayleigh: 3,
+                        mieCoefficient: 0.005,
+                        mieDirectionalG: 0.7,
+                        elevation: 2,
+                        azimuth: 180,
+                        exposure: renderer.toneMappingExposure
+                    };
+    
+                    function guiChanged(): void {
+    
+                        const uniforms = sky.material.uniforms;
+                        uniforms[ "turbidity" ].value = effectController.turbidity;
+                        uniforms[ "rayleigh" ].value = effectController.rayleigh;
+                        uniforms[ "mieCoefficient" ].value = effectController.mieCoefficient;
+                        uniforms[ "mieDirectionalG" ].value = effectController.mieDirectionalG;
+    
+                        const phi = THREE.MathUtils.degToRad( 90 - effectController.elevation );
+                        const theta = THREE.MathUtils.degToRad( effectController.azimuth );
+    
+                        sun.setFromSphericalCoords( 1, phi, theta );
+    
+                        uniforms[ "sunPosition" ].value.copy( sun );
+    
+                        renderer.toneMappingExposure = effectController.exposure;
+                    }
+
+                    guiChanged();
+                    c.object3D = sky;
+                }))
+
+            .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, -30))
+                .withComponent(Object3DContainer, c => {
+                    c.startCoroutine(loadAndRun());
+
+                    function *loadAndRun(): CoroutineIterator {
+                        let loadingText = document.getElementById("load-progress");
+                        if (!loadingText) {
+                            loadingText = document.createElement("div");
+                            loadingText.id = "load-progress";
+                            loadingText.style.position = "absolute";
+                            loadingText.style.top = "0";
+                            loadingText.style.left = "0";
+                            loadingText.style.margin = "10px";
+                            document.body.appendChild(loadingText);
+                        }
+
+                        const modelLoadingText = document.createElement("div");
+                        loadingText.appendChild(modelLoadingText);
+
+                        function makeProgressUpdate(title: string, target: HTMLElement) {
+                            return function onProgress(xhr: ProgressEvent): void {
+                                if (xhr.lengthComputable) {
+                                    const percentComplete = xhr.loaded / xhr.total * 100;
+                                    target.innerText = title + ": " + Math.round(percentComplete) + "% loading";
+                                }
+                            };
+                        }
+
+                        const modelFile = "mmd/Stage36/Stage36.pmx";
+
+                        const loader = new MMDLoader();
+
+                        let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>|null = null;
+                        loader.load(modelFile, object => model = object, makeProgressUpdate("stage", modelLoadingText));
+                        yield new WaitUntil(() => model !== null);
+                        modelLoadingText.innerText = "stage loaded";
+
+                        c.object3D = model;
+
+                        // //replace all materials with phong materials
+                        // const materials = model!.material as THREE.Material[];
+                        // for (let i = 0; i < materials.length; i++) {
+                        //     materials[i] = new THREE.MeshPhongMaterial(materials[i].userData);
+                        // }
+
+                        model!.traverse(object => {
+                            if ((object as THREE.Mesh).isMesh) {
+                                object.castShadow = true;
+                                object.receiveShadow = true;
+                            }
+                        });
+                    }
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-model")
@@ -116,11 +216,16 @@ export class Bootstrapper extends BaseBootstrapper {
                     c.startCoroutine(loadAndRun());
 
                     function *loadAndRun(): CoroutineIterator {
-                        const loadingText = document.createElement("div");
-                        loadingText.style.position = "absolute";
-                        loadingText.style.top = "0";
-                        loadingText.style.left = "0";
-                        loadingText.style.margin = "10px";
+                        let loadingText = document.getElementById("load-progress");
+                        if (!loadingText) {
+                            loadingText = document.createElement("div");
+                            loadingText.id = "load-progress";
+                            loadingText.style.position = "absolute";
+                            loadingText.style.top = "0";
+                            loadingText.style.left = "0";
+                            loadingText.style.margin = "10px";
+                            document.body.appendChild(loadingText);
+                        }
                         const modelLoadingText = document.createElement("div");
                         loadingText.appendChild(modelLoadingText);
                         const modelAnimationLoadingText = document.createElement("div");
@@ -129,7 +234,6 @@ export class Bootstrapper extends BaseBootstrapper {
                         loadingText.appendChild(cameraLoadingText);
                         const audioLoadingText = document.createElement("div");
                         loadingText.appendChild(audioLoadingText);
-                        document.body.appendChild(loadingText);
 
                         function makeProgressUpdate(title: string, target: HTMLElement) {
                             return function onProgress(xhr: ProgressEvent): void {
@@ -167,6 +271,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         model!.traverse(object => {
                             if ((object as THREE.Mesh).isMesh) {
                                 object.castShadow = true;
+                                object.frustumCulled = false;
                             }
                         });
 
