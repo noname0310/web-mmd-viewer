@@ -42,6 +42,7 @@ export class Bootstrapper extends BaseBootstrapper {
         return this.sceneBuilder
             .withChild(instantiater.buildGameObject("camera")
                 .withComponent(Camera, c => {
+                    c.priority = -2;
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
                 })
@@ -161,7 +162,7 @@ export class Bootstrapper extends BaseBootstrapper {
                             }
                         });
 
-                        const threeCamera = DuckThreeCamera.createInterface(camera.ref!);
+                        const threeCamera = DuckThreeCamera.createInterface(camera.ref!, false).toThreeCamera();
                         
                         let modelAnimation: THREE.AnimationClip|null = null;
                         loader.loadAnimation(vmdFiles as any, model!,
@@ -195,6 +196,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         }
 
                         loadingText.remove();
+                        camera.ref!.priority = 0;
                         yield null;
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
