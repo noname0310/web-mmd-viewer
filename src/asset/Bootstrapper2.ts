@@ -51,7 +51,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 .getComponent(Camera, camera)
                 .getComponent(Object3DContainer, audioListener)
                 
-                .withChild(instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -100))
+                .withChild(instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -500))
                     .withComponent(Object3DContainer, c => {
                         video = document.createElement("video");
                         video.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
@@ -74,7 +74,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                             let lastFov = 0;
                             for (;;) {
                                 if (lastFov !== mmdCamera.fov || lastFov !== mmdCamera.fov) {
-                                    scale.setScalar(Math.tan(mmdCamera.fov * THREE.MathUtils.DEG2RAD) * 100);
+                                    scale.setScalar(Math.tan(mmdCamera.fov * THREE.MathUtils.DEG2RAD) * 500);
                                     lastFov = mmdCamera.fov;
                                 }
                                 yield null;
@@ -239,10 +239,11 @@ export class Bootstrapper2 extends BaseBootstrapper {
                         camera.ref!.priority = 0;
                         yield null;
                         video!.play();
+                        video!.loop = true;
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
                             if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 10) {
-                                video!.fastSeek(helper.audioManager.currentTime);
+                                video!.currentTime = helper.audioManager.currentTime;
                             }
                             
                             if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 0.1) {
