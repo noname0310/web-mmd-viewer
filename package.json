@@ -18,6 +18,7 @@
         "eslint-plugin-simple-import-sort": "^7.0.0",
         "eslint-webpack-plugin": "^3.2.0",
         "file-loader": "^6.2.0",
+        "html-loader": "^4.1.0",
         "html-webpack-plugin": "^5.5.0",
         "ts-loader": "^9.3.1",
         "typescript": "^4.7.4",
@@ -27,7 +28,6 @@
     },
     "dependencies": {
         "ammojs-typed": "^1.0.6",
-        "html-loader": "^4.1.0",
         "the-world-engine": "^0.4.26"
     }
 }
