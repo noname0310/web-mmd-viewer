@@ -241,8 +241,12 @@ export class Bootstrapper2 extends BaseBootstrapper {
                         video!.play();
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
-                            if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 0.5) {
-                                video!.currentTime = helper.audioManager.currentTime;
+                            if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 10) {
+                                video!.fastSeek(helper.audioManager.currentTime);
+                            }
+                            
+                            if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 0.1) {
+                                video!.playbackRate = 1 + (video!.currentTime < helper.audioManager.currentTime ? 0.1 : -0.1);
                             }
                             c.updateWorldMatrix();
                             yield null;
