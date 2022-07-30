@@ -140,12 +140,20 @@ export class Bootstrapper extends BaseBootstrapper {
                             };
                         }
 
-                        const modelFile = "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx";
+                        // const modelFile = "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx";
+                        // const vmdFiles = [
+                        //     "mmd/flos/flos_model.vmd", "mmd/flos/flos_physics.vmd"
+                        // ];
+                        // const cameraFile = "mmd/flos/flos_camera_mod.vmd";
+                        // const audioFile = "mmd/flos/flos_YuNi.mp3";
+                        // const audioParams = { delayTime: 0 }; //delayTime: 160 * 1 / 30 };
+
+                        const modelFile = "mmd/YYB 元气少女/Miku.pmx";
                         const vmdFiles = [
-                            "mmd/flos/flos_model.vmd", "mmd/flos/flos_physics.vmd"
+                            "mmd/pizzicato_drops/model.vmd"
                         ];
-                        const cameraFile = "mmd/flos/flos_camera_mod.vmd";
-                        const audioFile = "mmd/flos/flos_YuNi.mp3";
+                        const cameraFile = "mmd/pizzicato_drops/camera.vmd";
+                        const audioFile = "mmd/pizzicato_drops/pizzicato_drops.mp3";
                         const audioParams = { delayTime: 0 }; //delayTime: 160 * 1 / 30 };
 
                         const loader = new MMDLoader();
