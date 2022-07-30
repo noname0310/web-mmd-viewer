@@ -10,14 +10,12 @@ import {
     WaitUntil
 } from "the-world-engine";
 import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
-import { OutlineEffect } from "three/examples/jsm/effects/OutlineEffect";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
-import { Sky } from "three/examples/jsm/objects/Sky";
 import * as THREE from "three/src/Three";
 
 import { OrbitControls } from "./script/OrbitControls";
 
-export class Bootstrapper extends BaseBootstrapper {
+export class Bootstrapper2 extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
 
@@ -25,10 +23,7 @@ export class Bootstrapper extends BaseBootstrapper {
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        // renderer.outputEncoding = THREE.sRGBEncoding;
-        // renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        // renderer.toneMappingExposure = 0.5;
-        this.setting.render.webGLRenderer(new OutlineEffect(renderer), renderer.domElement);
+        this.setting.render.webGLRenderer(renderer);
 
         const instantiater = this.instantiater;
 
@@ -36,6 +31,7 @@ export class Bootstrapper extends BaseBootstrapper {
         const orbitCamera = new PrefabRef<Camera>();
         const audioListener = new PrefabRef<Object3DContainer<THREE.AudioListener>>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
+        let video: HTMLVideoElement|null = null;
 
         document.getElementById("switch-camera-button")!.onclick = (): void => {
             if (orbitCamera.ref === null) return;
@@ -53,7 +49,38 @@ export class Bootstrapper extends BaseBootstrapper {
                 })
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.AudioListener())
                 .getComponent(Camera, camera)
-                .getComponent(Object3DContainer, audioListener))
+                .getComponent(Object3DContainer, audioListener)
+                
+                .withChild(instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -100))
+                    .withComponent(Object3DContainer, c => {
+                        video = document.createElement("video");
+                        video.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
+                        video.muted = true;
+                        
+                        const texture = new THREE.VideoTexture(video);
+                        const aspect = 1280 / 720;
+                        const plane = new THREE.Mesh(
+                            new THREE.PlaneBufferGeometry(aspect, 1),
+                            new THREE.MeshBasicMaterial({ map: texture })
+                        );
+                        plane.material.depthTest = true;
+                        plane.material.depthWrite = true;
+
+                        c.object3D = plane;
+
+                        c.startCoroutine(function*(): CoroutineIterator {
+                            const mmdCamera = camera.ref!;
+                            const scale = c.transform.localScale;
+                            let lastFov = 0;
+                            for (;;) {
+                                if (lastFov !== mmdCamera.fov || lastFov !== mmdCamera.fov) {
+                                    scale.setScalar(Math.tan(mmdCamera.fov * THREE.MathUtils.DEG2RAD) * 100);
+                                    lastFov = mmdCamera.fov;
+                                }
+                                yield null;
+                            }
+                        }());
+                    })))
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
@@ -113,103 +140,10 @@ export class Bootstrapper extends BaseBootstrapper {
                 .withComponent(Object3DContainer, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
-                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(50, 50, 50)" })
+                        new THREE.MeshBasicMaterial({ color: 0xffffff, depthWrite: false })
                     );
                     mesh.receiveShadow = true;
                     c.object3D = mesh;
-                }))
-
-            
-            .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(1000))
-                .active(false)
-                .withComponent(Object3DContainer, c => {
-                    const sky = new Sky();
-                    
-                    const sun = new THREE.Vector3();
-                    const effectController = {
-                        turbidity: 10,
-                        rayleigh: 3,
-                        mieCoefficient: 0.005,
-                        mieDirectionalG: 0.7,
-                        elevation: 2,
-                        azimuth: 180,
-                        exposure: renderer.toneMappingExposure
-                    };
-    
-                    function guiChanged(): void {
-    
-                        const uniforms = sky.material.uniforms;
-                        uniforms[ "turbidity" ].value = effectController.turbidity;
-                        uniforms[ "rayleigh" ].value = effectController.rayleigh;
-                        uniforms[ "mieCoefficient" ].value = effectController.mieCoefficient;
-                        uniforms[ "mieDirectionalG" ].value = effectController.mieDirectionalG;
-    
-                        const phi = THREE.MathUtils.degToRad( 90 - effectController.elevation );
-                        const theta = THREE.MathUtils.degToRad( effectController.azimuth );
-    
-                        sun.setFromSphericalCoords( 1, phi, theta );
-    
-                        uniforms[ "sunPosition" ].value.copy( sun );
-    
-                        renderer.toneMappingExposure = effectController.exposure;
-                    }
-
-                    guiChanged();
-                    c.object3D = sky;
-                }))
-
-            .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, -30))
-                .withComponent(Object3DContainer, c => {
-                    c.startCoroutine(loadAndRun());
-
-                    function *loadAndRun(): CoroutineIterator {
-                        let loadingText = document.getElementById("load-progress");
-                        if (!loadingText) {
-                            loadingText = document.createElement("div");
-                            loadingText.id = "load-progress";
-                            loadingText.style.position = "absolute";
-                            loadingText.style.top = "0";
-                            loadingText.style.left = "0";
-                            loadingText.style.margin = "10px";
-                            document.body.appendChild(loadingText);
-                        }
-
-                        const modelLoadingText = document.createElement("div");
-                        loadingText.appendChild(modelLoadingText);
-
-                        function makeProgressUpdate(title: string, target: HTMLElement) {
-                            return function onProgress(xhr: ProgressEvent): void {
-                                if (xhr.lengthComputable) {
-                                    const percentComplete = xhr.loaded / xhr.total * 100;
-                                    target.innerText = title + ": " + Math.round(percentComplete) + "% loading";
-                                }
-                            };
-                        }
-
-                        const modelFile = "mmd/Stage36/Stage36.pmx";
-
-                        const loader = new MMDLoader();
-
-                        let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>|null = null;
-                        loader.load(modelFile, object => model = object, makeProgressUpdate("stage", modelLoadingText));
-                        yield new WaitUntil(() => model !== null);
-                        modelLoadingText.innerText = "stage loaded";
-
-                        c.object3D = model;
-
-                        // //replace all materials with phong materials
-                        // const materials = model!.material as THREE.Material[];
-                        // for (let i = 0; i < materials.length; i++) {
-                        //     materials[i] = new THREE.MeshPhongMaterial(materials[i].userData);
-                        // }
-
-                        model!.traverse(object => {
-                            if ((object as THREE.Mesh).isMesh) {
-                                object.castShadow = true;
-                                object.receiveShadow = true;
-                            }
-                        });
-                    }
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-model")
@@ -245,20 +179,12 @@ export class Bootstrapper extends BaseBootstrapper {
                             };
                         }
 
-                        // const modelFile = "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx";
-                        // const vmdFiles = [
-                        //     "mmd/flos/flos_model.vmd", "mmd/flos/flos_physics.vmd"
-                        // ];
-                        // const cameraFile = "mmd/flos/flos_camera_mod.vmd";
-                        // const audioFile = "mmd/flos/flos_YuNi.mp3";
-                        // const audioParams = { delayTime: 0 }; //delayTime: 160 * 1 / 30 };
-
-                        const modelFile = "mmd/YYB 元气少女/Miku.pmx";
+                        const modelFile = "mmd/YYB式改変初音ミクV2_10th デフォ服/YYB式初音ミク_10th デフォ服 FF.pmx";
                         const vmdFiles = [
-                            "mmd/pizzicato_drops/model.vmd", "mmd/pizzicato_drops/physics_reduce4.vmd"
+                            "mmd/as_you_like_it/TDA Motion.vmd"
                         ];
-                        const cameraFile = "mmd/pizzicato_drops/camera.vmd";
-                        const audioFile = "mmd/pizzicato_drops/pizzicato_drops.mp3";
+                        const cameraFile = "mmd/as_you_like_it/TDA Cam.vmd";
+                        const audioFile = "mmd/as_you_like_it/as_you_like_it.mp3";
                         const audioParams = { delayTime: 0 }; //delayTime: 160 * 1 / 30 };
 
                         const loader = new MMDLoader();
@@ -312,8 +238,12 @@ export class Bootstrapper extends BaseBootstrapper {
                         loadingText.remove();
                         camera.ref!.priority = 0;
                         yield null;
+                        video!.play();
                         for (; ;) {
                             helper.update(c.engine.time.deltaTime);
+                            if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 0.5) {
+                                video!.currentTime = helper.audioManager.currentTime;
+                            }
                             c.updateWorldMatrix();
                             yield null;
                         }
