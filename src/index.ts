@@ -7,7 +7,7 @@ import { Bootstrapper2 } from "./asset/Bootstrapper2";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
-        const game = new Game(document.body);
+        const game = new Game(document.getElementById("game_view")!);
         game.run(Bootstrapper2);
         game.inputHandler.startHandleEvents();
         //run();

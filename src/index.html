@@ -14,12 +14,10 @@
         }
 
         #switch-camera-button {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
             border: none;
-            width: 130px;
-            height: 60px;
+            width: 230px;
+            height: 30px;
+            margin-right: 10px;
             z-index: 1;
             font-size: 16px;
 
@@ -33,12 +31,68 @@
         #switch-camera-button:active {
             background-color: #e0e0e0;
         }
+
+        .game_view {
+            width: 100%;
+            height: calc(100% - 50px);
+            margin: 0;
+            padding: 0;
+        }
+
+        .game_container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game_controls {
+            width: 100%;
+            height: 50px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .control_button {
+            margin: 0px 10px 0px 10px;
+            border: none;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 15px;
+            width: 80px;
+        }
+
+        .control_button:active {
+            background-color: #e0e0e0;
+        }
+
+        .animation_slider {
+            width: 100%;
+            margin: 0px 10px 0px 10px;
+        }
+
+        .control_text {
+            margin: 0px 10px 0px 10px;
+            width: 80px;
+            text-align: center;
+        }
     </style>
     <link rel="icon" href="data:,">
 </head>
 
 <body>
-    <button id="switch-camera-button">switch camera</button>
+    <div class="game_view" id="game_view">
+    </div>
+    
+    <div class="game_controls">
+        <button class="control_button" id="play_button">play</button>
+        <input type="range" min="0" max="1024" value="0" step="1" class="animation_slider" id="animation_slider">
+        <span id="frame_display" class="control_text">00000</span>
+        <button id="switch-camera-button">switch camera</button>
+    </div>
 </body>
 
 </html>

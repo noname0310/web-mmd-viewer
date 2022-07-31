@@ -3,17 +3,20 @@ import {
     Camera,
     CameraType,
     CoroutineIterator,
-    DuckThreeCamera,
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
+    WaitForEndOfFrame,
     WaitUntil
 } from "the-world-engine";
-import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
-import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
+import { MmdCameraLoader } from "./script/MmdCameraLoader";
+import { MmdModelLoader } from "./script/MmdModelLoader";
+import { MmdPlayer } from "./script/MmdPlayer";
 import { OrbitControls } from "./script/OrbitControls";
+import { Ui } from "./script/Ui";
+import { UiController } from "./script/UiController";
 
 export class Bootstrapper2 extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -31,15 +34,35 @@ export class Bootstrapper2 extends BaseBootstrapper {
         const orbitCamera = new PrefabRef<Camera>();
         const audioListener = new PrefabRef<Object3DContainer<THREE.AudioListener>>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
+
+        const mmdModelLoader = new PrefabRef<MmdModelLoader>();
+        const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
         let video: HTMLVideoElement|null = null;
-
-        document.getElementById("switch-camera-button")!.onclick = (): void => {
-            if (orbitCamera.ref === null) return;
-
-            orbitCamera.ref.priority = orbitCamera.ref.priority === -1 ? 1 : -1;
-        };
         
         return this.sceneBuilder
+            .withChild(instantiater.buildGameObject("game-manager")
+                .withComponent(UiController, c => {
+                    c.orbitCamera = orbitCamera.ref;
+                    c.switchCameraButton = document.getElementById("switch-camera-button") as HTMLButtonElement;
+                }))
+
+            .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
+                .withComponent(Camera, c => {
+                    c.cameraType = CameraType.Perspective;
+                    c.fov = 60;
+                    c.far = 1500;
+                    c.priority = -1;
+                })
+                .withComponent(OrbitControls, c => {
+                    c.enabled = true;
+                    c.target = new THREE.Vector3(0, 14, 0);
+                    c.minDistance = 20;
+                    c.maxDistance = 100;
+                    c.enableDamping = false;
+                })
+                .getComponent(Camera, orbitCamera))
+
+            
             .withChild(instantiater.buildGameObject("camera")
                 .withComponent(Camera, c => {
                     c.priority = -2;
@@ -47,8 +70,25 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     c.fov = 60;
                     c.far = 1500;
                 })
+                .withComponent(MmdCameraLoader, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const cameraLoadingText = document.createElement("div");
+                    loadingText.appendChild(cameraLoadingText);
+
+                    c.onProgress.addListener((e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
+
+                    c.asyncLoadAnimation("mmd/as_you_like_it/TDA Cam.vmd", () => {
+                        cameraLoadingText.innerText = "camera loaded";
+                    });
+                })
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.AudioListener())
                 .getComponent(Camera, camera)
+                .getComponent(MmdCameraLoader, mmdCameraLoader)
                 .getComponent(Object3DContainer, audioListener)
                 
                 .withChild(instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -500))
@@ -68,6 +108,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
 
                         c.object3D = plane;
 
+                        const waitForEndOfFrame = new WaitForEndOfFrame();
                         c.startCoroutine(function*(): CoroutineIterator {
                             const mmdCamera = camera.ref!;
                             const scale = c.transform.localScale;
@@ -77,26 +118,10 @@ export class Bootstrapper2 extends BaseBootstrapper {
                                     scale.setScalar(Math.tan(mmdCamera.fov * THREE.MathUtils.DEG2RAD) * 500);
                                     lastFov = mmdCamera.fov;
                                 }
-                                yield null;
+                                yield waitForEndOfFrame;
                             }
                         }());
                     })))
-
-            .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
-                .withComponent(Camera, c => {
-                    c.cameraType = CameraType.Perspective;
-                    c.fov = 60;
-                    c.far = 1500;
-                    c.priority = -1;
-                })
-                .withComponent(OrbitControls, c => {
-                    c.enabled = true;
-                    c.target = new THREE.Vector3(0, 14, 0);
-                    c.minDistance = 20;
-                    c.maxDistance = 100;
-                    c.enableDamping = false;
-                })
-                .getComponent(Camera, orbitCamera))
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
@@ -147,26 +172,42 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-model")
-                .withComponent(Object3DContainer, c => {
+                .withComponent(MmdModelLoader, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const modelLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelLoadingText);
+                    const modelAnimationLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelAnimationLoadingText);
+                    
+                    c.onProgress.addListener((type, e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            (type === "model" ? modelLoadingText : modelAnimationLoadingText)
+                                .innerText = type + ": " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
+
+                    c.asyncLoadModel("mmd/YYB式改変初音ミクV2_10th デフォ服/YYB式初音ミク_10th デフォ服 FF.pmx", model => {
+                        modelLoadingText.innerText = "model loaded";
+                        model!.traverse(object => {
+                            if ((object as THREE.Mesh).isMesh) {
+                                object.castShadow = true;
+                                object.frustumCulled = false;
+                            }
+                        });
+                    });
+                    c.asyncLoadAnimation([ "mmd/as_you_like_it/TDA Motion.vmd" ], () => {
+                        modelAnimationLoadingText.innerText = "animation loaded";
+                    });
+                })
+                .getComponent(MmdModelLoader, mmdModelLoader))
+
+            .withChild(instantiater.buildGameObject("mmd-player")
+                .withComponent(MmdPlayer, c => {
                     c.startCoroutine(loadAndRun());
 
                     function *loadAndRun(): CoroutineIterator {
-                        let loadingText = document.getElementById("load-progress");
-                        if (!loadingText) {
-                            loadingText = document.createElement("div");
-                            loadingText.id = "load-progress";
-                            loadingText.style.position = "absolute";
-                            loadingText.style.top = "0";
-                            loadingText.style.left = "0";
-                            loadingText.style.margin = "10px";
-                            document.body.appendChild(loadingText);
-                        }
-                        const modelLoadingText = document.createElement("div");
-                        loadingText.appendChild(modelLoadingText);
-                        const modelAnimationLoadingText = document.createElement("div");
-                        loadingText.appendChild(modelAnimationLoadingText);
-                        const cameraLoadingText = document.createElement("div");
-                        loadingText.appendChild(cameraLoadingText);
+                        const loadingText = Ui.getOrCreateLoadingElement();
                         const audioLoadingText = document.createElement("div");
                         loadingText.appendChild(audioLoadingText);
 
@@ -178,78 +219,48 @@ export class Bootstrapper2 extends BaseBootstrapper {
                                 }
                             };
                         }
-
-                        const modelFile = "mmd/YYB式改変初音ミクV2_10th デフォ服/YYB式初音ミク_10th デフォ服 FF.pmx";
-                        const vmdFiles = [
-                            "mmd/as_you_like_it/TDA Motion.vmd"
-                        ];
-                        const cameraFile = "mmd/as_you_like_it/TDA Cam.vmd";
                         const audioFile = "mmd/as_you_like_it/as_you_like_it.mp3";
-                        const audioParams = { delayTime: 0 }; //delayTime: 160 * 1 / 30 };
 
-                        const loader = new MMDLoader();
-
-                        let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>|null = null;
-                        loader.load(modelFile, object => model = object, makeProgressUpdate("model", modelLoadingText));
-                        yield new WaitUntil(() => model !== null);
-                        modelLoadingText.innerText = "model loaded";
-
-                        c.object3D = model;
-                        model!.traverse(object => {
-                            if ((object as THREE.Mesh).isMesh) {
-                                object.castShadow = true;
-                                object.frustumCulled = false;
-                            }
-                        });
-
-                        const threeCamera = DuckThreeCamera.createInterface(camera.ref!, false).toThreeCamera();
-                        
-                        let modelAnimation: THREE.AnimationClip|null = null;
-                        loader.loadAnimation(vmdFiles as any, model!,
-                            object => modelAnimation = object as THREE.AnimationClip, makeProgressUpdate("model animation", modelAnimationLoadingText));
-                        yield new WaitUntil(() => modelAnimation !== null);
-                        modelAnimationLoadingText.innerText = "model animation loaded";
-
-                        let cameraAnimation: THREE.AnimationClip|null = null;
-                        loader.loadAnimation(cameraFile, threeCamera,
-                            object => cameraAnimation = object as THREE.AnimationClip, makeProgressUpdate("camera motion", cameraLoadingText));
-                        yield new WaitUntil(() => cameraAnimation !== null);
-                        cameraLoadingText.innerText = "camera loaded";
-
-                        const useAudio = true;
                         let audioBuffer: AudioBuffer|null = null;
-                        if (useAudio) {
-                            new THREE.AudioLoader().load(audioFile, buffer => audioBuffer = buffer, makeProgressUpdate("audio", audioLoadingText));
-                            yield new WaitUntil(() => audioBuffer !== null);
-                            audioLoadingText.innerText = "audio loaded";
-                        }
+                        new THREE.AudioLoader().load(audioFile, buffer => audioBuffer = buffer, makeProgressUpdate("audio", audioLoadingText));
+                        yield new WaitUntil(() => audioBuffer !== null);
+                        audioLoadingText.innerText = "audio loaded";
                         const audio = new THREE.Audio(audioListener.ref!.object3D!).setBuffer(audioBuffer!);
 
-                        const helper = new MMDAnimationHelper()
-                            .enable("physics", vmdFiles.length < 2)
-                            .enable("cameraAnimation", true)
-                            .add(model!, { animation: modelAnimation! })
-                            .add(threeCamera, { animation: cameraAnimation! });
+                        while (mmdModelLoader.ref!.skinnedMesh === null || mmdModelLoader.ref!.isAnimationLoading) yield null;
+                        while (mmdCameraLoader.ref!.isAnimationLoading) yield null;
 
-                        if (useAudio) {
-                            helper.add(audio, audioParams);
-                        }
+                        const model = mmdModelLoader.ref!.object3DContainer!;
+                        const modelAnimation = mmdModelLoader.ref!.animations[0];
+                        const cameraLoaderDeRef = mmdCameraLoader.ref!;
+                        const cameraAnimation = mmdCameraLoader.ref!.animations[0];
+
+                        c.manualUpdate = true;
+                        c.play(
+                            model,
+                            modelAnimation,
+                            cameraLoaderDeRef.threeCamera!,
+                            cameraAnimation,
+                            audio
+                        );
 
                         loadingText.remove();
                         camera.ref!.priority = 0;
                         yield null;
                         video!.play();
                         video!.loop = true;
+                        
+                        let elapsedTime = 0;
                         for (; ;) {
-                            helper.update(c.engine.time.deltaTime);
-                            if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 10) {
-                                video!.currentTime = helper.audioManager.currentTime;
+                            elapsedTime += c.engine.time.deltaTime;
+                            c.process(elapsedTime * 60);
+                            if (Math.abs(video!.currentTime - elapsedTime) > 10) {
+                                video!.currentTime = elapsedTime;
                             }
                             
-                            if (Math.abs(video!.currentTime - helper.audioManager.currentTime) > 0.1) {
-                                video!.playbackRate = 1 + (video!.currentTime < helper.audioManager.currentTime ? 0.1 : -0.1);
+                            if (Math.abs(video!.currentTime - elapsedTime) > 0.1) {
+                                video!.playbackRate = 1 + (video!.currentTime < elapsedTime ? 0.1 : -0.1);
                             }
-                            c.updateWorldMatrix();
                             yield null;
                         }
                     }
