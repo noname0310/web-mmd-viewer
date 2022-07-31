@@ -5,8 +5,7 @@ import {
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
-    SceneBuilder,
-    WaitForEndOfFrame
+    SceneBuilder
 } from "the-world-engine";
 import * as THREE from "three/src/Three";
 import { AnimationLoopMode } from "tw-engine-498tokio";
@@ -123,7 +122,6 @@ export class Bootstrapper2 extends BaseBootstrapper {
 
                         c.object3D = plane;
 
-                        const waitForEndOfFrame = new WaitForEndOfFrame();
                         c.startCoroutine(function*(): CoroutineIterator {
                             const mmdCamera = camera.ref!;
                             const scale = c.transform.localScale;
@@ -133,7 +131,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                                     scale.setScalar(Math.tan(mmdCamera.fov * THREE.MathUtils.DEG2RAD) * 500);
                                     lastFov = mmdCamera.fov;
                                 }
-                                yield waitForEndOfFrame;
+                                yield null;
                             }
                         }());
                     })))
