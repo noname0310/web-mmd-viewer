@@ -44,18 +44,19 @@ export class ClockCalibrator implements IAnimationClock {
     private _lastNow = 0;
     
     public get currentTime(): number {
-        if (this._lastCurrentTime !== this._animationClock.currentTime) {
-            this._lastCurrentTime = this._animationClock.currentTime;
+        const currentTime = this._animationClock.currentTime;
+        if (this._lastCurrentTime !== currentTime) {
+            this._lastCurrentTime = currentTime;
             this._lastNow = performance.now() / 1000;
-            return this._animationClock.currentTime;
+            return currentTime;
         } else {
             const performanceNow = performance.now() / 1000;
             const performanceDelta = performanceNow - this._lastNow;
-            this._lastNow = performanceNow;
-            if (1000 < performanceDelta) {
+
+            if (1 < performanceDelta) {
                 return this._lastCurrentTime;
             } else {
-                return this._lastCurrentTime + performanceDelta;
+                return this._lastCurrentTime + performanceDelta / 2;
             }
         }
     }    
