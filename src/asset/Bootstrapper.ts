@@ -241,7 +241,8 @@ export class Bootstrapper extends BaseBootstrapper {
                     ], () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
-                }))
+                })
+                .getComponent(MmdModelLoader, mmdModelLoader))
 
             
             .withChild(instantiater.buildGameObject("mmd-player")
