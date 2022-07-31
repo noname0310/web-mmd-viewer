@@ -3,19 +3,25 @@ import {
     Camera,
     CameraType,
     CoroutineIterator,
-    DuckThreeCamera,
     Object3DContainer,
     PrefabRef,
-    SceneBuilder,
-    WaitUntil
+    SceneBuilder
 } from "the-world-engine";
-import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
 import { OutlineEffect } from "three/examples/jsm/effects/OutlineEffect";
-import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import * as THREE from "three/src/Three";
+import { AnimationLoopMode } from "tw-engine-498tokio";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
+import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/AnimationControl";
+import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
+import { MmdCameraLoader } from "./script/MmdCameraLoader";
+import { MmdController } from "./script/MmdController";
+import { MmdModelLoader } from "./script/MmdModelLoader";
+import { MmdPlayer } from "./script/MmdPlayer";
 import { OrbitControls } from "./script/OrbitControls";
+import { Ui } from "./script/Ui";
+import { UiController } from "./script/UiController";
 
 export class Bootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -34,27 +40,28 @@ export class Bootstrapper extends BaseBootstrapper {
 
         const camera = new PrefabRef<Camera>();
         const orbitCamera = new PrefabRef<Camera>();
-        const audioListener = new PrefabRef<Object3DContainer<THREE.AudioListener>>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
 
-        document.getElementById("switch-camera-button")!.onclick = (): void => {
-            if (orbitCamera.ref === null) return;
+        const mmdModelLoader = new PrefabRef<MmdModelLoader>();
+        const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
 
-            orbitCamera.ref.priority = orbitCamera.ref.priority === -1 ? 1 : -1;
-        };
+        const animationControl = new PrefabRef<AnimationControl>();
+        const audioPlayer = new PrefabRef<AudioPlayer>();
+        const mmdPlayer = new PrefabRef<MmdPlayer>();
         
         return this.sceneBuilder
-            .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => {
-                    c.priority = -2;
-                    c.cameraType = CameraType.Perspective;
-                    c.fov = 60;
-                    c.far = 1500;
+            .withChild(instantiater.buildGameObject("game-manager")
+                .withComponent(UiController, c => {
+                    c.orbitCamera = orbitCamera.ref;
+                    c.switchCameraButton = document.getElementById("switch-camera-button") as HTMLButtonElement;
                 })
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.AudioListener())
-                .getComponent(Camera, camera)
-                .getComponent(Object3DContainer, audioListener))
-
+                .withComponent(AnimationControl, c => {
+                    c.playButton = document.getElementById("play_button")! as HTMLButtonElement;
+                    c.frameDisplayText = document.getElementById("frame_display")! as HTMLInputElement;
+                })
+                .getComponent(AnimationControl, animationControl))
+                
+            
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
@@ -70,6 +77,36 @@ export class Bootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
+            
+            .withChild(instantiater.buildGameObject("camera")
+                .withComponent(Camera, c => {
+                    c.priority = -2;
+                    c.cameraType = CameraType.Perspective;
+                    c.fov = 60;
+                    c.far = 1500;
+                })
+                .withComponent(MmdCameraLoader, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const cameraLoadingText = document.createElement("div");
+                    loadingText.appendChild(cameraLoadingText);
+
+                    c.onProgress.addListener((e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
+
+                    c.asyncLoadAnimation("mmd/pizzicato_drops/camera.vmd", () => {
+                        cameraLoadingText.innerText = "camera loaded";
+                    });
+                })
+                .withComponent(AudioPlayer, c => {
+                    c.asyncSetAudioFromUrl("mmd/pizzicato_drops/pizzicato_drops.mp3");
+                })
+                .getComponent(Camera, camera)
+                .getComponent(MmdCameraLoader, mmdCameraLoader)
+                .getComponent(AudioPlayer, audioPlayer))
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
@@ -159,166 +196,75 @@ export class Bootstrapper extends BaseBootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, -30))
-                .withComponent(Object3DContainer, c => {
-                    c.startCoroutine(loadAndRun());
-
-                    function *loadAndRun(): CoroutineIterator {
-                        let loadingText = document.getElementById("load-progress");
-                        if (!loadingText) {
-                            loadingText = document.createElement("div");
-                            loadingText.id = "load-progress";
-                            loadingText.style.position = "absolute";
-                            loadingText.style.top = "0";
-                            loadingText.style.left = "0";
-                            loadingText.style.margin = "10px";
-                            document.body.appendChild(loadingText);
+                .withComponent(MmdModelLoader, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const modelLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelLoadingText);
+                    c.onProgress.addListener((_type, e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            modelLoadingText.innerText = "stage: " + Math.round(percentComplete) + "% loading";
                         }
+                    });
 
-                        const modelLoadingText = document.createElement("div");
-                        loadingText.appendChild(modelLoadingText);
-
-                        function makeProgressUpdate(title: string, target: HTMLElement) {
-                            return function onProgress(xhr: ProgressEvent): void {
-                                if (xhr.lengthComputable) {
-                                    const percentComplete = xhr.loaded / xhr.total * 100;
-                                    target.innerText = title + ": " + Math.round(percentComplete) + "% loading";
-                                }
-                            };
-                        }
-
-                        const modelFile = "mmd/Stage36/Stage36.pmx";
-
-                        const loader = new MMDLoader();
-
-                        let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>|null = null;
-                        loader.load(modelFile, object => model = object, makeProgressUpdate("stage", modelLoadingText));
-                        yield new WaitUntil(() => model !== null);
-                        modelLoadingText.innerText = "stage loaded";
-
-                        c.object3D = model;
-
-                        // //replace all materials with phong materials
-                        // const materials = model!.material as THREE.Material[];
-                        // for (let i = 0; i < materials.length; i++) {
-                        //     materials[i] = new THREE.MeshPhongMaterial(materials[i].userData);
-                        // }
-
-                        model!.traverse(object => {
-                            if ((object as THREE.Mesh).isMesh) {
-                                object.castShadow = true;
-                                object.receiveShadow = true;
-                            }
-                        });
-                    }
+                    c.asyncLoadModel("mmd/Stage36/Stage36.pmx", () => {
+                        modelLoadingText.innerText = "model loaded";
+                    });
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-model")
-                .withComponent(Object3DContainer, c => {
-                    c.startCoroutine(loadAndRun());
+                .withComponent(MmdModelLoader, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const modelLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelLoadingText);
+                    const modelAnimationLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelAnimationLoadingText);
 
-                    function *loadAndRun(): CoroutineIterator {
-                        let loadingText = document.getElementById("load-progress");
-                        if (!loadingText) {
-                            loadingText = document.createElement("div");
-                            loadingText.id = "load-progress";
-                            loadingText.style.position = "absolute";
-                            loadingText.style.top = "0";
-                            loadingText.style.left = "0";
-                            loadingText.style.margin = "10px";
-                            document.body.appendChild(loadingText);
+                    c.onProgress.addListener((type, e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            (type === "model" ? modelLoadingText : modelAnimationLoadingText)
+                                .innerText = type + ": " + Math.round(percentComplete) + "% loading";
                         }
-                        const modelLoadingText = document.createElement("div");
-                        loadingText.appendChild(modelLoadingText);
-                        const modelAnimationLoadingText = document.createElement("div");
-                        loadingText.appendChild(modelAnimationLoadingText);
-                        const cameraLoadingText = document.createElement("div");
-                        loadingText.appendChild(cameraLoadingText);
-                        const audioLoadingText = document.createElement("div");
-                        loadingText.appendChild(audioLoadingText);
-
-                        function makeProgressUpdate(title: string, target: HTMLElement) {
-                            return function onProgress(xhr: ProgressEvent): void {
-                                if (xhr.lengthComputable) {
-                                    const percentComplete = xhr.loaded / xhr.total * 100;
-                                    target.innerText = title + ": " + Math.round(percentComplete) + "% loading";
-                                }
-                            };
-                        }
-
-                        // const modelFile = "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx";
-                        // const vmdFiles = [
-                        //     "mmd/flos/flos_model.vmd", "mmd/flos/flos_physics.vmd"
-                        // ];
-                        // const cameraFile = "mmd/flos/flos_camera_mod.vmd";
-                        // const audioFile = "mmd/flos/flos_YuNi.mp3";
-                        // const audioParams = { delayTime: 0 }; //delayTime: 160 * 1 / 30 };
-
-                        const modelFile = "mmd/YYB 元气少女/Miku.pmx";
-                        const vmdFiles = [
-                            "mmd/pizzicato_drops/model.vmd", "mmd/pizzicato_drops/physics_reduce4.vmd"
-                        ];
-                        const cameraFile = "mmd/pizzicato_drops/camera.vmd";
-                        const audioFile = "mmd/pizzicato_drops/pizzicato_drops.mp3";
-                        const audioParams = { delayTime: 0 }; //delayTime: 160 * 1 / 30 };
-
-                        const loader = new MMDLoader();
-
-                        let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>|null = null;
-                        loader.load(modelFile, object => model = object, makeProgressUpdate("model", modelLoadingText));
-                        yield new WaitUntil(() => model !== null);
+                    });
+                    c.asyncLoadModel("mmd/YYB 元气少女/Miku.pmx", model => {
                         modelLoadingText.innerText = "model loaded";
-
-                        c.object3D = model;
                         model!.traverse(object => {
                             if ((object as THREE.Mesh).isMesh) {
                                 object.castShadow = true;
                                 object.frustumCulled = false;
                             }
                         });
-
-                        const threeCamera = DuckThreeCamera.createInterface(camera.ref!, false).toThreeCamera();
-                        
-                        let modelAnimation: THREE.AnimationClip|null = null;
-                        loader.loadAnimation(vmdFiles as any, model!,
-                            object => modelAnimation = object as THREE.AnimationClip, makeProgressUpdate("model animation", modelAnimationLoadingText));
-                        yield new WaitUntil(() => modelAnimation !== null);
-                        modelAnimationLoadingText.innerText = "model animation loaded";
-
-                        let cameraAnimation: THREE.AnimationClip|null = null;
-                        loader.loadAnimation(cameraFile, threeCamera,
-                            object => cameraAnimation = object as THREE.AnimationClip, makeProgressUpdate("camera motion", cameraLoadingText));
-                        yield new WaitUntil(() => cameraAnimation !== null);
-                        cameraLoadingText.innerText = "camera loaded";
-
-                        const useAudio = true;
-                        let audioBuffer: AudioBuffer|null = null;
-                        if (useAudio) {
-                            new THREE.AudioLoader().load(audioFile, buffer => audioBuffer = buffer, makeProgressUpdate("audio", audioLoadingText));
-                            yield new WaitUntil(() => audioBuffer !== null);
-                            audioLoadingText.innerText = "audio loaded";
-                        }
-                        const audio = new THREE.Audio(audioListener.ref!.object3D!).setBuffer(audioBuffer!);
-
-                        const helper = new MMDAnimationHelper()
-                            .enable("physics", vmdFiles.length < 2)
-                            .enable("cameraAnimation", true)
-                            .add(model!, { animation: modelAnimation! })
-                            .add(threeCamera, { animation: cameraAnimation! });
-
-                        if (useAudio) {
-                            helper.add(audio, audioParams);
-                        }
-
-                        loadingText.remove();
-                        camera.ref!.priority = 0;
-                        yield null;
-                        for (; ;) {
-                            helper.update(c.engine.time.deltaTime);
-                            c.updateWorldMatrix();
-                            yield null;
-                        }
-                    }
+                    });
+                    c.asyncLoadAnimation([
+                        "mmd/pizzicato_drops/model.vmd", "mmd/pizzicato_drops/physics_reduce4.vmd"
+                    ], () => {
+                        modelAnimationLoadingText.innerText = "animation loaded";
+                    });
                 }))
+
+            
+            .withChild(instantiater.buildGameObject("mmd-player")
+                .withComponent(MmdPlayer, c => {
+                    c.usePhysics = false;
+                })
+                .withComponent(AnimationSequencePlayer, c => {
+                    c.animationClock = audioPlayer.ref!;
+                    c.frameRate = 60;
+                    c.loopMode = AnimationLoopMode.None;
+                })
+                .withComponent(MmdController, c => {
+                    c.onLoadComplete.addListener(() => {
+                        Ui.getOrCreateLoadingElement().remove();
+                        camera.ref!.priority = 0;
+                        animationControl.ref!.player = c.gameObject.getComponent(AnimationSequencePlayer)!;
+                        animationControl.ref!.slider = document.getElementById("animation_slider")! as HTMLInputElement;
+                        animationControl.ref!.slider.value = "0";
+                    });
+
+                    c.asyncPlay(mmdModelLoader.ref!, mmdCameraLoader.ref!);
+                })
+                .getComponent(MmdPlayer, mmdPlayer))
         ;
     }
 }

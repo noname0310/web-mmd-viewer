@@ -3,12 +3,12 @@ import { Game } from "the-world-engine";
 
 import TestAudio from "./asset/audio/audioTest.mp3";
 //import { run } from "./example";
-import { Bootstrapper2 } from "./asset/Bootstrapper2";
+import { Bootstrapper } from "./asset/Bootstrapper";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
         const game = new Game(document.getElementById("game_view")!);
-        game.run(Bootstrapper2);
+        game.run(Bootstrapper);
         game.inputHandler.startHandleEvents();
         //run();
     } );
