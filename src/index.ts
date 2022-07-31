@@ -2,7 +2,6 @@ import Ammo from "ammojs-typed";
 import { Game } from "the-world-engine";
 
 import TestAudio from "./asset/audio/audioTest.mp3";
-//import { run } from "./example";
 import { Bootstrapper2 } from "./asset/Bootstrapper2";
 
 function startGame(): void {
@@ -10,7 +9,6 @@ function startGame(): void {
         const game = new Game(document.getElementById("game_view")!);
         game.run(Bootstrapper2);
         game.inputHandler.startHandleEvents();
-        //run();
     } );
 }
 
