@@ -18,7 +18,7 @@ export class VideoAnimationInstance {
         const elapsedTime = frameTime / this._fps;
         const video = this._htmlVideo;
 
-        if (Math.abs(video!.currentTime - elapsedTime) > 10) {
+        if (Math.abs(video!.currentTime - elapsedTime) > 1) {
             video!.currentTime = elapsedTime;
         }
         
