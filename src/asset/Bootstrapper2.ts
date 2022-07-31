@@ -13,6 +13,7 @@ import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/an
 import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/AnimationControl";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
+import { ClockCalibrator } from "./script/ClockCalibrator";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
 import { MmdController } from "./script/MmdController";
 import { MmdModelLoader } from "./script/MmdModelLoader";
@@ -218,7 +219,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("mmd-player")
                 .withComponent(MmdPlayer)
                 .withComponent(AnimationSequencePlayer, c => {
-                    c.animationClock = audioPlayer.ref!;
+                    c.animationClock = new ClockCalibrator(audioPlayer.ref!);
                     c.frameRate = 60;
                     c.loopMode = AnimationLoopMode.None;
 
@@ -240,6 +241,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     });
 
                     c.onProcess.addListener(frame => {
+                        console.log(frame);
                         video.process(frame);
                     });
 
