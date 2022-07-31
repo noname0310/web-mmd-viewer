@@ -56,7 +56,7 @@ export class ClockCalibrator implements IAnimationClock {
             if (1 < performanceDelta) {
                 return this._lastCurrentTime;
             } else {
-                return this._lastCurrentTime + performanceDelta / 2;
+                return this._lastCurrentTime + performanceDelta;
             }
         }
     }    
