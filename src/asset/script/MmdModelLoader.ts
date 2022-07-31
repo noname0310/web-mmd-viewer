@@ -2,7 +2,7 @@ import { Component, Coroutine, CoroutineIterator, EventContainer, IEventContaine
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
-type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>;
+export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>;
 
 export class MmdModelLoader extends Component {
     private readonly _loader = new MMDLoader();

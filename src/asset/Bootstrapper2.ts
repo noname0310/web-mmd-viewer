@@ -6,17 +6,22 @@ import {
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
-    WaitForEndOfFrame,
-    WaitUntil
+    WaitForEndOfFrame
 } from "the-world-engine";
 import * as THREE from "three/src/Three";
+import { AnimationLoopMode } from "tw-engine-498tokio";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
+import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/AnimationControl";
+import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
+import { MmdController } from "./script/MmdController";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { MmdPlayer } from "./script/MmdPlayer";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
 import { UiController } from "./script/UiController";
+import { VideoAnimationInstance } from "./script/VideoAnimationInstance";
 
 export class Bootstrapper2 extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -32,19 +37,27 @@ export class Bootstrapper2 extends BaseBootstrapper {
 
         const camera = new PrefabRef<Camera>();
         const orbitCamera = new PrefabRef<Camera>();
-        const audioListener = new PrefabRef<Object3DContainer<THREE.AudioListener>>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
 
         const mmdModelLoader = new PrefabRef<MmdModelLoader>();
         const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
-        let video: HTMLVideoElement|null = null;
+        const video = new VideoAnimationInstance(document.createElement("video"));
+
+        const animationControl = new PrefabRef<AnimationControl>();
+        const audioPlayer = new PrefabRef<AudioPlayer>();
+        const mmdPlayer = new PrefabRef<MmdPlayer>();
         
         return this.sceneBuilder
             .withChild(instantiater.buildGameObject("game-manager")
                 .withComponent(UiController, c => {
                     c.orbitCamera = orbitCamera.ref;
                     c.switchCameraButton = document.getElementById("switch-camera-button") as HTMLButtonElement;
-                }))
+                })
+                .withComponent(AnimationControl, c => {
+                    c.playButton = document.getElementById("play_button")! as HTMLButtonElement;
+                    c.frameDisplayText = document.getElementById("frame_display")! as HTMLInputElement;
+                })
+                .getComponent(AnimationControl, animationControl))
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
@@ -61,7 +74,6 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-
             
             .withChild(instantiater.buildGameObject("camera")
                 .withComponent(Camera, c => {
@@ -86,18 +98,21 @@ export class Bootstrapper2 extends BaseBootstrapper {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.AudioListener())
+                .withComponent(AudioPlayer, c => {
+                    c.asyncSetAudioFromUrl("mmd/as_you_like_it/as_you_like_it.mp3");
+                })
                 .getComponent(Camera, camera)
                 .getComponent(MmdCameraLoader, mmdCameraLoader)
-                .getComponent(Object3DContainer, audioListener)
+                .getComponent(AudioPlayer, audioPlayer)
                 
                 .withChild(instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -500))
                     .withComponent(Object3DContainer, c => {
-                        video = document.createElement("video");
-                        video.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
-                        video.muted = true;
+                        const videoElement = video.htmlVideo;
+                        videoElement.autoplay = false;
+                        videoElement.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
+                        videoElement.muted = true;
                         
-                        const texture = new THREE.VideoTexture(video);
+                        const texture = new THREE.VideoTexture(videoElement);
                         const aspect = 1280 / 720;
                         const plane = new THREE.Mesh(
                             new THREE.PlaneBufferGeometry(aspect, 1),
@@ -203,68 +218,36 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 .getComponent(MmdModelLoader, mmdModelLoader))
 
             .withChild(instantiater.buildGameObject("mmd-player")
-                .withComponent(MmdPlayer, c => {
-                    c.startCoroutine(loadAndRun());
+                .withComponent(MmdPlayer)
+                .withComponent(AnimationSequencePlayer, c => {
+                    c.animationClock = audioPlayer.ref!;
+                    c.frameRate = 60;
+                    c.loopMode = AnimationLoopMode.None;
 
-                    function *loadAndRun(): CoroutineIterator {
-                        const loadingText = Ui.getOrCreateLoadingElement();
-                        const audioLoadingText = document.createElement("div");
-                        loadingText.appendChild(audioLoadingText);
+                    c.onAnimationStart.addListener(() => {
+                        video.htmlVideo.play();
+                    });
 
-                        function makeProgressUpdate(title: string, target: HTMLElement) {
-                            return function onProgress(xhr: ProgressEvent): void {
-                                if (xhr.lengthComputable) {
-                                    const percentComplete = xhr.loaded / xhr.total * 100;
-                                    target.innerText = title + ": " + Math.round(percentComplete) + "% loading";
-                                }
-                            };
-                        }
-                        const audioFile = "mmd/as_you_like_it/as_you_like_it.mp3";
-
-                        let audioBuffer: AudioBuffer|null = null;
-                        new THREE.AudioLoader().load(audioFile, buffer => audioBuffer = buffer, makeProgressUpdate("audio", audioLoadingText));
-                        yield new WaitUntil(() => audioBuffer !== null);
-                        audioLoadingText.innerText = "audio loaded";
-                        const audio = new THREE.Audio(audioListener.ref!.object3D!).setBuffer(audioBuffer!);
-
-                        while (mmdModelLoader.ref!.skinnedMesh === null || mmdModelLoader.ref!.isAnimationLoading) yield null;
-                        while (mmdCameraLoader.ref!.isAnimationLoading) yield null;
-
-                        const model = mmdModelLoader.ref!.object3DContainer!;
-                        const modelAnimation = mmdModelLoader.ref!.animations[0];
-                        const cameraLoaderDeRef = mmdCameraLoader.ref!;
-                        const cameraAnimation = mmdCameraLoader.ref!.animations[0];
-
-                        c.manualUpdate = true;
-                        c.play(
-                            model,
-                            modelAnimation,
-                            cameraLoaderDeRef.threeCamera!,
-                            cameraAnimation,
-                            audio
-                        );
-
-                        loadingText.remove();
+                    c.onAnimationPaused.addListener(() => {
+                        video.htmlVideo.pause();
+                    });
+                })
+                .withComponent(MmdController, c => {
+                    c.onLoadComplete.addListener(() => {
+                        Ui.getOrCreateLoadingElement().remove();
                         camera.ref!.priority = 0;
-                        yield null;
-                        video!.play();
-                        video!.loop = true;
-                        
-                        let elapsedTime = 0;
-                        for (; ;) {
-                            elapsedTime += c.engine.time.deltaTime;
-                            c.process(elapsedTime * 60);
-                            if (Math.abs(video!.currentTime - elapsedTime) > 10) {
-                                video!.currentTime = elapsedTime;
-                            }
-                            
-                            if (Math.abs(video!.currentTime - elapsedTime) > 0.1) {
-                                video!.playbackRate = 1 + (video!.currentTime < elapsedTime ? 0.1 : -0.1);
-                            }
-                            yield null;
-                        }
-                    }
-                }))
+                        animationControl.ref!.player = c.gameObject.getComponent(AnimationSequencePlayer)!;
+                        animationControl.ref!.slider = document.getElementById("animation_slider")! as HTMLInputElement;
+                        animationControl.ref!.slider.value = "0";
+                    });
+
+                    c.onProcess.addListener(frame => {
+                        video.process(frame);
+                    });
+
+                    c.asyncPlay(mmdModelLoader.ref!, mmdCameraLoader.ref!);
+                })
+                .getComponent(MmdPlayer, mmdPlayer))
         ;
     }
 }

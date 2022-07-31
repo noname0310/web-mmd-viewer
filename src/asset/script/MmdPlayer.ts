@@ -1,15 +1,17 @@
-import { Component, Object3DContainer } from "the-world-engine";
+import { Component } from "the-world-engine";
 import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
-import { IAnimationContainer, IAnimationInstance } from "tw-engine-498tokio";
 
-export class MmdPlayer extends Component implements IAnimationInstance {
+import { SkinnedMeshContainer } from "./MmdModelLoader";
+
+export class MmdPlayer extends Component {
     private readonly _helper = new MMDAnimationHelper();
 
     private _isPlaying = false;
     private _elapsedTime = 0;
-    private _model: Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>|null = null;
+    private _model: SkinnedMeshContainer|null = null;
     private _manualUpdate = false;
     private _manualUpdateFps = 60;
+    private _animationEndFrame = 0;
 
     private _useIk = true;
     private _useGrant = true;
@@ -33,7 +35,7 @@ export class MmdPlayer extends Component implements IAnimationInstance {
     }
 
     public play(
-        model: Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>,
+        model: SkinnedMeshContainer,
         modelAnimation: THREE.AnimationClip,
         camera?: THREE.Camera,
         cameraAnimation?: THREE.AnimationClip,
@@ -44,7 +46,7 @@ export class MmdPlayer extends Component implements IAnimationInstance {
             throw new Error("model is null");
         }
 
-        this._helper.add(model.object3D, { animation: modelAnimation! });
+        this._helper.add(model.object3D, { animation: modelAnimation });
 
         if (camera && cameraAnimation) {
             this._helper.add(camera, { animation: cameraAnimation! });
@@ -55,6 +57,14 @@ export class MmdPlayer extends Component implements IAnimationInstance {
         this._isPlaying = true;
         this._elapsedTime = 0;
         this._model = model;
+
+        const duration = Math.max(
+            modelAnimation.duration,
+            cameraAnimation?.duration ?? 0,
+            audio?.duration ?? 0
+        );
+
+        this._animationEndFrame = Math.floor(duration * this._manualUpdateFps);
     }
 
     public stop(): void {
@@ -85,6 +95,10 @@ export class MmdPlayer extends Component implements IAnimationInstance {
         this._manualUpdateFps = value;
     }
 
+    public get animationEndFrame(): number {
+        return this._animationEndFrame;
+    }
+
     public get useIk(): boolean {
         return this._useIk;
     }
@@ -110,14 +124,6 @@ export class MmdPlayer extends Component implements IAnimationInstance {
     public set usePhysics(value: boolean) {
         this._usePhysics = value;
         this._helper.enable("physics", value);
-    }
-
-    public get animationContainer(): IAnimationContainer<unknown> {
-        throw new Error("there is no AnimationContainer of MmdPlayer");
-    }
-
-    public frameIndexHint(): void {
-        // there is no hint
     }
     
     public process(frameTime: number): void {
