@@ -208,7 +208,7 @@ export class Bootstrapper extends BaseBootstrapper {
                     });
 
                     c.asyncLoadModel("mmd/Stage36/Stage36.pmx", () => {
-                        modelLoadingText.innerText = "model loaded";
+                        modelLoadingText.innerText = "stage loaded";
                     });
                 }))
 
