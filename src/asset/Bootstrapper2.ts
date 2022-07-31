@@ -241,7 +241,6 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     });
 
                     c.onProcess.addListener(frame => {
-                        console.log(frame);
                         video.process(frame);
                     });
 
