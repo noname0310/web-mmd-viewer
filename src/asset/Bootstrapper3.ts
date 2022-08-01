@@ -56,6 +56,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 .withComponent(UiController, c => {
                     c.orbitCamera = orbitCamera.ref;
                     c.switchCameraButton = document.getElementById("switch-camera-button") as HTMLButtonElement;
+                    c.fullscreenButton = document.getElementById("fullscreen_button") as HTMLButtonElement;
                 })
                 .withComponent(AnimationControl, c => {
                     c.playButton = document.getElementById("play_button")! as HTMLButtonElement;

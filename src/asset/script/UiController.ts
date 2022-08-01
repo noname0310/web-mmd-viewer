@@ -3,18 +3,39 @@ import { Camera, Component } from "the-world-engine";
 export class UiController extends Component {
     public orbitCamera: Camera|null = null;
     private _switchCameraButton: HTMLButtonElement|null = null;
+    private _fullscreenButton: HTMLButtonElement|null = null;
 
     public onEnable(): void {
         this._switchCameraButton?.addEventListener("click", this.onSwitchCameraButtonClick);
+        this._fullscreenButton?.addEventListener("click", this.onFullscreenButtonClick);
+        document.addEventListener("fullscreenchange", this.onFullscreenChange);
     }
 
     public onDisable(): void {
         this._switchCameraButton?.removeEventListener("click", this.onSwitchCameraButtonClick);
+        this._fullscreenButton?.removeEventListener("click", this.onFullscreenButtonClick);
+        document.removeEventListener("fullscreenchange", this.onFullscreenChange);
     }
 
     private readonly onSwitchCameraButtonClick = (): void => {
         if (this.orbitCamera) {
             this.orbitCamera.priority = this.orbitCamera.priority === -1 ? 1 : -1;
+        }
+    };
+
+    private readonly onFullscreenButtonClick = (): void => {
+        if (this._fullscreenButton) {
+            if (this._fullscreenButton.innerText === "fullscreen") {
+                document.body.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    };
+
+    private readonly onFullscreenChange = (): void => {
+        if (this._fullscreenButton) {
+            this._fullscreenButton.innerText = this._fullscreenButton.innerText === "fullscreen" ? "exit" : "fullscreen";
         }
     };
 
@@ -27,6 +48,18 @@ export class UiController extends Component {
 
         if (value) {
             value.addEventListener("click", this.onSwitchCameraButtonClick);
+        }
+    }
+
+    public get fullscreenButton(): HTMLButtonElement|null {
+        return this._fullscreenButton;
+    }
+
+    public set fullscreenButton(value: HTMLButtonElement|null) {
+        this._fullscreenButton = value;
+
+        if (value) {
+            value.addEventListener("click", this.onFullscreenButtonClick);
         }
     }
 }
