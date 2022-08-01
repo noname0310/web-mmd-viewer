@@ -101,7 +101,7 @@ export class GameManagerPrefab extends Prefab {
 
                     c.modelLoader = this._modelLoader.ref;
                     c.cameraLoader = this._cameraLoader.ref;
-                    c.physicsMaximumStepCount = 10;
+                    c.physicsMaximumStepCount = 1;
 
                     if (this._modelAnimationName.ref) {
                         c.asyncPlay(
