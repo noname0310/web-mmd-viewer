@@ -93,7 +93,6 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 })
                 .withComponent(AudioPlayer, c => {
                     c.asyncSetAudioFromUrl("mmd/as_you_like_it/as_you_like_it.mp3");
-                    (globalThis as any).audioPlayer = c;
                 })
                 .getComponent(Camera, camera)
                 .getComponent(MmdCameraLoader, mmdCameraLoader)

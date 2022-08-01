@@ -1,4 +1,5 @@
-import { Component, CoroutineIterator, EventContainer, IEventContainer } from "the-world-engine";
+import { Component, CoroutineIterator, EventContainer, IEventContainer, ReadonlyVector3, WritableVector3 } from "the-world-engine";
+import { Vector3 } from "three/src/Three";
 import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
@@ -14,6 +15,10 @@ export class MmdController extends Component {
 
     private _modelLoader: MmdModelLoader|null = null;
     private _cameraLoader: MmdCameraLoader|null = null;
+
+    private _physicsUnitStep = 1 / 65;
+    private _physicsMaximumStepCount = 3;
+    private readonly _gravity = new Vector3(0, -9.8 * 10, 0);
 
     private readonly _onLoadCompleteEvent = new EventContainer<() => void>();
 
@@ -71,9 +76,9 @@ export class MmdController extends Component {
         mmdPlayer.manualUpdate = true;
         mmdPlayer.play(
             model,
-            modelAnimation,
+            { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount },
             threeCamera ?? undefined,
-            cameraAnimation ?? undefined
+            cameraAnimation ? { animation: cameraAnimation } : undefined
         );
         const endFrame = mmdPlayer.animationEndFrame;
 
@@ -109,6 +114,51 @@ export class MmdController extends Component {
 
     public set cameraLoader(value: MmdCameraLoader|null) {
         this._cameraLoader = value;
+    }
+
+    public get physicsUnitStep(): number {
+        return this._physicsUnitStep;
+    }
+
+    public set physicsUnitStep(value: number) {
+        this._physicsUnitStep = value;
+
+        if (this._mmdPlayer !== null) {
+            const mixer = this._mmdPlayer.mixer;
+            if (mixer && mixer.physics) {
+                mixer.physics.unitStep = value;
+            }
+        }
+    }
+
+    public get physicsMaximumStepCount(): number {
+        return this._physicsMaximumStepCount;
+    }
+
+    public set physicsMaximumStepCount(value: number) {
+        this._physicsMaximumStepCount = value;
+
+        if (this._mmdPlayer !== null) {
+            const mixer = this._mmdPlayer.mixer;
+            if (mixer && mixer.physics) {
+                mixer.physics.maxStepNum = value;
+            }
+        }
+    }
+
+    public get gravity(): ReadonlyVector3 {
+        return this._gravity;
+    }
+
+    public set gravity(value: ReadonlyVector3) {
+        (this._gravity as WritableVector3).copy(value);
+
+        if (this._mmdPlayer !== null) {
+            const mixer = this._mmdPlayer.mixer;
+            if (mixer && mixer.physics) {
+                (mixer.physics.gravity as WritableVector3).copy(value);
+            }
+        }
     }
 
     public get onLoadComplete(): IEventContainer<() => void> {

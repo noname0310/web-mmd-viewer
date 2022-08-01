@@ -1,7 +1,17 @@
 import { Component } from "the-world-engine";
-import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
+import { MMDAnimationHelper, MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 
 import { SkinnedMeshContainer } from "./MmdModelLoader";
+
+export interface MMDAnimationModelParameter extends Omit<MMDAnimationHelperAddParameter, "gravity"> {
+    animation: THREE.AnimationClip | THREE.AnimationClip[];
+    gravity?: THREE.Vector3;
+}
+
+export interface MMDAnimationCameraParameter extends
+    Omit<MMDAnimationHelperAddParameter, "physics"|"warmup"|"unitStep"|"maxStepNum"|"gravity"> {
+    animation: THREE.AnimationClip | THREE.AnimationClip[];
+}
 
 export class MmdPlayer extends Component {
     private readonly _helper = new MMDAnimationHelper();
@@ -36,9 +46,9 @@ export class MmdPlayer extends Component {
 
     public play(
         model: SkinnedMeshContainer,
-        modelAnimation: THREE.AnimationClip,
+        modelParams: MMDAnimationModelParameter,
         camera?: THREE.Camera,
-        cameraAnimation?: THREE.AnimationClip,
+        cameraParams?: MMDAnimationCameraParameter,
         audio?: THREE.Audio,
         audioDelay = 0
     ): void {
@@ -46,10 +56,10 @@ export class MmdPlayer extends Component {
             throw new Error("model is null");
         }
 
-        this._helper.add(model.object3D, { animation: modelAnimation });
+        this._helper.add(model.object3D, modelParams as MMDAnimationHelperAddParameter);
 
-        if (camera && cameraAnimation) {
-            this._helper.add(camera, { animation: cameraAnimation! });
+        if (camera && cameraParams) {
+            this._helper.add(camera, cameraParams);
         }
 
         if (audio) this._helper.add(audio, { delayTime: audioDelay });
@@ -58,12 +68,32 @@ export class MmdPlayer extends Component {
         this._elapsedTime = 0;
         this._model = model;
 
-        const duration = Math.max(
-            modelAnimation.duration,
-            cameraAnimation?.duration ?? 0,
-            audio?.duration ?? 0
-        );
 
+        let duration = 0;
+
+        if (modelParams.animation instanceof Array) {
+            const animations = modelParams.animation as THREE.AnimationClip[];
+            for (let i = 0; i < animations.length; i++) {
+                duration = Math.max(duration, animations[i].duration);
+            }
+        } else {
+            duration = modelParams.animation.duration;
+        }
+
+        if (camera && cameraParams) {
+            if (cameraParams.animation instanceof Array) {
+                const animations = cameraParams.animation as THREE.AnimationClip[];
+                for (let i = 0; i < animations.length; i++) {
+                    duration = Math.max(duration, animations[i].duration);
+                }
+            } else {
+                duration = Math.max(duration, cameraParams.animation.duration);
+            }
+        }
+
+        duration = Math.max(duration, audio?.duration ?? 0);
+
+        
         this._animationEndFrame = Math.floor(duration * this._manualUpdateFps);
     }
 
@@ -124,6 +154,11 @@ export class MmdPlayer extends Component {
     public set usePhysics(value: boolean) {
         this._usePhysics = value;
         this._helper.enable("physics", value);
+    }
+
+    public get mixer(): Omit<MMDAnimationHelperMixer, "duration">|null {
+        if (!this._model || !this._model.object3D) return null;
+        return this._helper.objects.get(this._model.object3D) as Omit<MMDAnimationHelperMixer, "duration">;
     }
     
     public process(frameTime: number): void {
