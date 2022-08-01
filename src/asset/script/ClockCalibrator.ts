@@ -12,6 +12,10 @@ export class ClockCalibrator implements IAnimationClock {
         return this._animationClock.playbackRate;
     }
 
+    public set playbackRate(value: number) {
+        this._animationClock.playbackRate = value;
+    }
+
     public get onPlayed(): IEventContainer<() => void> {
         return this._animationClock.onPlayed;
     }
