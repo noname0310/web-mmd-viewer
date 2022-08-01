@@ -7,8 +7,8 @@ export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.Buf
 export class MmdModelLoader extends Component {
     private readonly _loader = new MMDLoader();
     private _object3DContainer: SkinnedMeshContainer|null = null;
-    private _animations: THREE.AnimationClip[] = [];
-    private _loadingAnimations = 0;
+    private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
+    private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(objectType: "model"|"animation", event: ProgressEvent<EventTarget>) => void>();
 
     private _animationLoadingCoroutines: Coroutine[] = [];
@@ -32,7 +32,7 @@ export class MmdModelLoader extends Component {
     public onDisable(): void {
         if (this.enabled) {
             this._animationLoadingCoroutines.length = 0;
-            this._loadingAnimations = 0;
+            this._loadingAnimations.clear();
         }
     }
 
@@ -55,7 +55,8 @@ export class MmdModelLoader extends Component {
         this._animationLoadingCoroutines.length = 0;
         
         this._loadingAnimations = 0;
-        this._animations.length = 0;
+        this._loadingAnimations.clear();
+        this._animations.clear();
         this.startCoroutine(
             this.loadModelInternal(
                 url,
@@ -66,16 +67,18 @@ export class MmdModelLoader extends Component {
     }
 
     public asyncLoadAnimation(
+        animationName: string,
         url: string|string[],
         onComplete?: (animation: THREE.AnimationClip) => void
     ): void {
         if (!this._isReadyToLoad) {
-            this._initLoadAnimationFunc.push(() => this.asyncLoadAnimation(url, onComplete));
+            this._initLoadAnimationFunc.push(() => this.asyncLoadAnimation(animationName, url, onComplete));
             return;
         }
 
         const coroutine = this.startCoroutine(
             this.loadAnimationInternal(
+                animationName,
                 url,
                 (event) => this._onProgressEvent.invoke("animation", event),
                 onComplete
@@ -97,6 +100,7 @@ export class MmdModelLoader extends Component {
     }
 
     private *loadAnimationInternal(
+        animationName: string,
         url: string|string[],
         onProgress?: (event: ProgressEvent<EventTarget>) => void,
         onComplete?: (animation: THREE.AnimationClip) => void
@@ -105,16 +109,20 @@ export class MmdModelLoader extends Component {
             throw new Error("Model is not loaded yet.");
         }
 
-        this._loadingAnimations += 1;
+        this._loadingAnimations.add(animationName);
 
         let animation: THREE.AnimationClip|null = null;
         this._loader.loadAnimation(url as any, this._object3DContainer!.object3D, object => animation = object as THREE.AnimationClip, onProgress);
         yield new WaitUntil(() => animation !== null);
-        this._animations.push(animation!);
+        this._animations.set(animationName, animation!);
 
-        this._loadingAnimations -= 1;
+        this._loadingAnimations.delete(animationName);
 
         onComplete?.(animation!);
+    }
+
+    public isAnimationLoading(animationName: string): boolean {
+        return this._loadingAnimations.has(animationName);
     }
 
     public get skinnedMesh(): THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>|null {
@@ -125,11 +133,7 @@ export class MmdModelLoader extends Component {
         return this._object3DContainer;
     }
 
-    public get isAnimationLoading(): boolean {
-        return 0 < this._loadingAnimations;
-    }
-
-    public get animations(): readonly THREE.AnimationClip[] {
+    public get animations(): ReadonlyMap<string, THREE.AnimationClip> {
         return this._animations;
     }
 

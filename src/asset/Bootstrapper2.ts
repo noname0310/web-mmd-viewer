@@ -8,19 +8,14 @@ import {
     SceneBuilder
 } from "the-world-engine";
 import * as THREE from "three/src/Three";
-import { AnimationLoopMode } from "tw-engine-498tokio";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
-import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/AnimationControl";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
+import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 
-import { ClockCalibrator } from "./script/ClockCalibrator";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
-import { MmdController } from "./script/MmdController";
 import { MmdModelLoader } from "./script/MmdModelLoader";
-import { MmdPlayer } from "./script/MmdPlayer";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
-import { UiController } from "./script/UiController";
 import { VideoAnimationInstance } from "./script/VideoAnimationInstance";
 
 export class Bootstrapper2 extends BaseBootstrapper {
@@ -41,27 +36,21 @@ export class Bootstrapper2 extends BaseBootstrapper {
 
         const mmdModelLoader = new PrefabRef<MmdModelLoader>();
         const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
-        const video = new VideoAnimationInstance(document.createElement("video"));
 
         const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
         const audioPlayer = new PrefabRef<AudioPlayer>();
-        const mmdPlayer = new PrefabRef<MmdPlayer>();
         
         return this.sceneBuilder
-            .withChild(instantiater.buildGameObject("game-manager")
-                .withComponent(UiController, c => {
-                    c.orbitCamera = orbitCamera.ref;
-                    c.switchCameraButton = document.getElementById("switch-camera-button") as HTMLButtonElement;
-                })
-                .withComponent(AnimationControl, c => {
-                    c.playButton = document.getElementById("play_button")! as HTMLButtonElement;
-                    c.frameDisplayText = document.getElementById("frame_display")! as HTMLInputElement;
-                    c.player = animationPlayer.ref;
-                    c.slider = document.getElementById("animation_slider")! as HTMLInputElement;
-                    c.slider.value = "0";
-                    c.playbackRateSlider = document.getElementById("playback_rate_slider")! as HTMLInputElement;
-                    c.playbackRateSlider.value = "1";
-                }))
+            .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
+                .withCamera(camera)
+                .withOrbitCamera(orbitCamera)
+                .withModelLoader(mmdModelLoader)
+                .withCameraLoader(mmdCameraLoader)
+                .withAudioPlayer(audioPlayer)
+                .withCameraAnimationName(new PrefabRef("animation1"))
+                .withModelAnimationName(new PrefabRef("animation1"))
+                .getAnimationPlayer(animationPlayer)
+                .make())
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
@@ -98,7 +87,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                         }
                     });
 
-                    c.asyncLoadAnimation("mmd/as_you_like_it/TDA Cam.vmd", () => {
+                    c.asyncLoadAnimation("animation1", "mmd/as_you_like_it/TDA Cam.vmd", () => {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
@@ -112,6 +101,17 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 
                 .withChild(instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -500))
                     .withComponent(Object3DContainer, c => {
+                        const video = new VideoAnimationInstance(document.createElement("video"));
+                        animationPlayer.ref!.onAnimationStart.addListener(() => {
+                            video.htmlVideo.play();
+                        });
+                        animationPlayer.ref!.onAnimationPaused.addListener(() => {
+                            video.htmlVideo.pause();
+                        });
+                        animationPlayer.ref!.onAnimationProcess.addListener(frame => {
+                            video.process(frame, audioPlayer.ref!.playbackRate);
+                        });
+                        
                         const videoElement = video.htmlVideo;
                         videoElement.autoplay = false;
                         videoElement.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
@@ -215,41 +215,11 @@ export class Bootstrapper2 extends BaseBootstrapper {
                             }
                         });
                     });
-                    c.asyncLoadAnimation([ "mmd/as_you_like_it/TDA Motion.vmd" ], () => {
+                    c.asyncLoadAnimation("animation1", [ "mmd/as_you_like_it/TDA Motion.vmd" ], () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
                 })
                 .getComponent(MmdModelLoader, mmdModelLoader))
-
-            .withChild(instantiater.buildGameObject("mmd-player")
-                .withComponent(MmdPlayer)
-                .withComponent(AnimationSequencePlayer, c => {
-                    c.animationClock = new ClockCalibrator(audioPlayer.ref!);
-                    c.frameRate = 60;
-                    c.loopMode = AnimationLoopMode.None;
-
-                    c.onAnimationStart.addListener(() => {
-                        video.htmlVideo.play();
-                    });
-
-                    c.onAnimationPaused.addListener(() => {
-                        video.htmlVideo.pause();
-                    });
-                })
-                .withComponent(MmdController, c => {
-                    c.onLoadComplete.addListener(() => {
-                        Ui.getOrCreateLoadingElement().remove();
-                        camera.ref!.priority = 0;
-                    });
-
-                    c.onProcess.addListener(frame => {
-                        video.process(frame, audioPlayer.ref!.playbackRate);
-                    });
-
-                    c.asyncPlay(mmdModelLoader.ref!, mmdCameraLoader.ref!);
-                })
-                .getComponent(MmdPlayer, mmdPlayer)
-                .getComponent(AnimationSequencePlayer, animationPlayer))
         ;
     }
 }

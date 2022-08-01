@@ -12,34 +12,50 @@ export class MmdController extends Component {
     private _mmdPlayer: MmdPlayer|null = null;
     private _animationSequencePlayer: AnimationSequencePlayer|null = null;
 
+    private _modelLoader: MmdModelLoader|null = null;
+    private _cameraLoader: MmdCameraLoader|null = null;
+
     private readonly _onLoadCompleteEvent = new EventContainer<() => void>();
-    private readonly _onProcessEvent = new EventContainer<(frameTime: number) => void>();
 
     public awake(): void {
         this._mmdPlayer = this.gameObject.getComponent(MmdPlayer);
         this._animationSequencePlayer = this.gameObject.getComponent(AnimationSequencePlayer);
     }
 
-    public asyncPlay(modelLoader: MmdModelLoader, cameraLoader: MmdCameraLoader): void {
-        this.startCoroutine(this.playInternal(modelLoader, cameraLoader));
+    public asyncPlay(modelAnimationName: string, cameraAnimationName?: string): void {
+        if (this._modelLoader === null) throw new Error("modelLoader is null");
+        if (cameraAnimationName) {
+            if (this._cameraLoader === null) throw new Error("cameraLoader is null");
+        }
+
+        this.startCoroutine(this.playInternal(modelAnimationName, cameraAnimationName));
     }
 
-    private *playInternal(modelLoader: MmdModelLoader, cameraLoader: MmdCameraLoader): CoroutineIterator {
+    private *playInternal(modelAnimationName: string, cameraAnimationName?: string): CoroutineIterator {
+        let threeCamera: THREE.Camera|null = null;
+        let cameraAnimation: THREE.AnimationClip|null = null;
+
+        if (cameraAnimationName) {
+            const cameraLoader = this._cameraLoader!;
+            while (cameraLoader.isAnimationLoading(cameraAnimationName)) yield null;
+
+            threeCamera = cameraLoader.threeCamera;
+            cameraAnimation = cameraLoader.animations.get(cameraAnimationName)!;
+        }
+
+        const modelLoader = this._modelLoader!;
         while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading) yield null;
-        while (cameraLoader.isAnimationLoading) yield null;
 
         const model = modelLoader.object3DContainer!;
-        const modelAnimation = modelLoader.animations[0];
-        const cameraLoaderDeRef = cameraLoader;
-        const cameraAnimation = cameraLoader.animations[0];
+        const modelAnimation = modelLoader.animations.get(modelAnimationName)!;
 
         const mmdPlayer = this._mmdPlayer!;
         mmdPlayer.manualUpdate = true;
         mmdPlayer.play(
             model,
             modelAnimation,
-            cameraLoaderDeRef.threeCamera!,
-            cameraAnimation
+            threeCamera ?? undefined,
+            cameraAnimation ?? undefined
         );
         const endFrame = mmdPlayer.animationEndFrame;
 
@@ -52,7 +68,6 @@ export class MmdController extends Component {
             ]), [
                 (frame: number): void => {
                     mmdPlayer.process(frame);
-                    this._onProcessEvent.invoke(frame);
                 }
             ]
         );
@@ -62,11 +77,23 @@ export class MmdController extends Component {
         this._animationSequencePlayer!.play();
     }
 
-    public get onLoadComplete(): IEventContainer<() => void> {
-        return this._onLoadCompleteEvent;
+    public get modelLoader(): MmdModelLoader|null {
+        return this._modelLoader;
     }
 
-    public get onProcess(): IEventContainer<(frameTime: number) => void> {
-        return this._onProcessEvent;
+    public set modelLoader(value: MmdModelLoader|null) {
+        this._modelLoader = value;
+    }
+    
+    public get cameraLoader(): MmdCameraLoader|null {
+        return this._cameraLoader;
+    }
+
+    public set cameraLoader(value: MmdCameraLoader|null) {
+        this._cameraLoader = value;
+    }
+
+    public get onLoadComplete(): IEventContainer<() => void> {
+        return this._onLoadCompleteEvent;
     }
 }

@@ -7,8 +7,8 @@ export class MmdCameraLoader extends Component {
     private readonly _loader = new MMDLoader();
 
     private _camera: THREE.Camera|null = null;
-    private readonly _animations: THREE.AnimationClip[] = [];
-    private _loadingAnimations = 0;
+    private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
+    private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(event: ProgressEvent<EventTarget>) => void>();
 
     private readonly _animationLoadingCoroutines: Coroutine[] = [];
@@ -34,21 +34,23 @@ export class MmdCameraLoader extends Component {
     public onDisable(): void {
         if (this.enabled) {
             this._animationLoadingCoroutines.length = 0;
-            this._loadingAnimations = 0;
+            this._loadingAnimations.clear();
         }
     }
 
     public asyncLoadAnimation(
+        animationName: string,
         url: string,
         onComplete?: (animation: THREE.AnimationClip) => void
     ): void {
         if (!this._isReadyToLoad) {
-            this._initLoadAnimationFunc.push(() => this.asyncLoadAnimation(url, onComplete));
+            this._initLoadAnimationFunc.push(() => this.asyncLoadAnimation(animationName, url, onComplete));
             return;
         }
 
         const coroutine = this.startCoroutine(
             this.loadAnimationInternal(
+                animationName,
                 url,
                 (event) => this._onProgressEvent.invoke(event),
                 onComplete
@@ -58,33 +60,34 @@ export class MmdCameraLoader extends Component {
     }
 
     private *loadAnimationInternal(
+        animationName: string,
         url: string|string[],
         onProgress?: (event: ProgressEvent<EventTarget>) => void,
         onComplete?: (animation: THREE.AnimationClip) => void
     ): CoroutineIterator {
         if (this._camera === null) throw new Error("Unreachable");
 
-        this._loadingAnimations += 1;
+        this._loadingAnimations.add(animationName);
 
         let animation: THREE.AnimationClip|null = null;
         this._loader.loadAnimation(url as any, this._camera, object => animation = object as THREE.AnimationClip, onProgress);
         yield new WaitUntil(() => animation !== null);
-        this._animations.push(animation!);
+        this._animations.set(animationName, animation!);
 
-        this._loadingAnimations -= 1;
+        this._loadingAnimations.delete(animationName);
 
         onComplete?.(animation!);
+    }
+
+    public isAnimationLoading(animationName: string): boolean {
+        return this._loadingAnimations.has(animationName);
     }
 
     public get threeCamera(): THREE.Camera|null {
         return this._camera;
     }
-    
-    public get isAnimationLoading(): boolean {
-        return 0 < this._loadingAnimations;
-    }
 
-    public get animations(): readonly THREE.AnimationClip[] {
+    public get animations(): ReadonlyMap<string, THREE.AnimationClip> {
         return this._animations;
     }
 

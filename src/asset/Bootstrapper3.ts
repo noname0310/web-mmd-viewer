@@ -10,19 +10,13 @@ import {
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
 import * as THREE from "three/src/Three";
-import { AnimationLoopMode } from "tw-engine-498tokio";
-import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
-import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/AnimationControl";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { ClockCalibrator } from "./script/ClockCalibrator";
+import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
-import { MmdController } from "./script/MmdController";
 import { MmdModelLoader } from "./script/MmdModelLoader";
-import { MmdPlayer } from "./script/MmdPlayer";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
-import { UiController } from "./script/UiController";
 import WaterNormal from "./texture/waternormals.jpg";
 
 export class Bootstrapper3 extends BaseBootstrapper {
@@ -45,30 +39,21 @@ export class Bootstrapper3 extends BaseBootstrapper {
         const mmdModelLoader = new PrefabRef<MmdModelLoader>();
         const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
 
-        const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
         const audioPlayer = new PrefabRef<AudioPlayer>();
-        const mmdPlayer = new PrefabRef<MmdPlayer>();
 
         const water = new PrefabRef<Object3DContainer<Water>>();
         
         return this.sceneBuilder
-            .withChild(instantiater.buildGameObject("game-manager")
-                .withComponent(UiController, c => {
-                    c.orbitCamera = orbitCamera.ref;
-                    c.switchCameraButton = document.getElementById("switch-camera-button") as HTMLButtonElement;
-                    c.fullscreenButton = document.getElementById("fullscreen_button") as HTMLButtonElement;
-                })
-                .withComponent(AnimationControl, c => {
-                    c.playButton = document.getElementById("play_button")! as HTMLButtonElement;
-                    c.frameDisplayText = document.getElementById("frame_display")! as HTMLInputElement;
-                    c.player = animationPlayer.ref;
-                    c.slider = document.getElementById("animation_slider")! as HTMLInputElement;
-                    c.slider.value = "0";
-                    c.playbackRateSlider = document.getElementById("playback_rate_slider")! as HTMLInputElement;
-                    c.playbackRateSlider.value = "1";
-                }))
+            .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
+                .withCamera(camera)
+                .withOrbitCamera(orbitCamera)
+                .withModelLoader(mmdModelLoader)
+                .withCameraLoader(mmdCameraLoader)
+                .withAudioPlayer(audioPlayer)
+                .withCameraAnimationName(new PrefabRef("animation1"))
+                .withModelAnimationName(new PrefabRef("animation1"))
+                .make())
                 
-            
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
@@ -89,8 +74,6 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 .withComponent(Camera, c => {
                     c.priority = -2;
                     c.cameraType = CameraType.Perspective;
-                    c.fov = 60;
-                    c.far = 1500;
                 })
                 .withComponent(MmdCameraLoader, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -104,7 +87,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         }
                     });
 
-                    c.asyncLoadAnimation("mmd/flos/flos_camera_mod.vmd", () => {
+                    c.asyncLoadAnimation("animation1", "mmd/flos/flos_camera_mod.vmd", () => {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
@@ -296,34 +279,14 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         model.castShadow = true;
                         model.frustumCulled = false;
                     });
-                    c.asyncLoadAnimation([
-                        "mmd/flos/flos_model.vmd"//, "mmd/pizzicato_drops/physics_reduce4.vmd"
-                    ], () => {
-                        modelAnimationLoadingText.innerText = "animation loaded";
-                    });
+                    c.asyncLoadAnimation("animation1",
+                        [
+                            "mmd/flos/flos_model.vmd"//, "mmd/pizzicato_drops/physics_reduce4.vmd"
+                        ], () => {
+                            modelAnimationLoadingText.innerText = "animation loaded";
+                        });
                 })
                 .getComponent(MmdModelLoader, mmdModelLoader))
-
-            
-            .withChild(instantiater.buildGameObject("mmd-player")
-                .withComponent(MmdPlayer, c => {
-                    c.usePhysics = true;
-                })
-                .withComponent(AnimationSequencePlayer, c => {
-                    c.animationClock = new ClockCalibrator(audioPlayer.ref!);
-                    c.frameRate = 60;
-                    c.loopMode = AnimationLoopMode.None;
-                })
-                .withComponent(MmdController, c => {
-                    c.onLoadComplete.addListener(() => {
-                        Ui.getOrCreateLoadingElement().remove();
-                        camera.ref!.priority = 0;
-                    });
-
-                    c.asyncPlay(mmdModelLoader.ref!, mmdCameraLoader.ref!);
-                })
-                .getComponent(MmdPlayer, mmdPlayer)
-                .getComponent(AnimationSequencePlayer, animationPlayer))
         ;
     }
 }
