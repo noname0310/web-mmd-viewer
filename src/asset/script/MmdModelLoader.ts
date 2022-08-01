@@ -54,7 +54,6 @@ export class MmdModelLoader extends Component {
         }
         this._animationLoadingCoroutines.length = 0;
         
-        this._loadingAnimations = 0;
         this._loadingAnimations.clear();
         this._animations.clear();
         this.startCoroutine(
