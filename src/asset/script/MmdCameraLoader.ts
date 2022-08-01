@@ -43,6 +43,8 @@ export class MmdCameraLoader extends Component {
         url: string,
         onComplete?: (animation: THREE.AnimationClip) => void
     ): void {
+        this._loadingAnimations.add(animationName);
+        
         if (!this._isReadyToLoad) {
             this._initLoadAnimationFunc.push(() => this.asyncLoadAnimation(animationName, url, onComplete));
             return;
@@ -66,8 +68,6 @@ export class MmdCameraLoader extends Component {
         onComplete?: (animation: THREE.AnimationClip) => void
     ): CoroutineIterator {
         if (this._camera === null) throw new Error("Unreachable");
-
-        this._loadingAnimations.add(animationName);
 
         let animation: THREE.AnimationClip|null = null;
         this._loader.loadAnimation(url as any, this._camera, object => animation = object as THREE.AnimationClip, onProgress);

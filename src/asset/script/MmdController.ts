@@ -17,12 +17,30 @@ export class MmdController extends Component {
 
     private readonly _onLoadCompleteEvent = new EventContainer<() => void>();
 
+    private _initializeFunction: (() => void)|null = null;
+    private _readyToPlay = false;
+
     public awake(): void {
         this._mmdPlayer = this.gameObject.getComponent(MmdPlayer);
         this._animationSequencePlayer = this.gameObject.getComponent(AnimationSequencePlayer);
     }
 
+    public start(): void {
+        this._readyToPlay = true;
+        if (this._initializeFunction !== null) {
+            this._initializeFunction();
+            this._initializeFunction = null;
+        }
+    }
+
     public asyncPlay(modelAnimationName: string, cameraAnimationName?: string): void {
+        if (!this._readyToPlay) {
+            this._initializeFunction = (): void => {
+                this.asyncPlay(modelAnimationName, cameraAnimationName);
+            };
+            return;
+        }
+
         if (this._modelLoader === null) throw new Error("modelLoader is null");
         if (cameraAnimationName) {
             if (this._cameraLoader === null) throw new Error("cameraLoader is null");
@@ -44,7 +62,7 @@ export class MmdController extends Component {
         }
 
         const modelLoader = this._modelLoader!;
-        while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading) yield null;
+        while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(modelAnimationName)) yield null;
 
         const model = modelLoader.object3DContainer!;
         const modelAnimation = modelLoader.animations.get(modelAnimationName)!;

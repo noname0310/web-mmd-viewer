@@ -70,6 +70,8 @@ export class MmdModelLoader extends Component {
         url: string|string[],
         onComplete?: (animation: THREE.AnimationClip) => void
     ): void {
+        this._loadingAnimations.add(animationName);
+        
         if (!this._isReadyToLoad) {
             this._initLoadAnimationFunc.push(() => this.asyncLoadAnimation(animationName, url, onComplete));
             return;
@@ -107,8 +109,6 @@ export class MmdModelLoader extends Component {
         if (this._object3DContainer!.object3D === null) {
             throw new Error("Model is not loaded yet.");
         }
-
-        this._loadingAnimations.add(animationName);
 
         let animation: THREE.AnimationClip|null = null;
         this._loader.loadAnimation(url as any, this._object3DContainer!.object3D, object => animation = object as THREE.AnimationClip, onProgress);
