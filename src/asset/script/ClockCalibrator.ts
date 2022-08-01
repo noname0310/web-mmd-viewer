@@ -8,6 +8,10 @@ export class ClockCalibrator implements IAnimationClock {
         this._animationClock = animationClock;
     }
 
+    public get playbackRate(): number {
+        return this._animationClock.playbackRate;
+    }
+
     public get onPlayed(): IEventContainer<() => void> {
         return this._animationClock.onPlayed;
     }
@@ -51,7 +55,7 @@ export class ClockCalibrator implements IAnimationClock {
             return currentTime;
         } else {
             const performanceNow = performance.now() / 1000;
-            const performanceDelta = performanceNow - this._lastNow;
+            const performanceDelta = (performanceNow - this._lastNow) * this.playbackRate;
 
             if (1 < performanceDelta) {
                 return this._lastCurrentTime;

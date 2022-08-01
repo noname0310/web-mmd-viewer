@@ -23,7 +23,7 @@ export class MmdCameraLoader extends Component {
     public start(): void {
         const camera = this.gameObject.getComponent(Camera)!;
 
-        this._camera = DuckThreeCamera.createInterface(camera, false).toThreeCamera();
+        this._camera = DuckThreeCamera.createInterface(camera);
         
         const initLoadAnimationFunc = this._initLoadAnimationFunc;
         for (let i = 0; i < initLoadAnimationFunc.length; ++i) {

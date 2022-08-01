@@ -43,7 +43,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
         const video = new VideoAnimationInstance(document.createElement("video"));
 
-        const animationControl = new PrefabRef<AnimationControl>();
+        const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
         const audioPlayer = new PrefabRef<AudioPlayer>();
         const mmdPlayer = new PrefabRef<MmdPlayer>();
         
@@ -56,8 +56,10 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 .withComponent(AnimationControl, c => {
                     c.playButton = document.getElementById("play_button")! as HTMLButtonElement;
                     c.frameDisplayText = document.getElementById("frame_display")! as HTMLInputElement;
-                })
-                .getComponent(AnimationControl, animationControl))
+                    c.player = animationPlayer.ref;
+                    c.slider = document.getElementById("animation_slider")! as HTMLInputElement;
+                    c.slider.value = "0";
+                }))
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
@@ -100,6 +102,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 })
                 .withComponent(AudioPlayer, c => {
                     c.asyncSetAudioFromUrl("mmd/as_you_like_it/as_you_like_it.mp3");
+                    (globalThis as any).audioPlayer = c;
                 })
                 .getComponent(Camera, camera)
                 .getComponent(MmdCameraLoader, mmdCameraLoader)
@@ -235,9 +238,6 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     c.onLoadComplete.addListener(() => {
                         Ui.getOrCreateLoadingElement().remove();
                         camera.ref!.priority = 0;
-                        animationControl.ref!.player = c.gameObject.getComponent(AnimationSequencePlayer)!;
-                        animationControl.ref!.slider = document.getElementById("animation_slider")! as HTMLInputElement;
-                        animationControl.ref!.slider.value = "0";
                     });
 
                     c.onProcess.addListener(frame => {
@@ -246,7 +246,8 @@ export class Bootstrapper2 extends BaseBootstrapper {
 
                     c.asyncPlay(mmdModelLoader.ref!, mmdCameraLoader.ref!);
                 })
-                .getComponent(MmdPlayer, mmdPlayer))
+                .getComponent(MmdPlayer, mmdPlayer)
+                .getComponent(AnimationSequencePlayer, animationPlayer))
         ;
     }
 }
