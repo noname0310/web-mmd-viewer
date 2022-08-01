@@ -19,7 +19,13 @@ export class UiController extends Component {
 
     private readonly onSwitchCameraButtonClick = (): void => {
         if (this.orbitCamera) {
-            this.orbitCamera.priority = this.orbitCamera.priority === -1 ? 1 : -1;
+            if (this.orbitCamera.priority === -1) {
+                this.orbitCamera.priority = 1;
+                this.orbitCamera.gameObject.activeSelf = true;
+            } else {
+                this.orbitCamera.priority = -1;
+                this.orbitCamera.gameObject.activeSelf = false;
+            }
         }
     };
 
