@@ -241,7 +241,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     });
 
                     c.onProcess.addListener(frame => {
-                        video.process(frame);
+                        video.process(frame, audioPlayer.ref!.playbackRate);
                     });
 
                     c.asyncPlay(mmdModelLoader.ref!, mmdCameraLoader.ref!);

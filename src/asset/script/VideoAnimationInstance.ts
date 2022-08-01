@@ -14,7 +14,7 @@ export class VideoAnimationInstance {
         this._fps = value;
     }
 
-    public process(frameTime: number): void {
+    public process(frameTime: number, playbackRate: number): void {
         const elapsedTime = frameTime / this._fps;
         const video = this._htmlVideo;
 
@@ -23,7 +23,9 @@ export class VideoAnimationInstance {
         }
         
         if (Math.abs(video!.currentTime - elapsedTime) > 0.1) {
-            video!.playbackRate = 1 + (video!.currentTime < elapsedTime ? 0.1 : -0.1);
+            video!.playbackRate = playbackRate + (video!.currentTime < elapsedTime ? 0.1 : -0.1);
+        } else {
+            video!.playbackRate = playbackRate;
         }
     }
 
