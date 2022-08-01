@@ -59,6 +59,8 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     c.player = animationPlayer.ref;
                     c.slider = document.getElementById("animation_slider")! as HTMLInputElement;
                     c.slider.value = "0";
+                    c.playbackRateSlider = document.getElementById("playback_rate_slider")! as HTMLInputElement;
+                    c.playbackRateSlider.value = "1";
                 }))
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))

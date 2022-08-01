@@ -46,7 +46,6 @@ export class Bootstrapper extends BaseBootstrapper {
         const mmdModelLoader = new PrefabRef<MmdModelLoader>();
         const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
 
-        const animationControl = new PrefabRef<AnimationControl>();
         const audioPlayer = new PrefabRef<AudioPlayer>();
         const mmdPlayer = new PrefabRef<MmdPlayer>();
         
@@ -59,8 +58,12 @@ export class Bootstrapper extends BaseBootstrapper {
                 .withComponent(AnimationControl, c => {
                     c.playButton = document.getElementById("play_button")! as HTMLButtonElement;
                     c.frameDisplayText = document.getElementById("frame_display")! as HTMLInputElement;
-                })
-                .getComponent(AnimationControl, animationControl))
+                    c.player = c.gameObject.getComponent(AnimationSequencePlayer)!;
+                    c.slider = document.getElementById("animation_slider")! as HTMLInputElement;
+                    c.slider.value = "0";
+                    c.playbackRateSlider = document.getElementById("playback_rate_slider")! as HTMLInputElement;
+                    c.playbackRateSlider.value = "1";
+                }))
                 
             
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
@@ -259,9 +262,6 @@ export class Bootstrapper extends BaseBootstrapper {
                     c.onLoadComplete.addListener(() => {
                         Ui.getOrCreateLoadingElement().remove();
                         camera.ref!.priority = 0;
-                        animationControl.ref!.player = c.gameObject.getComponent(AnimationSequencePlayer)!;
-                        animationControl.ref!.slider = document.getElementById("animation_slider")! as HTMLInputElement;
-                        animationControl.ref!.slider.value = "0";
                     });
 
                     c.asyncPlay(mmdModelLoader.ref!, mmdCameraLoader.ref!);
