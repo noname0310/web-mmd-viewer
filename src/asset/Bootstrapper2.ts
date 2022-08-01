@@ -10,8 +10,8 @@ import {
 import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
-import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 
+import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
