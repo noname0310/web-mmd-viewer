@@ -56,6 +56,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
+                    c.near = 1;
                     c.far = 1500;
                     c.priority = -1;
                 })
@@ -73,6 +74,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                     c.priority = -2;
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
+                    c.near = 1;
                     c.far = 1500;
                 })
                 .withComponent(MmdCameraLoader, c => {
