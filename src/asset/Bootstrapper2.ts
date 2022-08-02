@@ -135,7 +135,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                             let lastFov = 0;
                             for (;;) {
                                 if (lastFov !== mmdCamera.fov || lastFov !== mmdCamera.fov) {
-                                    scale.setScalar(Math.tan(mmdCamera.fov * THREE.MathUtils.DEG2RAD) * 500);
+                                    scale.setScalar(Math.tan(mmdCamera.fov / 2 * THREE.MathUtils.DEG2RAD) * 2 * 500);
                                     lastFov = mmdCamera.fov;
                                 }
                                 yield null;
