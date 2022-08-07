@@ -5,7 +5,8 @@ import {
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
-    SceneBuilder
+    SceneBuilder,
+    WebGLRendererLoader
 } from "the-world-engine";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
@@ -22,13 +23,15 @@ import WaterNormal from "./texture/waternormals.jpg";
 export class Bootstrapper3 extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        //renderer.toneMapping = THREE.CineonToneMapping;
-        this.setting.render.webGLRenderer(renderer, renderer.domElement);
+        this.setting.render.webGLRendererLoader(WebGLRendererLoader);
+        this.setting.render.webGLRenderer(() => {
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            //renderer.toneMapping = THREE.CineonToneMapping;
+            return renderer;
+        });
 
         const instantiater = this.instantiater;
 
@@ -175,7 +178,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                     skyUniforms["mieDirectionalG"].value = 0.8;
     
                     const sun = new THREE.Vector3();
-                    const pmremGenerator = new THREE.PMREMGenerator( renderer );
+                    const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
                     let renderTarget: THREE.WebGLRenderTarget;
     
                     function updateSun(): void {

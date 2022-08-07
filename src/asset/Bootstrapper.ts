@@ -5,7 +5,8 @@ import {
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
-    SceneBuilder
+    SceneBuilder,
+    WebGLRendererLoader
 } from "the-world-engine";
 import { OutlineEffect } from "three/examples/jsm/effects/OutlineEffect";
 import { Sky } from "three/examples/jsm/objects/Sky";
@@ -21,15 +22,17 @@ import { Ui } from "./script/Ui";
 export class Bootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        // renderer.outputEncoding = THREE.sRGBEncoding;
-        // renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        // renderer.toneMappingExposure = 0.5;
-        this.setting.render.webGLRenderer(new OutlineEffect(renderer), renderer.domElement);
+        this.setting.render.webGLRendererLoader(WebGLRendererLoader);
+        this.setting.render.webGLRenderer(() => {
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            // renderer.outputEncoding = THREE.sRGBEncoding;
+            // renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            // renderer.toneMappingExposure = 0.5;
+            return [new OutlineEffect(renderer), renderer.domElement] as const;
+        });
 
         const instantiater = this.instantiater;
 
@@ -163,7 +166,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         mieDirectionalG: 0.7,
                         elevation: 2,
                         azimuth: 180,
-                        exposure: renderer.toneMappingExposure
+                        exposure: c.engine.webGL!.webglRenderer!.toneMappingExposure
                     };
     
                     function guiChanged(): void {
@@ -181,7 +184,7 @@ export class Bootstrapper extends BaseBootstrapper {
     
                         uniforms[ "sunPosition" ].value.copy( sun );
     
-                        renderer.toneMappingExposure = effectController.exposure;
+                        c.engine.webGL!.webglRenderer!.toneMappingExposure = effectController.exposure;
                     }
 
                     guiChanged();

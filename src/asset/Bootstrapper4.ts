@@ -5,8 +5,12 @@ import {
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
-    SceneBuilder
+    SceneBuilder,
+    WebGLGlobalPostProcessVolume,
+    WebGLRendererLoader
 } from "the-world-engine";
+import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
@@ -19,12 +23,14 @@ import { Ui } from "./script/Ui";
 export class Bootstrapper4 extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        this.setting.render.webGLRenderer(renderer, renderer.domElement);
+        this.setting.render.webGLRendererLoader(WebGLRendererLoader);
+        this.setting.render.webGLRenderer(() => {
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            return renderer;
+        });
 
         const instantiater = this.instantiater;
 
@@ -95,6 +101,17 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 .getComponent(Camera, camera)
                 .getComponent(MmdCameraLoader, mmdCameraLoader)
                 .getComponent(AudioPlayer, audioPlayer))
+
+            .withChild(instantiater.buildGameObject("post-process-volume")
+                .withComponent(WebGLGlobalPostProcessVolume, c => {
+                    c.initializer((composer, scene, camera, screen): void => {
+                        const ssaoPass = new SSAOPass(scene, camera);
+                        composer.addPass(ssaoPass);
+
+                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 1.5, 0.4, 0.85);
+                        composer.addPass(bloomPass);
+                    });
+                }))
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))

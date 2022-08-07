@@ -5,7 +5,8 @@ import {
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
-    SceneBuilder
+    SceneBuilder,
+    WebGLRendererLoader
 } from "the-world-engine";
 import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
@@ -21,12 +22,14 @@ import { VideoAnimationInstance } from "./script/VideoAnimationInstance";
 export class Bootstrapper2 extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        this.setting.render.webGLRenderer(renderer);
+        this.setting.render.webGLRendererLoader(WebGLRendererLoader);
+        this.setting.render.webGLRenderer(() => {
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            return renderer;
+        });
 
         const instantiater = this.instantiater;
 
