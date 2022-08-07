@@ -1,15 +1,24 @@
 import {
     Bootstrapper as BaseBootstrapper,
     Camera,
+    CameraContainer,
     CameraType,
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
+    WebGLGlobalPostProcessVolume,
     WebGLRendererLoader
 } from "the-world-engine";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
+import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
+import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
+import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
@@ -29,7 +38,6 @@ export class Bootstrapper3 extends BaseBootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            //renderer.toneMapping = THREE.CineonToneMapping;
             return renderer;
         });
 
@@ -46,6 +54,8 @@ export class Bootstrapper3 extends BaseBootstrapper {
 
         const water = new PrefabRef<Object3DContainer<Water>>();
         
+        let bokehPass: BokehPass | null = null;
+
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
                 .withCamera(camera)
@@ -103,11 +113,45 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 .getComponent(Camera, camera)
                 .getComponent(MmdCameraLoader, mmdCameraLoader)
                 .getComponent(AudioPlayer, audioPlayer))
+
+            .withChild(instantiater.buildGameObject("post-process-volume")
+                .withComponent(WebGLGlobalPostProcessVolume, c => {
+                    c.initializer((composer, scene, camera, screen): void => {
+                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
+                        composer.addPass(adaptiveTonemappingPass);
+
+                        const smaaPass = new SMAAPass(screen.width, screen.height);
+                        composer.addPass(smaaPass);
+
+                        const ssaoPass = new SSAOPass(scene, camera);
+                        ssaoPass.kernelRadius = 16;
+                        ssaoPass.kernelSize = 8;
+                        composer.addPass(ssaoPass);
+
+                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width / 10, screen.height / 10), 0.4, 0.4, 0.9);
+                        composer.addPass(bloomPass);
+
+                        const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+                        composer.addPass(gammaCorrectionPass);
+
+                        bokehPass = new BokehPass(scene, camera, {
+                            aperture: 0,
+                            maxblur: 0.02
+                        });
+                        composer.addPass(bokehPass);
+                        (globalThis as any).bokehPass = bokehPass;
+                        
+                        (c.engine.cameraContainer as CameraContainer).onCameraChanged.addListener(camera => {
+                            ssaoPass.camera = (camera as any).threeCamera;
+                            bokehPass!.camera = (camera as any).threeCamera;
+                        });
+                    });
+                }))
             
             .withChild(instantiater.buildGameObject("ambient-light")
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
+                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2)))
 
-            .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 100))
+            .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 70))
                 .withComponent(Object3DContainer, c => {
                     const light = new THREE.DirectionalLight(0xffffff, 0.5);
                     light.castShadow = true;
@@ -166,23 +210,23 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 })
                 .getComponent(Object3DContainer, water))
             
-            .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(1000))
+            .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(450000))
                 .withComponent(Object3DContainer, c => {
                     const sky = new Sky();
                     
                     const skyUniforms = sky.material.uniforms;
 
                     skyUniforms["turbidity"].value = 10;
-                    skyUniforms["rayleigh"].value = 2;
-                    skyUniforms["mieCoefficient"].value = 0.005;
-                    skyUniforms["mieDirectionalG"].value = 0.8;
+                    skyUniforms["rayleigh"].value = 0.3;
+                    skyUniforms["mieCoefficient"].value = 0.001;
+                    skyUniforms["mieDirectionalG"].value = 1;
     
                     const sun = new THREE.Vector3();
                     const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
                     let renderTarget: THREE.WebGLRenderTarget;
     
                     function updateSun(): void {
-                        sun.copy(directionalLight.ref!.transform.localPosition);
+                        sun.copy(directionalLight.ref!.transform.localPosition).normalize();
     
                         sky.material.uniforms["sunPosition"].value.copy(sun);
                         water.ref!.object3D!.material.uniforms["sunDirection"].value.copy( sun ).normalize();
@@ -291,6 +335,37 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         ], () => {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
+
+                    c.startCoroutine(function*(): CoroutineIterator {
+                        const headPosition = new THREE.Vector3();
+                        const cameraNormal = new THREE.Vector3();
+                        const tempVector = new THREE.Vector3();
+
+                        yield null;
+                        for (; ;) {
+                            const container = c.object3DContainer;
+                            const cameraUnwrap = c.engine.cameraContainer.camera;
+                            if (container && container.object3D && cameraUnwrap) {
+                                const model = container.object3D as THREE.SkinnedMesh;
+
+                                const modelHead = model.skeleton.bones.find(b => b.name === "頭")!;
+                                headPosition.setFromMatrixPosition(modelHead.matrixWorld);
+                                const cameraPosition = cameraUnwrap.transform.position;
+                                cameraUnwrap.transform.getForward(cameraNormal).negate();
+
+                                const a = cameraNormal;
+                                const b = tempVector.copy(headPosition).sub(cameraPosition);
+                                const focusDistance = b.dot(a) / a.dot(a);
+
+                                if (bokehPass) {
+                                    const uniforms = bokehPass.uniforms as any;
+                                    uniforms["focus"].value = focusDistance;
+                                    uniforms["aperture"].value = Math.max(0, (0.0005 - (focusDistance * 0.00001)) / 2);
+                                }
+                            }
+                            yield null;
+                        }
+                    }());
                 })
                 .getComponent(MmdModelLoader, mmdModelLoader))
         ;

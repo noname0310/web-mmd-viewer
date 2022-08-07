@@ -1,6 +1,7 @@
 import {
     Bootstrapper as BaseBootstrapper,
     Camera,
+    CameraContainer,
     CameraType,
     CoroutineIterator,
     Object3DContainer,
@@ -9,6 +10,9 @@ import {
     WebGLGlobalPostProcessVolume,
     WebGLRendererLoader
 } from "the-world-engine";
+import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
+import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
@@ -42,6 +46,8 @@ export class Bootstrapper4 extends BaseBootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
+
+        let bokehPass: BokehPass | null = null;
         
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -105,18 +111,37 @@ export class Bootstrapper4 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.initializer((composer, scene, camera, screen): void => {
+                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
+                        composer.addPass(adaptiveTonemappingPass);
+
+                        const smaaPass = new SMAAPass(screen.width, screen.height);
+                        composer.addPass(smaaPass);
+
                         const ssaoPass = new SSAOPass(scene, camera);
+                        ssaoPass.kernelRadius = 16;
                         composer.addPass(ssaoPass);
 
-                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 1.5, 0.4, 0.85);
+                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 0.4, 0.4, 0.9);
                         composer.addPass(bloomPass);
+
+                        bokehPass = new BokehPass(scene, camera, {
+                            aperture: 0,
+                            maxblur: 0.02
+                        });
+                        composer.addPass(bokehPass);
+                        (globalThis as any).bokehPass = bokehPass;
+                        
+                        (c.engine.cameraContainer as CameraContainer).onCameraChanged.addListener(camera => {
+                            ssaoPass.camera = (camera as any).threeCamera;
+                            bokehPass!.camera = (camera as any).threeCamera;
+                        });
                     });
                 }))
             
             .withChild(instantiater.buildGameObject("ambient-light")
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
+                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2)))
 
-            .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 100))
+            .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-5, 30, 100))
                 .withComponent(Object3DContainer, c => {
                     const light = new THREE.DirectionalLight(0xffffff, 0.5);
                     light.castShadow = true;
@@ -161,7 +186,10 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.object3D = mesh;
                 }))
 
-            .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, 0))
+            .withChild(instantiater.buildGameObject("mmd-stage",
+                new THREE.Vector3(0, 0, 0), 
+                new THREE.Quaternion()//.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2)
+            )
                 .withComponent(MmdModelLoader, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
@@ -176,6 +204,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.asyncLoadModel("mmd/舞踏会風ステージVer2/舞踏会風ステージ.pmx", model => {
                         modelLoadingText.innerText = "stage1 loaded";
                         model.receiveShadow = true;
+                        model.castShadow = false;
                     });
                 })
                 .withComponent(MmdModelLoader, c => {
@@ -192,6 +221,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.asyncLoadModel("mmd/舞踏会風ステージVer2/タペストリー.pmx", model => {
                         modelLoadingText.innerText = "stage2 loaded";
                         model.receiveShadow = true;
+                        model.castShadow = false;
                     });
                 })
                 .withComponent(MmdModelLoader, c => {
@@ -208,6 +238,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.asyncLoadModel("mmd/舞踏会風ステージVer2/床.pmx", model => {
                         modelLoadingText.innerText = "stage3 loaded";
                         model.receiveShadow = true;
+                        model.castShadow = false;
                     });
                 }))
 
@@ -241,6 +272,37 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         ], () => {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
+
+                    c.startCoroutine(function*(): CoroutineIterator {
+                        const headPosition = new THREE.Vector3();
+                        const cameraNormal = new THREE.Vector3();
+                        const tempVector = new THREE.Vector3();
+
+                        yield null;
+                        for (; ;) {
+                            const container = c.object3DContainer;
+                            const cameraUnwrap = c.engine.cameraContainer.camera;
+                            if (container && container.object3D && cameraUnwrap) {
+                                const model = container.object3D as THREE.SkinnedMesh;
+
+                                const modelHead = model.skeleton.bones.find(b => b.name === "頭")!;
+                                headPosition.setFromMatrixPosition(modelHead.matrixWorld);
+                                const cameraPosition = cameraUnwrap.transform.position;
+                                cameraUnwrap.transform.getForward(cameraNormal).negate();
+
+                                const a = cameraNormal;
+                                const b = tempVector.copy(headPosition).sub(cameraPosition);
+                                const focusDistance = b.dot(a) / a.dot(a);
+
+                                if (bokehPass) {
+                                    const uniforms = bokehPass.uniforms as any;
+                                    uniforms["focus"].value = focusDistance;
+                                    uniforms["aperture"].value = Math.max(0, (0.0005 - (focusDistance * 0.00001)) / 2);
+                                }
+                            }
+                            yield null;
+                        }
+                    }());
                 })
                 .getComponent(MmdModelLoader, mmdModelLoader))
         ;
