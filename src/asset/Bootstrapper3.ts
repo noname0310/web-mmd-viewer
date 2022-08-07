@@ -15,7 +15,6 @@ import { Water } from "three/examples/jsm/objects/Water";
 import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
@@ -115,16 +114,14 @@ export class Bootstrapper3 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.initializer((composer, scene, camera, screen): void => {
-                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
+                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(false, 256);
+                        adaptiveTonemappingPass.setMiddleGrey(3);
+                        adaptiveTonemappingPass.setMaxLuminance(2.5);
+                        adaptiveTonemappingPass.setAverageLuminance(1.0);
                         composer.addPass(adaptiveTonemappingPass);
 
                         const smaaPass = new SMAAPass(screen.width, screen.height);
                         composer.addPass(smaaPass);
-
-                        const ssaoPass = new SSAOPass(scene, camera);
-                        ssaoPass.kernelRadius = 16;
-                        ssaoPass.kernelSize = 8;
-                        composer.addPass(ssaoPass);
 
                         const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width / 10, screen.height / 10), 0.3, 0.4, 0.9);
                         composer.addPass(bloomPass);
@@ -137,7 +134,6 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         (globalThis as any).bokehPass = bokehPass;
                         
                         (c.engine.cameraContainer as CameraContainer).onCameraChanged.addListener(camera => {
-                            ssaoPass.camera = (camera as any).threeCamera;
                             bokehPass!.camera = (camera as any).threeCamera;
                         });
                     });
@@ -352,14 +348,12 @@ export class Bootstrapper3 extends BaseBootstrapper {
                                 const b = tempVector.copy(headPosition).sub(cameraPosition);
                                 const focusDistance = b.dot(a) / a.dot(a);
 
-                                const headSize = 1;
-                                const screenSpaceHeadSize = headSize / focusDistance * cameraUnwrap.fov / 2;
-                                console.log(screenSpaceHeadSize);
+                                const screenSpaceHeadSize = Math.tan(cameraUnwrap.fov / 2 * THREE.MathUtils.DEG2RAD) * 2 * focusDistance;
 
                                 if (bokehPass) {
                                     const uniforms = bokehPass.uniforms as any;
                                     uniforms["focus"].value = focusDistance;
-                                    uniforms["aperture"].value = Math.max(0, (0.0005 - (focusDistance * 0.00001)) / 2);
+                                    uniforms["aperture"].value = 20 < screenSpaceHeadSize ? 0 : 0.0005 - (20 - screenSpaceHeadSize) * 0.0001;
                                 }
                             }
                             yield null;
