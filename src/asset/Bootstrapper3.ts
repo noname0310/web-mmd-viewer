@@ -14,11 +14,9 @@ import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
 import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
@@ -128,11 +126,8 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         ssaoPass.kernelSize = 8;
                         composer.addPass(ssaoPass);
 
-                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width / 10, screen.height / 10), 0.4, 0.4, 0.9);
+                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width / 10, screen.height / 10), 0.3, 0.4, 0.9);
                         composer.addPass(bloomPass);
-
-                        const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
-                        composer.addPass(gammaCorrectionPass);
 
                         bokehPass = new BokehPass(scene, camera, {
                             aperture: 0,
@@ -149,7 +144,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 }))
             
             .withChild(instantiater.buildGameObject("ambient-light")
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2)))
+                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 70))
                 .withComponent(Object3DContainer, c => {
@@ -215,10 +210,10 @@ export class Bootstrapper3 extends BaseBootstrapper {
                     const sky = new Sky();
                     
                     const skyUniforms = sky.material.uniforms;
-
-                    skyUniforms["turbidity"].value = 10;
-                    skyUniforms["rayleigh"].value = 0.3;
-                    skyUniforms["mieCoefficient"].value = 0.001;
+                    
+                    skyUniforms["turbidity"].value = 40;
+                    skyUniforms["rayleigh"].value = 0.9;
+                    skyUniforms["mieCoefficient"].value = 0.002;
                     skyUniforms["mieDirectionalG"].value = 1;
     
                     const sun = new THREE.Vector3();
@@ -356,6 +351,10 @@ export class Bootstrapper3 extends BaseBootstrapper {
                                 const a = cameraNormal;
                                 const b = tempVector.copy(headPosition).sub(cameraPosition);
                                 const focusDistance = b.dot(a) / a.dot(a);
+
+                                const headSize = 1;
+                                const screenSpaceHeadSize = headSize / focusDistance * cameraUnwrap.fov / 2;
+                                console.log(screenSpaceHeadSize);
 
                                 if (bokehPass) {
                                     const uniforms = bokehPass.uniforms as any;
