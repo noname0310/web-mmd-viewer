@@ -20,11 +20,11 @@ function startGame(): void {
         let currentGame: Game|null = null;
         let currentBootsrapper: BootstrapperConstructor<unknown, BaseBootstrapper<unknown>>|null = null;
         function runGame(bootstrapper: BootstrapperConstructor<unknown, BaseBootstrapper<unknown>>): void {
-            if (currentGame) {
-                currentGame.dispose();
-            }
             if (currentBootsrapper === bootstrapper) {
                 return;
+            }
+            if (currentGame) {
+                currentGame.dispose();
             }
             currentBootsrapper = bootstrapper;
             currentGame = new Game(document.getElementById("game_view")!);
