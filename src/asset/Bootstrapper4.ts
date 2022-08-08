@@ -139,11 +139,11 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 }))
             
             .withChild(instantiater.buildGameObject("ambient-light")
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2)))
+                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5)))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-5, 30, 100))
                 .withComponent(Object3DContainer, c => {
-                    const light = new THREE.DirectionalLight(0xffffff, 0.5);
+                    const light = new THREE.DirectionalLight(0xffffff, 0.2);
                     light.castShadow = true;
                     light.shadow.mapSize.width = 1024 * 8;
                     light.shadow.mapSize.height = 1024 * 8;
