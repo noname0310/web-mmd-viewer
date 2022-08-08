@@ -16,7 +16,7 @@ export class GameManagerPrefab extends Prefab {
     private _orbitCamera = new PrefabRef<Camera>();
     private _camera = new PrefabRef<Camera>();
     private _audioPlayer = new PrefabRef<AudioPlayer>();
-    private _modelLoader = new PrefabRef<MmdModelLoader>();
+    private readonly _modelLoaders: PrefabRef<MmdModelLoader>[] = [];
     private _cameraLoader = new PrefabRef<MmdCameraLoader>();
     private _modelAnimationName = new PrefabRef<string>();
     private _cameraAnimationName = new PrefabRef<string>();
@@ -39,7 +39,7 @@ export class GameManagerPrefab extends Prefab {
     }
 
     public withModelLoader(modelLoader: PrefabRef<MmdModelLoader>): this {
-        this._modelLoader = modelLoader;
+        this._modelLoaders.push(modelLoader);
         return this;
     }
 
@@ -85,9 +85,6 @@ export class GameManagerPrefab extends Prefab {
             
             
             .withChild(instantiater.buildGameObject("mmd-player")
-                .withComponent(MmdPlayer, c => {
-                    c.usePhysics = true;
-                })
                 .withComponent(AnimationSequencePlayer, c => {
                     c.animationClock = new ClockCalibrator(this._audioPlayer.ref!);
                     c.frameRate = 60;
@@ -99,7 +96,17 @@ export class GameManagerPrefab extends Prefab {
                         if (this._camera.ref) this._camera.ref.priority = 0;
                     });
 
-                    c.modelLoader = this._modelLoader.ref;
+                    const modelLoaders = this._modelLoaders;
+                    for (let i = 0; i < modelLoaders.length; i++) {
+                        if(modelLoaders[i].ref) {
+                            c.addModelLoader(modelLoaders[i].ref!);
+
+                            const mmdPlayer = c.gameObject.addComponent(MmdPlayer)!;
+                            c.addMmdPlayer(mmdPlayer);
+                            mmdPlayer.usePhysics = true;
+                        }
+                    }
+
                     c.cameraLoader = this._cameraLoader.ref;
                     c.physicsMaximumStepCount = 1;
 

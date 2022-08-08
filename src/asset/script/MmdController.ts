@@ -8,12 +8,12 @@ import { MmdModelLoader } from "./MmdModelLoader";
 import { MmdPlayer } from "./MmdPlayer";
 
 export class MmdController extends Component {
-    public static readonly requiredComponents = [MmdPlayer, AnimationSequencePlayer];
+    public static readonly requiredComponents = [AnimationSequencePlayer];
 
-    private _mmdPlayer: MmdPlayer|null = null;
+    private readonly _mmdPlayers: MmdPlayer[] = [];
     private _animationSequencePlayer: AnimationSequencePlayer|null = null;
 
-    private _modelLoader: MmdModelLoader|null = null;
+    private readonly _modelLoaders: MmdModelLoader[] = [];
     private _cameraLoader: MmdCameraLoader|null = null;
 
     private _physicsUnitStep = 1 / 65;
@@ -26,7 +26,6 @@ export class MmdController extends Component {
     private _readyToPlay = false;
 
     public awake(): void {
-        this._mmdPlayer = this.gameObject.getComponent(MmdPlayer);
         this._animationSequencePlayer = this.gameObject.getComponent(AnimationSequencePlayer);
     }
 
@@ -46,7 +45,7 @@ export class MmdController extends Component {
             return;
         }
 
-        if (this._modelLoader === null) throw new Error("modelLoader is null");
+        if (this._modelLoaders.length === 0) throw new Error("modelLoader is empty");
         if (cameraAnimationName) {
             if (this._cameraLoader === null) throw new Error("cameraLoader is null");
         }
@@ -66,46 +65,108 @@ export class MmdController extends Component {
             cameraAnimation = cameraLoader.animations.get(cameraAnimationName)!;
         }
 
-        const modelLoader = this._modelLoader!;
-        while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(modelAnimationName)) yield null;
+        const modelLoaders = this._modelLoaders!;
+        for (let i = 0; i < modelLoaders.length; i++) {
+            const modelLoader = modelLoaders[i];
+            while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(modelAnimationName)) yield null;
+        }
 
-        const model = modelLoader.object3DContainer!;
-        const modelAnimation = modelLoader.animations.get(modelAnimationName)!;
+        if (modelLoaders.length === 1) {
+            const modelLoader = modelLoaders[0];
+            const model = modelLoader.object3DContainer!;
+            const modelAnimation = modelLoader.animations.get(modelAnimationName)!;
 
-        const mmdPlayer = this._mmdPlayer!;
-        mmdPlayer.manualUpdate = true;
-        mmdPlayer.play(
-            model,
-            { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount },
-            threeCamera ?? undefined,
-            cameraAnimation ? { animation: cameraAnimation } : undefined
-        );
-        const endFrame = mmdPlayer.animationEndFrame;
+            if (this._mmdPlayers.length === 0) {
+                throw new Error("you need one or more MmdPlayer for playing animation");
+            }
+            const mmdPlayer = this._mmdPlayers[0];
+            mmdPlayer.manualUpdate = true;
+            mmdPlayer.play(
+                model,
+                { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount },
+                threeCamera ?? undefined,
+                cameraAnimation ? { animation: cameraAnimation } : undefined
+            );
+            const endFrame = mmdPlayer.animationEndFrame;
 
-        this._animationSequencePlayer!.setAnimationAndBind(
-            new AnimationSequence([
-                new RangedAnimation(AnimationTrack.createScalarTrack([
-                    AnimationKey.createValueType(0, 0, InterpolationKind.Linear),
-                    AnimationKey.createValueType(endFrame, endFrame, InterpolationKind.Linear)
-                ]))
-            ]), [
-                (frame: number): void => {
-                    mmdPlayer.process(frame);
-                }
-            ]
-        );
+            this._animationSequencePlayer!.setAnimationAndBind(
+                new AnimationSequence([
+                    new RangedAnimation(AnimationTrack.createScalarTrack([
+                        AnimationKey.createValueType(0, 0, InterpolationKind.Linear),
+                        AnimationKey.createValueType(endFrame, endFrame, InterpolationKind.Linear)
+                    ]))
+                ]), [
+                    (frame: number): void => {
+                        mmdPlayer.process(frame);
+                    }
+                ]
+            );
+        } else {
+            const mmdPlayers = this._mmdPlayers;
+            const mmdPlayerCount = mmdPlayers.length;
+            if (mmdPlayerCount !== modelLoaders.length) {
+                throw new Error("mmdPlayer count must be equal to modelLoader count");
+            }
+
+            let endFrame = 0;
+            for (let i = 0; i < mmdPlayerCount; i++) {
+                const mmdPlayer = mmdPlayers[i];
+                const modelLoader = modelLoaders[i];
+                const model = modelLoader.object3DContainer!;
+                const modelAnimation = modelLoader.animations.get(modelAnimationName)!;
+
+                mmdPlayer.manualUpdate = true;
+                mmdPlayer.play(
+                    model,
+                    { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount },
+                    threeCamera && i == 0 ? threeCamera : undefined,
+                    cameraAnimation && i == 0 ? { animation: cameraAnimation } : undefined
+                );
+                endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
+            }
+
+            this._animationSequencePlayer!.setAnimationAndBind(
+                new AnimationSequence([
+                    new RangedAnimation(AnimationTrack.createScalarTrack([
+                        AnimationKey.createValueType(0, 0, InterpolationKind.Linear),
+                        AnimationKey.createValueType(endFrame, endFrame, InterpolationKind.Linear)
+                    ]))
+                ]), [
+                    (frame: number): void => {
+                        for (let i = 0; i < mmdPlayerCount; i++) {
+                            mmdPlayers[i].process(frame);
+                        }
+                    }
+                ]
+            );
+        }
         
         this._onLoadCompleteEvent.invoke();
 
         this._animationSequencePlayer!.play();
     }
-
-    public get modelLoader(): MmdModelLoader|null {
-        return this._modelLoader;
+    
+    public addMmdPlayer(mmdPlayer: MmdPlayer): void {
+        this._mmdPlayers.push(mmdPlayer);
     }
 
-    public set modelLoader(value: MmdModelLoader|null) {
-        this._modelLoader = value;
+    public removeMmdPlayer(mmdPlayer: MmdPlayer): void {
+        const index = this._mmdPlayers.indexOf(mmdPlayer);
+        if (index >= 0) {
+            this._mmdPlayers.splice(index, 1);
+        }
+    }
+
+    public removeAllMmdPlayers(): void {
+        this._mmdPlayers.length = 0;
+    }
+
+    public get modelLoaders(): readonly MmdModelLoader[] {
+        return this._modelLoaders;
+    }
+
+    public addModelLoader(modelLoader: MmdModelLoader): void {
+        this._modelLoaders.push(modelLoader);
     }
     
     public get cameraLoader(): MmdCameraLoader|null {
@@ -123,8 +184,10 @@ export class MmdController extends Component {
     public set physicsUnitStep(value: number) {
         this._physicsUnitStep = value;
 
-        if (this._mmdPlayer !== null) {
-            const mixer = this._mmdPlayer.mixer;
+        const mmdPlayers = this._mmdPlayers;
+        for (let i = 0; i < mmdPlayers.length; i++) {
+            const mmdPlayer = mmdPlayers[i];
+            const mixer = mmdPlayer.mixer;
             if (mixer && mixer.physics) {
                 mixer.physics.unitStep = value;
             }
@@ -138,8 +201,10 @@ export class MmdController extends Component {
     public set physicsMaximumStepCount(value: number) {
         this._physicsMaximumStepCount = value;
 
-        if (this._mmdPlayer !== null) {
-            const mixer = this._mmdPlayer.mixer;
+        const mmdPlayers = this._mmdPlayers;
+        for (let i = 0; i < mmdPlayers.length; i++) {
+            const mmdPlayer = mmdPlayers[i];
+            const mixer = mmdPlayer.mixer;
             if (mixer && mixer.physics) {
                 mixer.physics.maxStepNum = value;
             }
@@ -153,8 +218,10 @@ export class MmdController extends Component {
     public set gravity(value: ReadonlyVector3) {
         (this._gravity as WritableVector3).copy(value);
 
-        if (this._mmdPlayer !== null) {
-            const mixer = this._mmdPlayer.mixer;
+        const mmdPlayers = this._mmdPlayers;
+        for (let i = 0; i < mmdPlayers.length; i++) {
+            const mmdPlayer = mmdPlayers[i];
+            const mixer = mmdPlayer.mixer;
             if (mixer && mixer.physics) {
                 (mixer.physics.gravity as WritableVector3).copy(value);
             }
