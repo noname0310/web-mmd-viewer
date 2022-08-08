@@ -1,3 +1,4 @@
+import { BlendFunction, DepthOfFieldEffect, EdgeDetectionMode, EffectPass, NormalPass, SMAAEffect, SMAAPreset, SSAOEffect, TextureEffect } from "postprocessing";
 import {
     Bootstrapper as BaseBootstrapper,
     Camera,
@@ -7,24 +8,19 @@ import {
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
-    WebGLGlobalPostProcessVolume,
     WebGLRendererLoader
 } from "the-world-engine";
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
-import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
-import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
-import { BokehDepthPass } from "./script/BokehDepthPass";
-import { BokehPass2 } from "./script/BokehPass2";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
+import { WebGLGlobalPostProcessVolume } from "./script/WebGLGlobalPostProcessVolume";
 import WaterNormal from "./texture/waternormals.jpg";
 
 export class Bootstrapper3 extends BaseBootstrapper {
@@ -55,7 +51,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
 
         const water = new PrefabRef<Object3DContainer<Water>>();
         
-        let bokehPass: BokehPass2 | null = null;
+        let depthOfFieldEffect: DepthOfFieldEffect|null = null;
 
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -117,44 +113,70 @@ export class Bootstrapper3 extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
-                    c.initializer((composer, scene, camera, screen): void => {
-                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(false, 256);
-                        adaptiveTonemappingPass.setMiddleGrey(3);
-                        adaptiveTonemappingPass.setMaxLuminance(2.5);
-                        adaptiveTonemappingPass.setAverageLuminance(1.0);
-                        //composer.addPass(adaptiveTonemappingPass);
+                    c.initializer((composer, scene, camera, _screen): void => {
+                        let effectPassInsertPosition = -1;
 
-                        const smaaPass = new SMAAPass(screen.width, screen.height);
-                        smaaPass;
-                        //composer.addPass(smaaPass);
+                        const initializeEffectPass = (camera: THREE.Camera): void => {          
+                            const normalPass = new NormalPass(scene, camera);
 
-                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width / 10, screen.height / 10), 0.3, 0.4, 0.9);
-                        bloomPass;
-                        //composer.addPass(bloomPass);
+                            const ssaoEffect = new SSAOEffect(camera, normalPass.texture, {
+                                blendFunction: BlendFunction.MULTIPLY,
+                                distanceScaling: true,
+                                depthAwareUpsampling: true,
+                                samples: 9,
+                                rings: 7,
+                                worldDistanceThreshold: 0.02,
+                                worldDistanceFalloff: 0.0025,
+                                worldProximityThreshold: 0.0003,
+                                worldProximityFalloff: 0.0001,
+                                luminanceInfluence: 0.7,
+                                minRadiusScale: 0.33,
+                                radius: 0.1,
+                                intensity: 1.33,
+                                bias: 0.025,
+                                fade: 0.01,
+                                resolutionScale: 0.5
+                            });
+                            
+                            depthOfFieldEffect = new DepthOfFieldEffect(camera, {
+                                focusDistance: 0.0,
+                                focalLength: 0.0447,
+                                worldFocusRange: 50,
+                                bokehScale: 5.0,
+                                height: 480
+                            });
 
-                        const bokehDepthPass = new BokehDepthPass(scene, camera, {
-                            width: screen.width,
-                            height: screen.height
-                        });
-                        bokehDepthPass;
-                        composer.addPass(bokehDepthPass);
+                            const cocTextureEffect = new TextureEffect({
+                                blendFunction: BlendFunction.SKIP,
+                                texture: (depthOfFieldEffect as any).cocTexture
+                            });
+
+                            const smaaEffect = new SMAAEffect({
+                                preset: SMAAPreset.HIGH,
+                                edgeDetectionMode: EdgeDetectionMode.DEPTH
+                            });
+
+                            smaaEffect.edgeDetectionMaterial.edgeDetectionThreshold = 0.01;
+                            
+                            const effectPass = new EffectPass(camera, depthOfFieldEffect, cocTextureEffect, smaaEffect, ssaoEffect);
+
+                            if (effectPassInsertPosition === -1) {
+                                effectPassInsertPosition = composer.passes.length;
+                                composer.addPass(normalPass);
+                                composer.addPass(effectPass);
+                            } else {
+                                composer.removePass(composer.passes[effectPassInsertPosition]);
+                                composer.removePass(composer.passes[effectPassInsertPosition]);
+                                composer.addPass(normalPass, effectPassInsertPosition);
+                                composer.addPass(effectPass, effectPassInsertPosition + 1);
+                            }
+                        };
                         
-                        bokehPass = new BokehPass2(scene, camera, {
-                            width: screen.width,
-                            height: screen.height
-                        });
-                        composer.addPass(bokehPass);
-                        bokehPass.materialBokeh.uniforms["showFocus"].value = true;
-                        (globalThis as any).bokehPass = bokehPass;
+                        initializeEffectPass(camera);
+                        
                         
                         (c.engine.cameraContainer as CameraContainer).onCameraChanged.addListener(camera => {
-                            bokehDepthPass.camera = (camera as any).threeCamera;
-                            bokehPass!.camera = (camera as any).threeCamera;
-                        });
-
-                        c.engine.screen.onResize.addListener((width, height) => {
-                            bokehDepthPass!.renderTargetDepth.setSize(width, height);
-                            bokehPass!.renderTargetDepth.setSize(width, height);
+                            initializeEffectPass((camera as any).threeCamera);
                         });
                     });
                 }))
@@ -340,17 +362,20 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         model.castShadow = true;
                         model.frustumCulled = false;
                     });
-                    c.asyncLoadAnimation("animation1",
-                        [
-                            "mmd/flos/flos_model.vmd"//, "mmd/pizzicato_drops/physics_reduce4.vmd"
-                        ], () => {
-                            modelAnimationLoadingText.innerText = "animation loaded";
-                        });
+                    c.asyncLoadAnimation("animation1", "mmd/flos/flos_model.vmd", () => {
+                        modelAnimationLoadingText.innerText = "animation loaded";
+                    });
 
                     c.startCoroutine(function*(): CoroutineIterator {
                         const headPosition = new THREE.Vector3();
                         const cameraNormal = new THREE.Vector3();
                         const tempVector = new THREE.Vector3();
+
+                        function linearize(depth: number, camera: Camera): number {
+                            const zfar = camera.far;
+                            const znear = camera.near;
+                            return - zfar * znear / (depth * (zfar - znear) - zfar);
+                        }
 
                         yield null;
                         for (; ;) {
@@ -368,9 +393,10 @@ export class Bootstrapper3 extends BaseBootstrapper {
                                 const b = tempVector.copy(headPosition).sub(cameraPosition);
                                 const focusDistance = b.dot(a) / a.dot(a);
 
-                                if (bokehPass) {
-                                    const uniforms = bokehPass.materialBokeh.uniforms as any;
-                                    uniforms["focalDepth"].value = focusDistance;
+                                if (depthOfFieldEffect) {
+                                    const ldistance = linearize(focusDistance, cameraUnwrap);
+                                    const cocMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
+                                    cocMaterial.focusDistance = 1 + ldistance;
                                 }
                             }
                             yield null;
