@@ -13,13 +13,14 @@ import {
 import { Sky } from "three/examples/jsm/objects/Sky";
 import { Water } from "three/examples/jsm/objects/Water";
 import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
-import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { BokehDepthPass } from "./script/BokehDepthPass";
+import { BokehPass2 } from "./script/BokehPass2";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
@@ -31,7 +32,10 @@ export class Bootstrapper3 extends BaseBootstrapper {
         this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);
         this.setting.render.webGLRenderer(() => {
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            const renderer = new THREE.WebGLRenderer({
+                powerPreference: "high-performance",
+                antialias: true
+            });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -51,7 +55,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
 
         const water = new PrefabRef<Object3DContainer<Water>>();
         
-        let bokehPass: BokehPass | null = null;
+        let bokehPass: BokehPass2 | null = null;
 
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -118,23 +122,39 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         adaptiveTonemappingPass.setMiddleGrey(3);
                         adaptiveTonemappingPass.setMaxLuminance(2.5);
                         adaptiveTonemappingPass.setAverageLuminance(1.0);
-                        composer.addPass(adaptiveTonemappingPass);
+                        //composer.addPass(adaptiveTonemappingPass);
 
                         const smaaPass = new SMAAPass(screen.width, screen.height);
-                        composer.addPass(smaaPass);
+                        smaaPass;
+                        //composer.addPass(smaaPass);
 
                         const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width / 10, screen.height / 10), 0.3, 0.4, 0.9);
-                        composer.addPass(bloomPass);
+                        bloomPass;
+                        //composer.addPass(bloomPass);
 
-                        bokehPass = new BokehPass(scene, camera, {
-                            aperture: 0,
-                            maxblur: 0.02
+                        const bokehDepthPass = new BokehDepthPass(scene, camera, {
+                            width: screen.width,
+                            height: screen.height
+                        });
+                        bokehDepthPass;
+                        composer.addPass(bokehDepthPass);
+                        
+                        bokehPass = new BokehPass2(scene, camera, {
+                            width: screen.width,
+                            height: screen.height
                         });
                         composer.addPass(bokehPass);
+                        bokehPass.materialBokeh.uniforms["showFocus"].value = true;
                         (globalThis as any).bokehPass = bokehPass;
                         
                         (c.engine.cameraContainer as CameraContainer).onCameraChanged.addListener(camera => {
+                            bokehDepthPass.camera = (camera as any).threeCamera;
                             bokehPass!.camera = (camera as any).threeCamera;
+                        });
+
+                        c.engine.screen.onResize.addListener((width, height) => {
+                            bokehDepthPass!.renderTargetDepth.setSize(width, height);
+                            bokehPass!.renderTargetDepth.setSize(width, height);
                         });
                     });
                 }))
@@ -348,12 +368,9 @@ export class Bootstrapper3 extends BaseBootstrapper {
                                 const b = tempVector.copy(headPosition).sub(cameraPosition);
                                 const focusDistance = b.dot(a) / a.dot(a);
 
-                                const screenSpaceHeadSize = Math.tan(cameraUnwrap.fov / 2 * THREE.MathUtils.DEG2RAD) * 2 * focusDistance;
-
                                 if (bokehPass) {
-                                    const uniforms = bokehPass.uniforms as any;
-                                    uniforms["focus"].value = focusDistance;
-                                    uniforms["aperture"].value = 20 < screenSpaceHeadSize ? 0 : 0.0005 - (20 - screenSpaceHeadSize) * 0.0001;
+                                    const uniforms = bokehPass.materialBokeh.uniforms as any;
+                                    uniforms["focalDepth"].value = focusDistance;
                                 }
                             }
                             yield null;
