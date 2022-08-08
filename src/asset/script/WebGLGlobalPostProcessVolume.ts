@@ -1,5 +1,5 @@
-import { Camera, CameraContainer, Component, EngineGlobalObject, IReadonlyGameScreen, WebGLGlobalObject } from "the-world-engine";
 import { EffectComposer, RenderPass } from "postprocessing";
+import { Camera, CameraContainer, Component, EngineGlobalObject, IReadonlyGameScreen, WebGLGlobalObject } from "the-world-engine";
 import { WebGLRenderer } from "three/src/Three";
 
 class EffectComposerRc {
