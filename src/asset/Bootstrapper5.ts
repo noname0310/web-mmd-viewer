@@ -1,9 +1,11 @@
-import { 
+import {
     BlendFunction,
     BloomEffect,
     DepthOfFieldEffect,
     EdgeDetectionMode,
     EffectPass,
+    GodRaysEffect,
+    KernelSize,
     SMAAEffect,
     SMAAPreset,
     TextureEffect,
@@ -19,6 +21,7 @@ import {
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
+    ReadonlyVector3,
     SceneBuilder,
     WebGLRendererLoader
 } from "the-world-engine";
@@ -63,8 +66,11 @@ export class Bootstrapper5 extends BaseBootstrapper {
         const audioPlayer = new PrefabRef<AudioPlayer>();
 
         const water = new PrefabRef<Object3DContainer<Water>>();
-        
-        let depthOfFieldEffect: DepthOfFieldEffect|null = null;
+
+        let depthOfFieldEffect: DepthOfFieldEffect | null = null;
+
+        const sunVector: ReadonlyVector3 = new THREE.Vector3(5, 5, -50);
+        const sunMesh = new PrefabRef<Object3DContainer<THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>>>();
 
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -77,13 +83,13 @@ export class Bootstrapper5 extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .make())
-                
+
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
                     c.near = 1;
-                    c.far = 1500;
+                    c.far = 2000;
                     c.priority = -1;
                     c.backgroundColor = Color.fromHex("#a9caeb");
                 })
@@ -95,16 +101,14 @@ export class Bootstrapper5 extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildGameObject("camera")
                 .withComponent(Camera, c => {
                     c.near = 1;
-                    c.far = 1000;
+                    c.far = 2000;
                     c.priority = -2;
                     c.cameraType = CameraType.Perspective;
                     c.backgroundColor = Color.fromHex("#a9caeb");
-
-                    
                 })
                 .withComponent(MmdCameraLoader, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -128,6 +132,21 @@ export class Bootstrapper5 extends BaseBootstrapper {
                 .getComponent(Camera, camera)
                 .getComponent(MmdCameraLoader, mmdCameraLoader)
                 .getComponent(AudioPlayer, audioPlayer))
+
+            .withChild(instantiater.buildGameObject("sun", sunVector.clone().multiplyScalar(30))
+                .withComponent(Object3DContainer, c => {
+                    const sunMaterial = new THREE.MeshBasicMaterial({
+                        color: 0xffddaa,
+                        transparent: true,
+                        fog: false
+                    });
+                    const sunGeometry = new THREE.SphereBufferGeometry(600, 32, 32);
+                    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+                    sun.frustumCulled = false;
+                    sun.matrixAutoUpdate = false;
+                    c.object3D = sun;
+                })
+                .getComponent(Object3DContainer, sunMesh))
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
@@ -155,16 +174,29 @@ export class Bootstrapper5 extends BaseBootstrapper {
                                 blendFunction: BlendFunction.SKIP,
                                 texture: (depthOfFieldEffect as any).cocTexture
                             });
+                            cocTextureEffect;
 
                             const smaaEffect = new SMAAEffect({
                                 preset: SMAAPreset.HIGH,
                                 edgeDetectionMode: EdgeDetectionMode.DEPTH
                             });
 
+                            const godRaysEffect = new GodRaysEffect(camera, sunMesh.ref!.object3D!, {
+                                height: 480,
+                                kernelSize: KernelSize.LARGE,
+                                density: 0.9,
+                                decay: 0.92,
+                                weight: 0.3,
+                                exposure: 0.3,
+                                samples: 60,
+                                clampMax: 1.0
+                            });
+                            (globalThis as any).godRaysEffect = godRaysEffect;
+
                             smaaEffect.edgeDetectionMaterial.edgeDetectionThreshold = 0.01;
 
                             const toneMappingEffect = new ToneMappingEffect({
-                                mode: ToneMappingMode.REINHARD2,
+                                mode: ToneMappingMode.ACES_FILMIC,
                                 resolution: 256,
                                 whitePoint: 16.0,
                                 middleGrey: 0.13,
@@ -172,8 +204,8 @@ export class Bootstrapper5 extends BaseBootstrapper {
                                 averageLuminance: 0.01,
                                 adaptationRate: 1.0
                             });
-                            
-                            const effectPass = new EffectPass(camera, bloomEffect, depthOfFieldEffect, cocTextureEffect, smaaEffect, toneMappingEffect);
+
+                            const effectPass = new EffectPass(camera, bloomEffect/*, depthOfFieldEffect, cocTextureEffect*/, smaaEffect, godRaysEffect, toneMappingEffect);
 
                             if (effectPassInsertPosition === -1) {
                                 effectPassInsertPosition = composer.passes.length;
@@ -183,20 +215,20 @@ export class Bootstrapper5 extends BaseBootstrapper {
                                 composer.addPass(effectPass, effectPassInsertPosition);
                             }
                         };
-                        
+
                         initializeEffectPass(camera);
-                        
-                        
+
+
                         (c.engine.cameraContainer as CameraContainer).onCameraChanged.addListener(camera => {
                             initializeEffectPass((camera as any).threeCamera);
                         });
                     });
                 }))
-            
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.7)))
 
-            .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 70))
+            .withChild(instantiater.buildGameObject("directional-light", sunVector)
                 .withComponent(Object3DContainer, c => {
                     const light = new THREE.DirectionalLight(0xffffff, 0.1);
                     light.castShadow = true;
@@ -214,7 +246,7 @@ export class Bootstrapper5 extends BaseBootstrapper {
                 .withComponent(Object3DContainer, c => {
                     c.enabled = false;
                     c.object3D = new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera);
-                    c.startCoroutine(function*(): CoroutineIterator {
+                    c.startCoroutine(function* (): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();
                             yield null;
@@ -229,7 +261,7 @@ export class Bootstrapper5 extends BaseBootstrapper {
             )
                 .withComponent(Object3DContainer, c => {
                     const water = new Water(
-                        new THREE.PlaneGeometry( 10000, 10000 ),
+                        new THREE.PlaneGeometry(10000, 10000),
                         {
                             textureWidth: 512,
                             textureHeight: 512,
@@ -246,7 +278,7 @@ export class Bootstrapper5 extends BaseBootstrapper {
 
                     c.object3D = water;
 
-                    c.startCoroutine(function*(): CoroutineIterator {
+                    c.startCoroutine(function* (): CoroutineIterator {
                         for (; ;) {
                             water.material.uniforms["time"].value += c.engine.time.deltaTime / 2;
                             yield null;
@@ -259,31 +291,31 @@ export class Bootstrapper5 extends BaseBootstrapper {
                 .active(true)
                 .withComponent(Object3DContainer, c => {
                     const sky = new Sky();
-                    
+
                     const skyUniforms = sky.material.uniforms;
-                    
+
                     skyUniforms["turbidity"].value = 40;
                     skyUniforms["rayleigh"].value = 1;
                     skyUniforms["mieCoefficient"].value = 0.002;
                     skyUniforms["mieDirectionalG"].value = 1;
-    
+
                     const sun = new THREE.Vector3();
                     const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
                     let renderTarget: THREE.WebGLRenderTarget;
-    
+
                     function updateSun(): void {
                         sun.copy(directionalLight.ref!.transform.localPosition).normalize();
-    
+
                         sky.material.uniforms["sunPosition"].value.copy(sun);
-                        water.ref!.object3D!.material.uniforms["sunDirection"].value.copy( sun ).normalize();
-    
-                        if ( renderTarget !== undefined ) renderTarget.dispose();
-    
+                        water.ref!.object3D!.material.uniforms["sunDirection"].value.copy(sun).normalize();
+
+                        if (renderTarget !== undefined) renderTarget.dispose();
+
                         renderTarget = pmremGenerator.fromScene(sky as any);
-    
+
                         c.engine.scene.unsafeGetThreeScene().environment = renderTarget.texture;
                     }
-    
+
                     updateSun();
 
                     c.object3D = sky;
@@ -344,8 +376,9 @@ export class Bootstrapper5 extends BaseBootstrapper {
                 .getComponent(MmdModelLoader, mmdModelLoader2))
 
             .withChild(instantiater.buildGameObject("mmd-camera-focus-controller")
+                .active(false)
                 .withComponent(Object3DContainer, c => {
-                    c.startCoroutine(function*(): CoroutineIterator {
+                    c.startCoroutine(function* (): CoroutineIterator {
                         const headPosition1 = new THREE.Vector3();
                         const headPosition2 = new THREE.Vector3();
                         const cameraNormal = new THREE.Vector3();

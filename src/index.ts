@@ -2,12 +2,12 @@ import Ammo from "ammojs-typed";
 import { Game } from "the-world-engine";
 
 import TestAudio from "./asset/audio/audioTest.mp3";
-import { Bootstrapper3 } from "./asset/Bootstrapper3";
+import { Bootstrapper5 } from "./asset/Bootstrapper5";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
         const game = new Game(document.getElementById("game_view")!);
-        game.run(Bootstrapper3);
+        game.run(Bootstrapper5);
         game.inputHandler.startHandleEvents();
     } );
 }
