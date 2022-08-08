@@ -50,6 +50,7 @@ export class Bootstrapper5 extends BaseBootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMappingExposure = 1.5;
             return renderer;
         });
 
@@ -184,7 +185,7 @@ export class Bootstrapper5 extends BaseBootstrapper {
                             const godRaysEffect = new GodRaysEffect(camera, sunMesh.ref!.object3D!, {
                                 height: 480,
                                 kernelSize: KernelSize.LARGE,
-                                density: 0.9,
+                                density: 0.7,
                                 decay: 0.92,
                                 weight: 0.3,
                                 exposure: 0.3,
