@@ -278,6 +278,23 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         const cameraNormal = new THREE.Vector3();
                         const tempVector = new THREE.Vector3();
 
+                        // let offset = 0;
+                        // const slider = document.createElement("input");
+                        // slider.type = "range";
+                        // slider.min = "0";
+                        // slider.max = "0.000001";
+                        // slider.step = "0.0000000001";
+                        // slider.value = "0";
+                        // slider.style.position = "absolute";
+                        // slider.style.left = "0";
+                        // slider.style.top = "0";
+                        // slider.style.width = "1000px";
+                        // document.body.appendChild(slider);
+                        // slider.addEventListener("input", () => {
+                        //     offset = parseFloat(slider.value);
+                        //     console.log(offset);
+                        // });
+
                         yield null;
                         for (; ;) {
                             const container = c.object3DContainer;
@@ -297,7 +314,9 @@ export class Bootstrapper4 extends BaseBootstrapper {
                                 if (bokehPass) {
                                     const uniforms = bokehPass.uniforms as any;
                                     uniforms["focus"].value = focusDistance;
-                                    uniforms["aperture"].value = Math.max(0, (0.0005 - (focusDistance * 0.00001)) / 2);
+
+                                    const ratio = Math.max(0, 21 - Math.tan(cameraUnwrap.fov / 2 * THREE.MathUtils.DEG2RAD) * focusDistance);
+                                    uniforms["aperture"].value = ratio * ratio * ratio * 6.1e-9;
                                 }
                             }
                             yield null;
