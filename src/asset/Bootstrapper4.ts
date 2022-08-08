@@ -118,7 +118,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         composer.addPass(smaaPass);
 
                         const ssaoPass = new SSAOPass(scene, camera);
-                        ssaoPass.kernelRadius = 16;
+                        ssaoPass.kernelRadius = 8;
                         composer.addPass(ssaoPass);
 
                         const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 0.4, 0.4, 0.9);
