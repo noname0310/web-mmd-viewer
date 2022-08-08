@@ -298,25 +298,31 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         yield null;
                         for (; ;) {
                             const container = c.object3DContainer;
-                            const cameraUnwrap = c.engine.cameraContainer.camera;
-                            if (container && container.object3D && cameraUnwrap) {
+                            if (container && container.object3D) {
                                 const model = container.object3D as THREE.SkinnedMesh;
-
                                 const modelHead = model.skeleton.bones.find(b => b.name === "頭")!;
-                                headPosition.setFromMatrixPosition(modelHead.matrixWorld);
-                                const cameraPosition = cameraUnwrap.transform.position;
-                                cameraUnwrap.transform.getForward(cameraNormal).negate();
+                                for (; ;) {
+                                    const cameraUnwrap = c.engine.cameraContainer.camera;
+                                    if (!cameraUnwrap) {
+                                        yield null;
+                                        continue;
+                                    }
+                                    headPosition.setFromMatrixPosition(modelHead.matrixWorld);
+                                    const cameraPosition = cameraUnwrap.transform.position;
+                                    cameraUnwrap.transform.getForward(cameraNormal).negate();
 
-                                const a = cameraNormal;
-                                const b = tempVector.copy(headPosition).sub(cameraPosition);
-                                const focusDistance = b.dot(a) / a.dot(a);
+                                    const a = cameraNormal;
+                                    const b = tempVector.copy(headPosition).sub(cameraPosition);
+                                    const focusDistance = b.dot(a) / a.dot(a);
 
-                                if (bokehPass) {
-                                    const uniforms = bokehPass.uniforms as any;
-                                    uniforms["focus"].value = focusDistance;
+                                    if (bokehPass) {
+                                        const uniforms = bokehPass.uniforms as any;
+                                        uniforms["focus"].value = focusDistance;
 
-                                    const ratio = Math.max(0, 21 - Math.tan(cameraUnwrap.fov / 2 * THREE.MathUtils.DEG2RAD) * focusDistance);
-                                    uniforms["aperture"].value = ratio * ratio * ratio * 6.1e-9;
+                                        const ratio = Math.max(0, 21 - Math.tan(cameraUnwrap.fov / 2 * THREE.MathUtils.DEG2RAD) * focusDistance);
+                                        uniforms["aperture"].value = ratio * ratio * ratio * 6.1e-9;
+                                    }
+                                    yield null;
                                 }
                             }
                             yield null;
