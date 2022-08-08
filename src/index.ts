@@ -1,15 +1,72 @@
 import Ammo from "ammojs-typed";
-import { Game } from "the-world-engine";
+import { BootstrapperConstructor, Game } from "the-world-engine";
+import { Bootstrapper as BaseBootstrapper } from "the-world-engine";
 
 import TestAudio from "./asset/audio/audioTest.mp3";
+import { Bootstrapper } from "./asset/Bootstrapper";
+import { Bootstrapper2 } from "./asset/Bootstrapper2";
+import { Bootstrapper3 } from "./asset/Bootstrapper3";
 import { Bootstrapper4 } from "./asset/Bootstrapper4";
+import { Bootstrapper5 } from "./asset/Bootstrapper5";
+import { Bootstrapper6 } from "./asset/Bootstrapper6";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
-        const game = new Game(document.getElementById("game_view")!);
-        game.run(Bootstrapper4);
-        game.inputHandler.startHandleEvents();
-    } );
+        const bootstrapperSelectPanel = document.createElement("div");
+        bootstrapperSelectPanel.style.position = "absolute";
+        bootstrapperSelectPanel.style.top = "0px";
+        bootstrapperSelectPanel.style.right = "0px";
+
+        let currentGame: Game|null = null;
+        let currentBootsrapper: BootstrapperConstructor<unknown, BaseBootstrapper<unknown>>|null = null;
+        function runGame(bootstrapper: BootstrapperConstructor<unknown, BaseBootstrapper<unknown>>): void {
+            if (currentGame) {
+                currentGame.dispose();
+            }
+            if (currentBootsrapper === bootstrapper) {
+                return;
+            }
+            currentBootsrapper = bootstrapper;
+            currentGame = new Game(document.getElementById("game_view")!);
+            currentGame.run(bootstrapper);
+            currentGame.inputHandler.startHandleEvents();
+        }
+
+        const button1 = document.createElement("button");
+        button1.innerText = "pizzicato drops";
+        button1.onclick = (): void => runGame(Bootstrapper);
+
+        const button2 = document.createElement("button");
+        button2.innerText = "as you like it";
+        button2.onclick = (): void => runGame(Bootstrapper2);
+
+        const button3 = document.createElement("button");
+        button3.innerText = "flos";
+        button3.onclick = (): void => runGame(Bootstrapper3);
+
+        const button4 = document.createElement("button");
+        button4.innerText = "ru se";
+        button4.onclick = (): void => runGame(Bootstrapper4);
+
+        const button5 = document.createElement("button");
+        button5.innerText = "daybreak frontline";
+        button5.onclick = (): void => runGame(Bootstrapper5);
+
+        const button6 = document.createElement("button");
+        button6.innerText = "notitle";
+        button6.onclick = (): void => runGame(Bootstrapper6);
+
+        bootstrapperSelectPanel.appendChild(button1);
+        bootstrapperSelectPanel.appendChild(button2);
+        bootstrapperSelectPanel.appendChild(button3);
+        bootstrapperSelectPanel.appendChild(button4);
+        bootstrapperSelectPanel.appendChild(button5);
+        bootstrapperSelectPanel.appendChild(button6);
+
+        document.body.appendChild(bootstrapperSelectPanel);
+
+        runGame(Bootstrapper2);
+    });
 }
 
 let audioTest: HTMLAudioElement|null = new Audio(TestAudio);
