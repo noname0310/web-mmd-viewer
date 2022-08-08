@@ -23,8 +23,8 @@ export class Bootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         this.setting.render.webGLRenderer(() => {
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -166,7 +166,7 @@ export class Bootstrapper extends BaseBootstrapper {
                         mieDirectionalG: 0.7,
                         elevation: 2,
                         azimuth: 180,
-                        exposure: c.engine.webGL!.webglRenderer!.toneMappingExposure
+                        exposure: renderer.toneMappingExposure
                     };
     
                     function guiChanged(): void {
@@ -184,7 +184,7 @@ export class Bootstrapper extends BaseBootstrapper {
     
                         uniforms[ "sunPosition" ].value.copy( sun );
     
-                        c.engine.webGL!.webglRenderer!.toneMappingExposure = effectController.exposure;
+                        renderer.toneMappingExposure = effectController.exposure;
                     }
 
                     guiChanged();
