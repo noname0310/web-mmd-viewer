@@ -149,11 +149,20 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             ssaoPass.copyMaterial.dispose();
                             (ssaoPass.fsQuad as FullScreenQuad).dispose();
 
-                            bloomPass.renderTargetsHorizontal.forEach(rt => rt.dispose());
-                            bloomPass.renderTargetsVertical.forEach(rt => rt.dispose());
+                            const renderTargetsHorizontal = bloomPass.renderTargetsHorizontal;
+                            for (let i = 0; i < renderTargetsHorizontal.length; ++i) {
+                                renderTargetsHorizontal[i].dispose();
+                            }
+                            const renderTargetsVertical = bloomPass.renderTargetsVertical;
+                            for (let i = 0; i < renderTargetsVertical.length; ++i) {
+                                renderTargetsVertical[i].dispose();
+                            }
                             bloomPass.renderTargetBright.dispose();
                             bloomPass.materialHighPassFilter.dispose();
-                            bloomPass.separableBlurMaterials.forEach(m => m.dispose());
+                            const separableBlurMaterials = bloomPass.separableBlurMaterials;
+                            for (let i = 0; i < separableBlurMaterials.length; ++i) {
+                                separableBlurMaterials[i].dispose();
+                            }
                             bloomPass.compositeMaterial.dispose();
                             bloomPass.materialCopy.dispose();
                             bloomPass.basic.dispose();
@@ -207,7 +216,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         object3D.geometry.dispose();
                         if (object3D.material instanceof Array) {
                             const materials = object3D.material;
-                            for (let i = 0; i < materials.length; i++) {
+                            for (let i = 0; i < materials.length; ++i) {
                                 materials[i].dispose();
                             }
                         } else {
