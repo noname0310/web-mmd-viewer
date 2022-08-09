@@ -2,6 +2,7 @@ import {
     BlendFunction,
     BloomEffect,
     BrightnessContrastEffect,
+    ChromaticAberrationEffect,
     DepthOfFieldEffect,
     EdgeDetectionMode,
     EffectPass,
@@ -191,9 +192,24 @@ export class Bootstrapper3 extends BaseBootstrapper {
                             contrast: 0.25
                         });
                         
-                        const effectPass = new EffectPass(camera, bloomEffect, depthOfFieldEffect, cocTextureEffect, smaaEffect, toneMappingEffect, contrastEffect);
+                        const effectPass = new EffectPass(camera,
+                            bloomEffect,
+                            depthOfFieldEffect,
+                            cocTextureEffect,
+                            smaaEffect,
+                            toneMappingEffect,
+                            contrastEffect
+                        );
                         
-                        return [[effectPass]];
+                        const chromaticAberrationEffect = new ChromaticAberrationEffect({
+                            offset: new THREE.Vector2(1e-3, 5e-4).multiplyScalar(0.5),
+                            radialModulation: false,
+                            modulationOffset: 0.15
+                        });
+
+                        const chromaticAberrationPass = new EffectPass(camera, chromaticAberrationEffect);
+                        
+                        return [[effectPass, chromaticAberrationPass]];
                     });
                 }))
             
