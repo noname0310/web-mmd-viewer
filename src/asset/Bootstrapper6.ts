@@ -48,7 +48,7 @@ export class Bootstrapper6 extends BaseBootstrapper {
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.toneMappingExposure = 1.5;
+            renderer.toneMappingExposure = 1.2;
             return renderer;
         });
 
@@ -164,7 +164,7 @@ export class Bootstrapper6 extends BaseBootstrapper {
                         smaaEffect.edgeDetectionMaterial.edgeDetectionThreshold = 0.01;
 
                         const toneMappingEffect = new ToneMappingEffect({
-                            mode: ToneMappingMode.ACES_FILMIC,
+                            mode: ToneMappingMode.REINHARD2,
                             resolution: 256,
                             whitePoint: 16.0,
                             middleGrey: 0.13,
@@ -181,7 +181,7 @@ export class Bootstrapper6 extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
-                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.7), object3D => object3D.dispose());
+                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5), object3D => object3D.dispose());
                 }))
 
             .withChild(instantiater.buildGameObject("directional-light", sunVector)
@@ -255,8 +255,8 @@ export class Bootstrapper6 extends BaseBootstrapper {
 
                     skyUniforms["turbidity"].value = 40;
                     skyUniforms["rayleigh"].value = 1;
-                    skyUniforms["mieCoefficient"].value = 0.002;
-                    skyUniforms["mieDirectionalG"].value = 1;
+                    skyUniforms["mieCoefficient"].value = 0.001;
+                    skyUniforms["mieDirectionalG"].value = 0.99999;
 
                     const sun = new THREE.Vector3();
                     const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
