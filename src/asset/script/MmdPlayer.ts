@@ -1,3 +1,4 @@
+import Ammo from "ammojs-typed";
 import { Component } from "the-world-engine";
 import { MMDAnimationHelper, MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 
@@ -27,6 +28,10 @@ export class MmdPlayer extends Component {
     private _useGrant = true;
     private _usePhysics = true;
 
+    private _currentMesh: THREE.SkinnedMesh|null = null;
+    private _currentCamera: THREE.Camera|null = null;
+    private _currentAudio: THREE.Audio|null = null;
+
     public awake(): void {
         this._helper
             .enable("ik", this._useIk)
@@ -44,6 +49,30 @@ export class MmdPlayer extends Component {
         this._model!.updateWorldMatrix();
     }
 
+    public onDestroy(): void {
+        const mmdPhysics = this.mixer?.physics;
+        const world = mmdPhysics?.world as unknown as Ammo.btDiscreteDynamicsWorld;
+
+        if (mmdPhysics && world) {
+            const bodies = mmdPhysics.bodies;
+            for (let i = 0; i < bodies.length; i++) {
+                world.removeRigidBody(bodies[i].body as Ammo.btRigidBody);
+            }
+
+            const constraints = mmdPhysics.constraints;
+            for (let i = 0; i < constraints.length; i++) {
+                world.removeConstraint(constraints[i].params as Ammo.btTypedConstraint);
+            }
+        }
+
+        if (this._currentMesh) this._helper.remove(this._currentMesh);
+        if (this._currentCamera) this._helper.remove(this._currentCamera);
+        if (this._currentAudio) this._helper.remove(this._currentAudio);
+        this._currentMesh = null;
+        this._currentCamera = null;
+        this._currentAudio = null;
+    }
+
     public play(
         model: SkinnedMeshContainer,
         modelParams: MMDAnimationModelParameter,
@@ -56,6 +85,8 @@ export class MmdPlayer extends Component {
             throw new Error("model is null");
         }
 
+        this.onDestroy();
+
         this._helper.add(model.object3D, modelParams as MMDAnimationHelperAddParameter);
 
         if (camera && cameraParams) {
@@ -63,6 +94,10 @@ export class MmdPlayer extends Component {
         }
 
         if (audio) this._helper.add(audio, { delayTime: audioDelay });
+
+        this._currentMesh = model.object3D;
+        this._currentCamera = camera ?? null;
+        this._currentAudio = audio ?? null;
 
         this._isPlaying = true;
         this._elapsedTime = 0;
