@@ -1,4 +1,15 @@
-import { BlendFunction, BloomEffect, DepthOfFieldEffect, EdgeDetectionMode, EffectPass, SMAAEffect, SMAAPreset, TextureEffect, ToneMappingEffect, ToneMappingMode } from "postprocessing";
+import { 
+    BlendFunction,
+    BloomEffect,
+    DepthOfFieldEffect,
+    EdgeDetectionMode,
+    EffectPass,
+    SMAAEffect,
+    SMAAPreset,
+    TextureEffect,
+    ToneMappingEffect,
+    ToneMappingMode
+} from "postprocessing";
 import {
     Bootstrapper as BaseBootstrapper,
     Camera,
@@ -35,6 +46,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
             return renderer;
         });
 
@@ -162,7 +174,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
-                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.7), object3D => object3D.dispose());
+                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6), object3D => object3D.dispose());
                 }))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 70))

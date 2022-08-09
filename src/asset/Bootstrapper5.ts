@@ -49,7 +49,8 @@ export class Bootstrapper5 extends BaseBootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.toneMappingExposure = 1.5;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMappingExposure = 1.1;
             return renderer;
         });
 
@@ -174,7 +175,8 @@ export class Bootstrapper5 extends BaseBootstrapper {
                             blendFunction: BlendFunction.SKIP,
                             texture: (depthOfFieldEffect as any).cocTexture
                         });
-                        cocTextureEffect;
+                        depthOfFieldEffect.dispose();
+                        cocTextureEffect.dispose();
 
                         const smaaEffect = new SMAAEffect({
                             preset: SMAAPreset.HIGH,
@@ -185,7 +187,7 @@ export class Bootstrapper5 extends BaseBootstrapper {
                             height: 480,
                             kernelSize: KernelSize.LARGE,
                             density: 0.7,
-                            decay: 0.92,
+                            decay: 0.9,
                             weight: 0.3,
                             exposure: 0.3,
                             samples: 60,
@@ -212,7 +214,7 @@ export class Bootstrapper5 extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
-                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.7), object3D => object3D.dispose());
+                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());
                 }))
 
             .withChild(instantiater.buildGameObject("directional-light", sunVector)

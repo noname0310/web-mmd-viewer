@@ -47,6 +47,7 @@ export class Bootstrapper6 extends BaseBootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.toneMappingExposure = 1.5;
             return renderer;
         });
