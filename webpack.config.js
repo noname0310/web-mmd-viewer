@@ -10,6 +10,9 @@ module.exports = {
         filename: "bundle.js",
         assetModuleFilename: "assets/[name][ext]"
     },
+    optimization: {
+        minimize: false
+    },
     module: {
         rules: [{
                 test: /\.tsx?$/,

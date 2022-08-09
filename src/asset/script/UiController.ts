@@ -5,13 +5,19 @@ export class UiController extends Component {
     private _switchCameraButton: HTMLButtonElement|null = null;
     private _fullscreenButton: HTMLButtonElement|null = null;
 
+    private _ready = false;
+
     public onEnable(): void {
+        this._ready = true;
+
         this._switchCameraButton?.addEventListener("click", this.onSwitchCameraButtonClick);
         this._fullscreenButton?.addEventListener("click", this.onFullscreenButtonClick);
         document.addEventListener("fullscreenchange", this.onFullscreenChange);
     }
 
     public onDisable(): void {
+        this._ready = true;
+        
         this._switchCameraButton?.removeEventListener("click", this.onSwitchCameraButtonClick);
         this._fullscreenButton?.removeEventListener("click", this.onFullscreenButtonClick);
         document.removeEventListener("fullscreenchange", this.onFullscreenChange);
@@ -52,7 +58,7 @@ export class UiController extends Component {
     public set switchCameraButton(value: HTMLButtonElement|null) {
         this._switchCameraButton = value;
 
-        if (value) {
+        if (value && this._ready) {
             value.addEventListener("click", this.onSwitchCameraButtonClick);
         }
     }
@@ -64,7 +70,7 @@ export class UiController extends Component {
     public set fullscreenButton(value: HTMLButtonElement|null) {
         this._fullscreenButton = value;
 
-        if (value) {
+        if (value && this._ready) {
             value.addEventListener("click", this.onFullscreenButtonClick);
         }
     }
