@@ -291,7 +291,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         });
 
                         // const materials = model.material as THREE.Material[];
-                        // for (let i = 0; i < materials.length; i++) {
+                        // for (let i = 0; i < materials.length; ++i) {
                         //     if (materials[i].name == "flooring white") {
                         //         const material = new THREE.MeshStandardMaterial({
                         //             map: new THREE.TextureLoader().load("mmd/water house 20200627/WoodFloor041_8K_Color.jpg", texture => {

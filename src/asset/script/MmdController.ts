@@ -66,7 +66,7 @@ export class MmdController extends Component {
         }
 
         const modelLoaders = this._modelLoaders!;
-        for (let i = 0; i < modelLoaders.length; i++) {
+        for (let i = 0; i < modelLoaders.length; ++i) {
             const modelLoader = modelLoaders[i];
             while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(modelAnimationName)) yield null;
         }
@@ -109,7 +109,7 @@ export class MmdController extends Component {
             }
 
             let endFrame = 0;
-            for (let i = 0; i < mmdPlayerCount; i++) {
+            for (let i = 0; i < mmdPlayerCount; ++i) {
                 const mmdPlayer = mmdPlayers[i];
                 const modelLoader = modelLoaders[i];
                 const model = modelLoader.object3DContainer!;
@@ -133,7 +133,7 @@ export class MmdController extends Component {
                     ]))
                 ]), [
                     (frame: number): void => {
-                        for (let i = 0; i < mmdPlayerCount; i++) {
+                        for (let i = 0; i < mmdPlayerCount; ++i) {
                             mmdPlayers[i].process(frame);
                         }
                     }
@@ -185,7 +185,7 @@ export class MmdController extends Component {
         this._physicsUnitStep = value;
 
         const mmdPlayers = this._mmdPlayers;
-        for (let i = 0; i < mmdPlayers.length; i++) {
+        for (let i = 0; i < mmdPlayers.length; ++i) {
             const mmdPlayer = mmdPlayers[i];
             const mixer = mmdPlayer.mixer;
             if (mixer && mixer.physics) {
@@ -202,7 +202,7 @@ export class MmdController extends Component {
         this._physicsMaximumStepCount = value;
 
         const mmdPlayers = this._mmdPlayers;
-        for (let i = 0; i < mmdPlayers.length; i++) {
+        for (let i = 0; i < mmdPlayers.length; ++i) {
             const mmdPlayer = mmdPlayers[i];
             const mixer = mmdPlayer.mixer;
             if (mixer && mixer.physics) {
@@ -219,7 +219,7 @@ export class MmdController extends Component {
         (this._gravity as WritableVector3).copy(value);
 
         const mmdPlayers = this._mmdPlayers;
-        for (let i = 0; i < mmdPlayers.length; i++) {
+        for (let i = 0; i < mmdPlayers.length; ++i) {
             const mmdPlayer = mmdPlayers[i];
             const mixer = mmdPlayer.mixer;
             if (mixer && mixer.physics) {

@@ -97,7 +97,7 @@ export class GameManagerPrefab extends Prefab {
                     });
 
                     const modelLoaders = this._modelLoaders;
-                    for (let i = 0; i < modelLoaders.length; i++) {
+                    for (let i = 0; i < modelLoaders.length; ++i) {
                         if(modelLoaders[i].ref) {
                             c.addModelLoader(modelLoaders[i].ref!);
 

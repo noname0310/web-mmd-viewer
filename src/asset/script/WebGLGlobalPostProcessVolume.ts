@@ -145,7 +145,7 @@ export class WebGLGlobalPostProcessVolume extends Component {
     private removeAndDisposePasses(effectComposer: EffectComposer, passes: readonly Pass[]): void {
         const startIndex = effectComposer.passes.indexOf(passes[0]);
         if (startIndex !== -1) {
-            for (let i = 0; i < passes.length; i++) {
+            for (let i = 0; i < passes.length; ++i) {
                 effectComposer.removePass(passes[i]);
                 passes[i].dispose();
             }
@@ -157,7 +157,7 @@ export class WebGLGlobalPostProcessVolume extends Component {
         if (0 < oldPasses.length) {
             startIndex = effectComposer.passes.indexOf(oldPasses[0]);
             if (startIndex !== -1) {
-                for (let i = 0; i < oldPasses.length; i++) {
+                for (let i = 0; i < oldPasses.length; ++i) {
                     effectComposer.removePass(oldPasses[i]);
                     oldPasses[i].dispose();
                 }
@@ -165,11 +165,11 @@ export class WebGLGlobalPostProcessVolume extends Component {
         }
 
         if (startIndex === -1) {
-            for (let i = 0; i < newPasses.length; i++) {
+            for (let i = 0; i < newPasses.length; ++i) {
                 effectComposer.addPass(newPasses[i]);
             }
         } else {
-            for (let i = 0; i < newPasses.length; i++) {
+            for (let i = 0; i < newPasses.length; ++i) {
                 effectComposer.addPass(newPasses[i], startIndex + i);
             }
         }

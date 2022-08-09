@@ -188,7 +188,7 @@ export class Bootstrapper2 extends BaseBootstrapper {
                         object3D.geometry.dispose();
                         if (object3D.material instanceof Array) {
                             const materials = object3D.material;
-                            for (let i = 0; i < materials.length; i++) {
+                            for (let i = 0; i < materials.length; ++i) {
                                 materials[i].dispose();
                             }
                         } else {

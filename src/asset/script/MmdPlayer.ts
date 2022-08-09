@@ -55,12 +55,12 @@ export class MmdPlayer extends Component {
 
         if (mmdPhysics && world) {
             const bodies = mmdPhysics.bodies;
-            for (let i = 0; i < bodies.length; i++) {
+            for (let i = 0; i < bodies.length; ++i) {
                 world.removeRigidBody(bodies[i].body as Ammo.btRigidBody);
             }
 
             const constraints = mmdPhysics.constraints;
-            for (let i = 0; i < constraints.length; i++) {
+            for (let i = 0; i < constraints.length; ++i) {
                 world.removeConstraint(constraints[i].params as Ammo.btTypedConstraint);
             }
         }
@@ -108,7 +108,7 @@ export class MmdPlayer extends Component {
 
         if (modelParams.animation instanceof Array) {
             const animations = modelParams.animation as THREE.AnimationClip[];
-            for (let i = 0; i < animations.length; i++) {
+            for (let i = 0; i < animations.length; ++i) {
                 duration = Math.max(duration, animations[i].duration);
             }
         } else {
@@ -118,7 +118,7 @@ export class MmdPlayer extends Component {
         if (camera && cameraParams) {
             if (cameraParams.animation instanceof Array) {
                 const animations = cameraParams.animation as THREE.AnimationClip[];
-                for (let i = 0; i < animations.length; i++) {
+                for (let i = 0; i < animations.length; ++i) {
                     duration = Math.max(duration, animations[i].duration);
                 }
             } else {
