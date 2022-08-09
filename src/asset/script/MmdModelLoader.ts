@@ -94,7 +94,20 @@ export class MmdModelLoader extends Component {
         onComplete?: (object: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>) => void
     ): CoroutineIterator {
         let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>|null = null;
-        this._loader.load(url, object => model = object, onProgress);
+        this._loader.load(url, object => {
+            model = object;
+            if (!this.exists || !this.gameObject.activeInHierarchy) {
+                model.geometry.dispose();
+                if (model.material instanceof Array) {
+                    const materials = model.material;
+                    for (let i = 0; i < materials.length; ++i) {
+                        materials[i].dispose();
+                    }
+                } else {
+                    model.material.dispose();
+                }
+            }
+        }, onProgress);
         yield new WaitUntil(() => model !== null);
         this._object3DContainer!.setObject3D(model!, object3D => {
             object3D.geometry.dispose();
