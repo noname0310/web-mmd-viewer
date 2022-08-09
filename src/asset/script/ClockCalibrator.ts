@@ -61,11 +61,11 @@ export class ClockCalibrator implements IAnimationClock {
             const performanceNow = performance.now() / 1000;
             const performanceDelta = (performanceNow - this._lastNow) * this.playbackRate;
 
-            if (1 < performanceDelta) {
+            if (0.5 < performanceDelta) {
                 return this._lastCurrentTime;
             } else {
                 return this._lastCurrentTime + performanceDelta;
             }
         }
-    }    
+    }
 }
