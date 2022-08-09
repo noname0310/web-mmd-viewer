@@ -34,6 +34,7 @@ import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
 import { WebGLGlobalPostProcessVolume } from "./script/WebGLGlobalPostProcessVolume";
+import FabricNormal from "./texture/fabric02.png";
 import WaterHouseMatcap from "./texture/waterhouse_matcap.png";
 import WaterNormal from "./texture/waternormals.jpg";
 
@@ -87,6 +88,10 @@ export class Bootstrapper3 extends BaseBootstrapper {
                     waterHouseEnv.mapping = THREE.EquirectangularReflectionMapping;
                     waterHouseEnv.encoding = THREE.sRGBEncoding;
                     c.addAsset("waterHouseEnv", waterHouseEnv);
+
+                    const fabricNormal = new THREE.TextureLoader().load(FabricNormal);
+                    fabricNormal.wrapS = fabricNormal.wrapT = THREE.RepeatWrapping;
+                    c.addAsset("fabricNormal", fabricNormal);
                 })
                 .getComponent(GlobalAssetManager, assetManager))
                 
@@ -362,7 +367,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         {
                             const eyes = converted.find(m => m.name === "eyes")!;
                             eyes.roughness = 0;
-                            eyes.metalness = 0.5;
+                            eyes.metalness = 0.4;
                             eyes.envMapIntensity = 0.5;
                             eyes.lightMapIntensity = 0.5;
                             eyes.envMap?.dispose();
@@ -391,6 +396,18 @@ export class Bootstrapper3 extends BaseBootstrapper {
                             shoes.envMap?.dispose();
                             shoes.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
                             shoes.needsUpdate = true;
+                        }
+                        {
+                            const clothes = ["Derss", "Top"];
+                            for (let i = 0; i < clothes.length; ++i) {
+                                const cloth = converted.find(m => m.name === clothes[i])!;
+                                cloth.roughness = 0.8;
+                                cloth.normalMapType = THREE.TangentSpaceNormalMap;
+                                cloth.normalMap?.dispose();
+                                cloth.normalMap = assetManager.ref!.assets.get("fabricNormal") as THREE.Texture;
+                                cloth.normalScale = new THREE.Vector2(1, 1);
+                                cloth.needsUpdate = true;
+                            }
                         }
                         
                         (globalThis as any).materials = converted;

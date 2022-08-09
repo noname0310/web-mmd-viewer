@@ -15,6 +15,8 @@ export class MmdMaterialUtils {
         material.map = mmdMaterial.map;
         material.envMap = mmdMaterial.envMap;
         material.envMapIntensity = 0;
+        material.normalMap?.dispose();
+        material.normalMap = null;
         material.roughness = 1;
         material.metalness = 0;
         material.needsUpdate = true;
