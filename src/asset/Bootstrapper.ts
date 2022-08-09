@@ -105,10 +105,12 @@ export class Bootstrapper extends BaseBootstrapper {
                 .getComponent(AudioPlayer, audioPlayer))
             
             .withChild(instantiater.buildGameObject("ambient-light")
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3)))
+                .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
+                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());
+                }))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 100))
-                .withComponent(Object3DContainer, c => {
+                .withComponent(Object3DContainer<THREE.DirectionalLight>, c => {
                     const light = new THREE.DirectionalLight(0xffffff, 0.5);
                     light.castShadow = true;
                     light.shadow.mapSize.width = 1024 * 8;
@@ -120,11 +122,11 @@ export class Bootstrapper extends BaseBootstrapper {
                     light.shadow.camera.right = radius;
                     light.shadow.camera.near = 0.1;
                     light.shadow.camera.far = 400;
-                    c.object3D = light;
+                    c.setObject3D(light, object3D => object3D.dispose());
                 })
-                .withComponent(Object3DContainer, c => {
+                .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                     c.enabled = false;
-                    c.object3D = new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera);
+                    c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
                     c.startCoroutine(function*(): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();
@@ -136,26 +138,41 @@ export class Bootstrapper extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("polar-grid-helper")
                 .active(false)
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.GridHelper(30, 10)))
+                .withComponent(Object3DContainer<THREE.GridHelper>, c => {
+                    c.setObject3D(new THREE.GridHelper(30, 10), object3D => {
+                        object3D.geometry.dispose();
+                        if (object3D.material instanceof Array) {
+                            const materials = object3D.material;
+                            for (let i = 0; i < materials.length; i++) {
+                                materials[i].dispose();
+                            }
+                        } else {
+                            object3D.material.dispose();
+                        }
+                    });
+                }))
 
             .withChild(instantiater.buildGameObject("ground",
                 undefined,
                 new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
             )
                 .active(false)
-                .withComponent(Object3DContainer, c => {
+                .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
                         new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(50, 50, 50)" })
                     );
                     mesh.receiveShadow = true;
-                    c.object3D = mesh;
+                    c.setObject3D(mesh, object3D => {
+                        object3D.geometry.dispose();
+                        object3D.material.dispose();
+                    });
                 }))
 
             
             .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(1000))
                 .active(false)
-                .withComponent(Object3DContainer, c => {
+                .withComponent(Object3DContainer<Sky>, c => {
                     const sky = new Sky();
                     
                     const sun = new THREE.Vector3();
@@ -188,7 +205,10 @@ export class Bootstrapper extends BaseBootstrapper {
                     }
 
                     guiChanged();
-                    c.object3D = sky;
+                    c.setObject3D(sky, object3D => {
+                        object3D.geometry.dispose();
+                        object3D.material.dispose();
+                    });
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, -30))

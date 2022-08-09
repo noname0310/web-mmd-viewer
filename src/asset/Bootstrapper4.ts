@@ -1,7 +1,6 @@
 import {
     Bootstrapper as BaseBootstrapper,
     Camera,
-    CameraContainer,
     CameraType,
     CoroutineIterator,
     Object3DContainer,
@@ -12,6 +11,7 @@ import {
 } from "the-world-engine";
 import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
+import { FullScreenQuad } from "three/examples/jsm/postprocessing/EffectComposer";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
@@ -110,39 +110,71 @@ export class Bootstrapper4 extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
-                    c.initializer((composer, scene, camera, screen): void => {
+                    c.initializer((scene, camera, screen) => {
                         const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
-                        composer.addPass(adaptiveTonemappingPass);
 
                         const smaaPass = new SMAAPass(screen.width, screen.height);
-                        composer.addPass(smaaPass);
 
                         const ssaoPass = new SSAOPass(scene, camera);
                         ssaoPass.kernelRadius = 8;
-                        composer.addPass(ssaoPass);
 
                         const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 0.4, 0.4, 0.9);
-                        composer.addPass(bloomPass);
 
                         bokehPass = new BokehPass(scene, camera, {
                             aperture: 0,
                             maxblur: 0.02
                         });
-                        composer.addPass(bokehPass);
                         (globalThis as any).bokehPass = bokehPass;
                         
-                        (c.engine.cameraContainer as CameraContainer).onCameraChanged.addListener(camera => {
-                            ssaoPass.camera = (camera as any).threeCamera;
-                            bokehPass!.camera = (camera as any).threeCamera;
-                        });
+                        return [[adaptiveTonemappingPass, smaaPass, ssaoPass, bloomPass, bokehPass], (): void => {
+                            adaptiveTonemappingPass.dispose();
+
+                            smaaPass.edgesRT.dispose();
+                            smaaPass.weightsRT.dispose();
+                            smaaPass.areaTexture.dispose();
+                            smaaPass.searchTexture.dispose();
+                            smaaPass.materialEdges.dispose();
+                            smaaPass.materialWeights.dispose();
+                            smaaPass.materialBlend.dispose();
+                            (smaaPass.fsQuad as FullScreenQuad).dispose();
+
+                            ssaoPass.beautyRenderTarget.dispose();
+                            ssaoPass.normalRenderTarget.dispose();
+                            ssaoPass.ssaoRenderTarget.dispose();
+                            ssaoPass.blurRenderTarget.dispose();
+                            ssaoPass.ssaoMaterial.dispose();
+                            ssaoPass.normalMaterial.dispose();
+                            ssaoPass.blurMaterial.dispose();
+                            ssaoPass.depthRenderMaterial.dispose();
+                            ssaoPass.copyMaterial.dispose();
+                            (ssaoPass.fsQuad as FullScreenQuad).dispose();
+
+                            bloomPass.renderTargetsHorizontal.forEach(rt => rt.dispose());
+                            bloomPass.renderTargetsVertical.forEach(rt => rt.dispose());
+                            bloomPass.renderTargetBright.dispose();
+                            bloomPass.materialHighPassFilter.dispose();
+                            bloomPass.separableBlurMaterials.forEach(m => m.dispose());
+                            bloomPass.compositeMaterial.dispose();
+                            bloomPass.materialCopy.dispose();
+                            bloomPass.basic.dispose();
+                            (bloomPass.fsQuad as FullScreenQuad).dispose();
+
+                            bokehPass!.renderTargetColor.dispose();
+                            bokehPass!.renderTargetDepth.dispose();
+                            bokehPass!.materialDepth.dispose();
+                            bokehPass!.materialBokeh.dispose();
+                            (bokehPass!.fsQuad as FullScreenQuad).dispose();
+                        }];
                     });
                 }))
             
             .withChild(instantiater.buildGameObject("ambient-light")
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5)))
+                .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
+                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5), object3D => object3D.dispose());
+                }))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-5, 30, 100))
-                .withComponent(Object3DContainer, c => {
+                .withComponent(Object3DContainer<THREE.DirectionalLight>, c => {
                     const light = new THREE.DirectionalLight(0xffffff, 0.2);
                     light.castShadow = true;
                     light.shadow.mapSize.width = 1024 * 8;
@@ -154,11 +186,11 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     light.shadow.camera.right = radius;
                     light.shadow.camera.near = 0.1;
                     light.shadow.camera.far = 400;
-                    c.object3D = light;
+                    c.setObject3D(light, object3D => object3D.dispose());
                 })
-                .withComponent(Object3DContainer, c => {
+                .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                     c.enabled = false;
-                    c.object3D = new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera);
+                    c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
                     c.startCoroutine(function*(): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();
@@ -170,20 +202,35 @@ export class Bootstrapper4 extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("polar-grid-helper")
                 .active(false)
-                .withComponent(Object3DContainer, c => c.object3D = new THREE.GridHelper(30, 10)))
+                .withComponent(Object3DContainer<THREE.GridHelper>, c => {
+                    c.setObject3D(new THREE.GridHelper(30, 10), object3D => {
+                        object3D.geometry.dispose();
+                        if (object3D.material instanceof Array) {
+                            const materials = object3D.material;
+                            for (let i = 0; i < materials.length; i++) {
+                                materials[i].dispose();
+                            }
+                        } else {
+                            object3D.material.dispose();
+                        }
+                    });
+                }))
 
             .withChild(instantiater.buildGameObject("ground",
                 undefined,
                 new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
             )
                 .active(false)
-                .withComponent(Object3DContainer, c => {
+                .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
                         new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(50, 50, 50)" })
                     );
                     mesh.receiveShadow = true;
-                    c.object3D = mesh;
+                    c.setObject3D(mesh, object3D => {
+                        object3D.geometry.dispose();
+                        object3D.material.dispose();
+                    });
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-stage",

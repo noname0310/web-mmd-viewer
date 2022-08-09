@@ -96,7 +96,16 @@ export class MmdModelLoader extends Component {
         let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>|null = null;
         this._loader.load(url, object => model = object, onProgress);
         yield new WaitUntil(() => model !== null);
-        this._object3DContainer!.object3D = model;
+        this._object3DContainer!.setObject3D(model!, object3D => {
+            object3D.geometry.dispose();
+            if (object3D.material instanceof Array) {
+                for (let i = 0; i < object3D.material.length; ++i) {
+                    object3D.material[i].dispose();
+                }
+            } else {
+                object3D.material.dispose();
+            }
+        });
         onComplete?.(model!);
     }
 
