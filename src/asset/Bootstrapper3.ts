@@ -1,6 +1,7 @@
 import { 
     BlendFunction,
     BloomEffect,
+    BrightnessContrastEffect,
     DepthOfFieldEffect,
     EdgeDetectionMode,
     EffectPass,
@@ -184,8 +185,13 @@ export class Bootstrapper3 extends BaseBootstrapper {
                             averageLuminance: 0.01,
                             adaptationRate: 1.0
                         });
+
+                        const contrastEffect = new BrightnessContrastEffect({
+                            brightness: -0.05,
+                            contrast: 0.25
+                        });
                         
-                        const effectPass = new EffectPass(camera, bloomEffect, depthOfFieldEffect, cocTextureEffect, smaaEffect, toneMappingEffect);
+                        const effectPass = new EffectPass(camera, bloomEffect, depthOfFieldEffect, cocTextureEffect, smaaEffect, toneMappingEffect, contrastEffect);
                         
                         return [[effectPass]];
                     });
