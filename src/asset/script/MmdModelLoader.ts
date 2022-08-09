@@ -2,6 +2,8 @@ import { Component, Coroutine, CoroutineIterator, EventContainer, IEventContaine
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
+import { MmdMaterialUtils, MMDToonMaterial } from "./MmdMaterialUtils";
+
 export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>;
 
 export class MmdModelLoader extends Component {
@@ -10,6 +12,7 @@ export class MmdModelLoader extends Component {
     private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
     private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(objectType: "model"|"animation", event: ProgressEvent<EventTarget>) => void>();
+    private readonly _onDisposeObject3DEvent = new EventContainer<(object3D: THREE.SkinnedMesh) => void>();
 
     private _animationLoadingCoroutines: Coroutine[] = [];
 
@@ -106,6 +109,7 @@ export class MmdModelLoader extends Component {
                 } else {
                     model.material.dispose();
                 }
+                MmdMaterialUtils.disposeTexture(model.material as MMDToonMaterial);
             }
         }, onProgress);
         yield new WaitUntil(() => model !== null);
@@ -117,7 +121,9 @@ export class MmdModelLoader extends Component {
                 }
             } else {
                 object3D.material.dispose();
+                MmdMaterialUtils.disposeTexture(object3D.material as MMDToonMaterial);
             }
+            this._onDisposeObject3DEvent.invoke(object3D);
         });
         onComplete?.(model!);
     }
@@ -160,5 +166,9 @@ export class MmdModelLoader extends Component {
 
     public get onProgress(): IEventContainer<(objectType: "model"|"animation", event: ProgressEvent<EventTarget>) => void> {
         return this._onProgressEvent;
+    }
+
+    public get onDisposeObject3D(): IEventContainer<(object3D: THREE.SkinnedMesh) => void> {
+        return this._onDisposeObject3DEvent;
     }
 }

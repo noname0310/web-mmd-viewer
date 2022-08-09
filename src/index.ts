@@ -65,7 +65,7 @@ function startGame(): void {
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        runGame(Bootstrapper5);
+        runGame(Bootstrapper3);
     });
 }
 

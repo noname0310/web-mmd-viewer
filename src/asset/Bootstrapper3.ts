@@ -27,11 +27,14 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { GlobalAssetManager } from "./script/GlobalAssetManager";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
+import { MmdMaterialUtils, MMDToonMaterial } from "./script/MmdMaterialUtils";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
 import { WebGLGlobalPostProcessVolume } from "./script/WebGLGlobalPostProcessVolume";
+import WaterHouseMatcap from "./texture/waterhouse_matcap.png";
 import WaterNormal from "./texture/waternormals.jpg";
 
 export class Bootstrapper3 extends BaseBootstrapper {
@@ -65,6 +68,8 @@ export class Bootstrapper3 extends BaseBootstrapper {
         
         let depthOfFieldEffect: DepthOfFieldEffect|null = null;
 
+        const assetManager = new PrefabRef<GlobalAssetManager>();
+
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
                 .withCamera(camera)
@@ -75,6 +80,15 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .make())
+
+            .withChild(instantiater.buildGameObject("asset-manager")
+                .withComponent(GlobalAssetManager, c => {
+                    const waterHouseEnv = new THREE.TextureLoader().load(WaterHouseMatcap);
+                    waterHouseEnv.mapping = THREE.EquirectangularReflectionMapping;
+                    waterHouseEnv.encoding = THREE.sRGBEncoding;
+                    c.addAsset("waterHouseEnv", waterHouseEnv);
+                })
+                .getComponent(GlobalAssetManager, assetManager))
                 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
@@ -88,7 +102,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 .withComponent(OrbitControls, c => {
                     c.enabled = true;
                     c.target = new THREE.Vector3(0, 14, 0);
-                    c.minDistance = 20;
+                    c.minDistance = 3;
                     c.maxDistance = 100;
                     c.enableDamping = false;
                 })
@@ -302,44 +316,19 @@ export class Bootstrapper3 extends BaseBootstrapper {
                             }
                         });
 
-                        // const materials = model.material as THREE.Material[];
-                        // for (let i = 0; i < materials.length; ++i) {
-                        //     if (materials[i].name == "flooring white") {
-                        //         const material = new THREE.MeshStandardMaterial({
-                        //             map: new THREE.TextureLoader().load("mmd/water house 20200627/WoodFloor041_8K_Color.jpg", texture => {
-                        //                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                        //                 texture.repeat.set(0.1, 0.1);
-                        //             }),
-                        //             aoMap: new THREE.TextureLoader().load("mmd/water house 20200627/WoodFloor041_8K_AmbientOcclusion.jpg", texture => {
-                        //                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                        //                 texture.repeat.set(0.1, 0.1);
-                        //             }),
-                        //             //aoMapIntensity?: number | undefined;
-                        //             normalMap: new THREE.TextureLoader().load("mmd/water house 20200627/WoodFloor041_8K_Normal.jpg", texture => {
-                        //                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                        //                 texture.repeat.set(0.1, 0.1);
-                        //             }),
-                        //             //normalMapType?: NormalMapTypes | undefined;
-                        //             //normalScale?: Vector2 | undefined;
-                        //             displacementMap: new THREE.TextureLoader().load("mmd/water house 20200627/WoodFloor041_8K_Displacement.jpg", texture => {
-                        //                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                        //                 texture.repeat.set(0.1, 0.1);
-                        //             }),
-                        //             // displacementScale?: number | undefined;
-                        //             // displacementBias?: number | undefined;
-                        //             roughnessMap: new THREE.TextureLoader().load("mmd/water house 20200627/WoodFloor041_8K_Roughness.jpg", texture => {
-                        //                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                        //                 texture.repeat.set(0.1, 0.1);
-                        //             })
-                        //             // metalnessMap?: Texture | null | undefined;
-                        //             // alphaMap?: Texture | null | undefined;
-                        //             // fog?: boolean | undefined;
-                        //         });
-                        //         materials[i] = material;
-                        //     }
-                        // }
-
                         c.object3DContainer!.updateWorldMatrix();
+
+                        const materials = (model.material instanceof Array ? model.material : [model.material]);
+                        for (let i = 0; i < materials.length; ++i) {
+                            materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                        }
+                    });
+
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
                     });
                 }))
 
@@ -363,7 +352,57 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         modelLoadingText.innerText = "model loaded";
                         model.castShadow = true;
                         model.frustumCulled = false;
+
+                        const materials = (model.material instanceof Array ? model.material : [model.material]);
+                        for (let i = 0; i < materials.length; ++i) {
+                            materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                        }
+
+                        const converted = materials as THREE.MeshStandardMaterial[];
+                        {
+                            const eyes = converted.find(m => m.name === "eyes")!;
+                            eyes.roughness = 0;
+                            eyes.metalness = 0.5;
+                            eyes.envMapIntensity = 0.5;
+                            eyes.lightMapIntensity = 0.5;
+                            eyes.envMap?.dispose();
+                            eyes.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
+                            eyes.needsUpdate = true;
+                        }
+                        {
+                            const hairs = ["Hair01", "Hair02", "Hair03"];
+                            for (let i = 0; i < hairs.length; ++i) {
+                                const hair = converted.find(m => m.name === hairs[i])!;
+                                hair.roughness = 0.2;
+                                hair.metalness = 0.0;
+                                hair.envMapIntensity = 0.1;
+                                hair.lightMapIntensity = 0.9;
+                                hair.envMap?.dispose();
+                                hair.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
+                                hair.needsUpdate = true;
+                            }
+                        }
+                        {
+                            const shoes = converted.find(m => m.name === "Shoes")!;
+                            shoes.roughness = 0;
+                            shoes.metalness = 0.6;
+                            shoes.envMapIntensity = 0.8;
+                            shoes.lightMapIntensity = 0.2;
+                            shoes.envMap?.dispose();
+                            shoes.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
+                            shoes.needsUpdate = true;
+                        }
+                        
+                        (globalThis as any).materials = converted;
                     });
+
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
+                    });
+
                     c.asyncLoadAnimation("animation1", "mmd/flos/flos_model.vmd", () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
