@@ -159,7 +159,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             bloomPass.basic.dispose();
                             (bloomPass.fsQuad as FullScreenQuad).dispose();
 
-                            bokehPass!.renderTargetColor.dispose();
+                            bokehPass!.renderTargetColor?.dispose();
                             bokehPass!.renderTargetDepth.dispose();
                             bokehPass!.materialDepth.dispose();
                             bokehPass!.materialBokeh.dispose();
