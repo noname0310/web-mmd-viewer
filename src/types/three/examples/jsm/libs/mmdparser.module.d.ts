@@ -9969,12 +9969,21 @@ export type Vmd = {
     cameras: {
         frameNum: number;
         distance: number;
-        position: number[];
-        rotation: number[];
+        position: [number, number, number];
+        rotation: [number, number, number];
         interpolation: [
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number
+            //x_ax, x_bx, x_ay, x_by
+            number, number, number, number,
+            //y_ax, y_bx, y_ay, y_by
+            number, number, number, number,
+            //z_ax, z_bx, z_ay, z_by
+            number, number, number, number,
+            //rot_ax, rot_bx, rot_ay, rot_by
+            number, number, number, number,
+            //distance_ax, distance_bx, distance_ay, distance_by
+            number, number, number, number,
+            //angle_ax, angle_bx, angle_ay, angle_by
+            number, number, number, number
         ]
         fov: number;
         perspective: number;
