@@ -136,7 +136,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                             }
                         });
 
-                        c.asyncLoadAnimation("animation1", "mmd/flos/flos_camera_sampled.vmd", () => {
+                        c.asyncLoadAnimation("animation1", "mmd/flos/flos_camera_mod2.vmd", () => {
                             cameraLoadingText.innerText = "camera loaded";
                         });
                     })
