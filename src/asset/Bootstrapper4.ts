@@ -125,7 +125,6 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             aperture: 0,
                             maxblur: 0.02
                         });
-                        (globalThis as any).bokehPass = bokehPass;
                         
                         return [[adaptiveTonemappingPass, smaaPass, ssaoPass, bloomPass, bokehPass], (): void => {
                             adaptiveTonemappingPass.dispose();

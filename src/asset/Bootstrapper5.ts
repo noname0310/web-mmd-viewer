@@ -194,7 +194,6 @@ export class Bootstrapper5 extends BaseBootstrapper {
                             samples: 60,
                             clampMax: 1.0
                         });
-                        (globalThis as any).godRaysEffect = godRaysEffect;
 
                         smaaEffect.edgeDetectionMaterial.edgeDetectionThreshold = 0.01;
 
