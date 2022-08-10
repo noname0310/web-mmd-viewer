@@ -8,8 +8,9 @@ export namespace MMDParser {
  * Simple CharsetEncoder.
  */
 export class CharsetEncoder {
-    s2u(uint8Array: Uint8Array): string;
-    s2uTable: {
+    public s2u(uint8Array: Uint8Array): string;
+    public s2uTable: {
+        /* eslint-disable @typescript-eslint/naming-convention */
         0: number;
         1: number;
         2: number;
@@ -9616,6 +9617,7 @@ export class CharsetEncoder {
         64585: number;
         64586: number;
         64587: number;
+        /* eslint-enable @typescript-eslint/naming-convention */
     };
 }
 
@@ -9992,12 +9994,12 @@ export type Vpd = {
  * @author takahiro / https://github.com/takahirox
  */
 export class Parser {
-    parsePmd(buffer: ArrayBufferLike, leftToRight: boolean): Pmd;
-    parsePmx(buffer: ArrayBufferLike, leftToRight: boolean): Pmx;
-    parseVmd(buffer: ArrayBufferLike, leftToRight: boolean): Vmd;
-    parseVpd(text: string, leftToRight: boolean): Vpd;
-    mergeVmds(vmds: Vmd[]): Vmd;
-    leftToRightModel(model: Pmd|Pmx): void;
-    leftToRightVmd(vmd: Vmd): void;
-    leftToRightVpd(vpd: Vpd): void;
+    public parsePmd(buffer: ArrayBufferLike, leftToRight: boolean): Pmd;
+    public parsePmx(buffer: ArrayBufferLike, leftToRight: boolean): Pmx;
+    public parseVmd(buffer: ArrayBufferLike, leftToRight: boolean): Vmd;
+    public parseVpd(text: string, leftToRight: boolean): Vpd;
+    public mergeVmds(vmds: Vmd[]): Vmd;
+    public leftToRightModel(model: Pmd|Pmx): void;
+    public leftToRightVmd(vmd: Vmd): void;
+    public leftToRightVpd(vpd: Vpd): void;
 }
