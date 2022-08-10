@@ -151,10 +151,10 @@ export class Bootstrapper3 extends BaseBootstrapper {
                     c.initializer((_scene, camera, _screen) => {
                         const bloomEffect = new BloomEffect({
                             blendFunction: BlendFunction.ADD,
-                            luminanceThreshold: 0.8,
-                            luminanceSmoothing: 0.3,
-                            intensity: 0.6,
-                            kernelSize: 16
+                            luminanceThreshold: 0.55,
+                            luminanceSmoothing: 0.7,
+                            intensity: 0.8,
+                            kernelSize: 8
                         });
 
                         depthOfFieldEffect = new DepthOfFieldEffect(camera, {
@@ -431,8 +431,6 @@ export class Bootstrapper3 extends BaseBootstrapper {
                                 cloth.needsUpdate = true;
                             }
                         }
-                        
-                        (globalThis as any).materials = converted;
                     });
 
                     c.onDisposeObject3D.addListener(mesh => {
