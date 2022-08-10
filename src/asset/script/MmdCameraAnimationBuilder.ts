@@ -106,10 +106,10 @@ export class MmdCameraAnimationBuilder {
         }
 
         const tracks: THREE.KeyframeTrack[] = [];
-        tracks.push(this.createTrack(".parent.parent.position", THREE.VectorKeyframeTrack, times, centerKeyframes, centerKeyframeInterpolations));
-        tracks.push(this.createTrack(".parent.parent.quaternion", THREE.QuaternionKeyframeTrack, times, quaternionKeyframes, quaternionKeyframeInterpolations));
-        tracks.push(this.createTrack(".position.z", THREE.VectorKeyframeTrack, times, distanceKeyframes, distanceKeyframeInterpolations));
-        tracks.push(this.createTrack(".fov", THREE.NumberKeyframeTrack, times, fovKeyframes, fovKeyframeInterpolations));
+        tracks.push(this.createTrack(".position", THREE.VectorKeyframeTrack, times, centerKeyframes, centerKeyframeInterpolations));
+        tracks.push(this.createTrack(".quaternion", THREE.QuaternionKeyframeTrack, times, quaternionKeyframes, quaternionKeyframeInterpolations));
+        tracks.push(this.createTrack("innerCamera.position", THREE.VectorKeyframeTrack, times, distanceKeyframes, distanceKeyframeInterpolations));
+        tracks.push(this.createTrack("innerCamera.fov", THREE.NumberKeyframeTrack, times, fovKeyframes, fovKeyframeInterpolations));
 
         return new THREE.AnimationClip(vmd.metadata.name, -1, tracks);
     }

@@ -145,7 +145,16 @@ export class Bootstrapper3 extends BaseBootstrapper {
                     })
                     .getComponent(Camera, camera)
                     .getComponent(MmdCameraLoader, mmdCameraLoader)
-                    .getComponent(AudioPlayer, audioPlayer)))
+                    .getComponent(AudioPlayer, audioPlayer)
+                    
+                    .withChild(instantiater.buildGameObject("innerCamera")
+                        .withComponent(Camera, c => {
+                            c.near = 1;
+                            c.far = 1000;
+                            c.priority = 3;
+                            c.cameraType = CameraType.Perspective;
+                            c.backgroundColor = Color.fromHex("#a9caeb");
+                        }))))
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
