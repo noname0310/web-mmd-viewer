@@ -39,5 +39,14 @@ export class MmdMaterialUtils {
     public static disposeConvertedMaterialTexture(material: THREE.MeshStandardMaterial): void {
         material.map?.dispose();
         material.envMap?.dispose();
+        material.normalMap?.dispose();
+        material.roughnessMap?.dispose();
+        material.metalnessMap?.dispose();
+        material.alphaMap?.dispose();
+        material.aoMap?.dispose();
+        material.emissiveMap?.dispose();
+        material.bumpMap?.dispose();
+        material.displacementMap?.dispose();
+        material.lightMap?.dispose();
     }
 }
