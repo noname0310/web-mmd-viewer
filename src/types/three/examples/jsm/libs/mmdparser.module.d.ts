@@ -9971,7 +9971,11 @@ export type Vmd = {
         distance: number;
         position: number[];
         rotation: number[];
-        interpolation: number[];
+        interpolation: [
+            number, number, number, number, number, number, number, number,
+            number, number, number, number, number, number, number, number,
+            number, number, number, number, number, number, number, number
+        ]
         fov: number;
         perspective: number;
     }[];
