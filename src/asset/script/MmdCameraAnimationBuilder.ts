@@ -1,6 +1,7 @@
+import { Camera } from "the-world-engine";
 import { MMDParser } from "three/examples/jsm/libs/mmdparser.module";
 import * as THREE from "three/src/Three";
-import { AnimationClip, AnimationKey, AnimationTrack, InferedAnimationClipBindData, InterpolationKind } from "tw-engine-498tokio";
+import { AnimationClip, AnimationClipBindInfo, AnimationClipInstance, AnimationKey, AnimationTrack, InferedAnimationClipBindData, InterpolationKind } from "tw-engine-498tokio";
 
 type CameraTrackData = [
     {
@@ -23,6 +24,8 @@ type CameraTrackData = [
 
 export type MmdCameraAnimationClip = AnimationClip<CameraTrackData, InferedAnimationClipBindData<CameraTrackData>>;
 
+export type MmdCameraAnimationClipInstance = AnimationClipInstance<CameraTrackData, InferedAnimationClipBindData<CameraTrackData>>;
+
 // export class CubicBezierInterpolator implements IAnimationInterpolator<number> {
 //     public lerp(): number {
 //         throw new Error("Method not implemented.");
@@ -38,6 +41,7 @@ export type MmdCameraAnimationClip = AnimationClip<CameraTrackData, InferedAnima
 export class MmdCameraAnimationBuilder {
     private readonly _parser = new MMDParser.Parser();
     private readonly _fileLoader = new THREE.FileLoader();
+    public frameRate = 60;
 
     public loadAnimationFromUrl(
         url: string,
@@ -71,27 +75,24 @@ export class MmdCameraAnimationBuilder {
 
         for (let i = 0, il = frames.length; i < il; i++) {
             const frame = frames[i];
+            const frameNumber = frame.frameNum / 30 * this.frameRate;
 
             {
                 const aCenter = frame.position;
                 center.set(aCenter[0], aCenter[1], aCenter[2]);
 
                 centerKeyframes.push(AnimationKey.createRefType(
-                    frame.frameNum,
+                    frameNumber,
                     center,
-                    InterpolationKind.Cubic,
-                    new THREE.Vector3(),
-                    new THREE.Vector3()
+                    InterpolationKind.Step
                 ));
             }
 
             {
                 distanceKeyframes.push(AnimationKey.createValueType(
-                    frame.frameNum,
+                    frameNumber,
                     frame.distance,
-                    InterpolationKind.Cubic,
-                    0,
-                    0
+                    InterpolationKind.Step
                 ));
             }
 
@@ -101,22 +102,25 @@ export class MmdCameraAnimationBuilder {
                 quaternion.setFromEuler(euler);
 
                 quaternionKeyframes.push(AnimationKey.createRefType(
-                    frame.frameNum,
+                    frameNumber,
                     quaternion,
-                    InterpolationKind.Cubic,
-                    new THREE.Quaternion(),
-                    new THREE.Quaternion()
+                    InterpolationKind.Step
                 ));
             }
 
             {
                 fovKeyframes.push(AnimationKey.createValueType(
-                    frame.frameNum,
+                    frameNumber,
                     frame.fov,
                     InterpolationKind.Linear
                 ));
             }
         }
+
+        centerKeyframes.sort((a, b) => a.frame - b.frame);
+        distanceKeyframes.sort((a, b) => a.frame - b.frame);
+        quaternionKeyframes.sort((a, b) => a.frame - b.frame);
+        fovKeyframes.sort((a, b) => a.frame - b.frame);
 
         return new AnimationClip([
             {
@@ -136,5 +140,30 @@ export class MmdCameraAnimationBuilder {
                 track: AnimationTrack.createScalarTrack(fovKeyframes)
             }
         ]);
+    }
+
+    public static createInstance(camera: Camera, animation: MmdCameraAnimationClip): MmdCameraAnimationClipInstance {
+        const cameraCenterPositon = camera.transform.parent!.localPosition;
+        const cameraPosition = camera.transform.localPosition;
+        const cameraRotation = camera.transform.parent!.localRotation;
+
+        return animation.createInstance(new AnimationClipBindInfo([
+            {
+                trackName: "center",
+                target: position => cameraCenterPositon.copy(position)
+            },
+            {
+                trackName: "distance",
+                target: value => cameraPosition.z = -value
+            },
+            {
+                trackName: "quaternion",
+                target: quaternion => cameraRotation.copy(quaternion)
+            },
+            {
+                trackName: "fov",
+                target: fov => camera.fov = fov
+            }
+        ]));
     }
 }

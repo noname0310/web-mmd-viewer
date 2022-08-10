@@ -1,13 +1,14 @@
-import { Camera, Component, Coroutine, CoroutineIterator, DuckThreeCamera, EventContainer, IEventContainer, WaitUntil } from "the-world-engine";
-import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
+import { Camera, Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, WaitUntil } from "the-world-engine";
+
+import { MmdCameraAnimationBuilder, MmdCameraAnimationClip } from "./MmdCameraAnimationBuilder";
 
 export class MmdCameraLoader extends Component {
     public override readonly requiredComponents = [Camera];
 
-    private readonly _loader = new MMDLoader();
+    private readonly _loader = new MmdCameraAnimationBuilder();
 
-    private _camera: THREE.Camera|null = null;
-    private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
+    private _camera: Camera|null = null;
+    private readonly _animations: Map<string, MmdCameraAnimationClip> = new Map();
     private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(event: ProgressEvent<EventTarget>) => void>();
 
@@ -23,7 +24,7 @@ export class MmdCameraLoader extends Component {
     public start(): void {
         const camera = this.gameObject.getComponent(Camera)!;
 
-        this._camera = DuckThreeCamera.createInterface(camera);
+        this._camera = camera;
         
         const initLoadAnimationFunc = this._initLoadAnimationFunc;
         for (let i = 0; i < initLoadAnimationFunc.length; ++i) {
@@ -41,7 +42,7 @@ export class MmdCameraLoader extends Component {
     public asyncLoadAnimation(
         animationName: string,
         url: string,
-        onComplete?: (animation: THREE.AnimationClip) => void
+        onComplete?: (animation: MmdCameraAnimationClip) => void
     ): void {
         this._loadingAnimations.add(animationName);
         
@@ -65,12 +66,12 @@ export class MmdCameraLoader extends Component {
         animationName: string,
         url: string|string[],
         onProgress?: (event: ProgressEvent<EventTarget>) => void,
-        onComplete?: (animation: THREE.AnimationClip) => void
+        onComplete?: (animation: MmdCameraAnimationClip) => void
     ): CoroutineIterator {
         if (this._camera === null) throw new Error("Unreachable");
 
-        let animation: THREE.AnimationClip|null = null;
-        this._loader.loadAnimation(url as any, this._camera, object => animation = object as THREE.AnimationClip, onProgress);
+        let animation: MmdCameraAnimationClip|null = null;
+        this._loader.loadAnimationFromUrl(url as any, object => animation = object, onProgress);
         yield new WaitUntil(() => animation !== null);
         this._animations.set(animationName, animation!);
 
@@ -83,11 +84,11 @@ export class MmdCameraLoader extends Component {
         return this._loadingAnimations.has(animationName);
     }
 
-    public get threeCamera(): THREE.Camera|null {
+    public get threeCamera(): Camera|null {
         return this._camera;
     }
 
-    public get animations(): ReadonlyMap<string, THREE.AnimationClip> {
+    public get animations(): ReadonlyMap<string, MmdCameraAnimationClip> {
         return this._animations;
     }
 
