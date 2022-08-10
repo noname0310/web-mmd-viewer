@@ -19,7 +19,13 @@
         "isolatedModules": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "paths": {
+            "*": [
+                "src/types/*"
+            ]
+        }
     },
     "include": [
       "src"
