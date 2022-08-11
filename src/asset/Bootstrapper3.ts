@@ -265,6 +265,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                             fog: c.engine.scene.unsafeGetThreeScene().fog !== undefined
                         }
                     );
+                    water.geometry.name = "water-geometry";
 
                     c.setObject3D(water, object3D => {
                         object3D.material.dispose();
@@ -284,6 +285,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 .active(true)
                 .withComponent(Object3DContainer<Sky>, c => {
                     const sky = new Sky();
+                    sky.geometry.name = "sky-geometry";
                     
                     const skyUniforms = sky.material.uniforms;
                     
@@ -333,6 +335,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
 
                     c.asyncLoadModel("mmd/water house 20200627/water house.pmx", model => {
                         modelLoadingText.innerText = "stage loaded";
+                        model.geometry.name = c.gameObject.name + "-geometry";
                         model.castShadow = true;
                         model.receiveShadow = true;
                         model.frustumCulled = false;
@@ -377,6 +380,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                     });
                     c.asyncLoadModel("mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx", model => {
                         modelLoadingText.innerText = "model loaded";
+                        model.geometry.name = c.gameObject.name + "-geometry";
                         model.castShadow = true;
                         model.frustumCulled = false;
 
