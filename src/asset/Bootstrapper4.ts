@@ -9,6 +9,7 @@ import {
     WebGLGlobalPostProcessVolume,
     WebGLRendererLoader
 } from "the-world-engine";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
 import { SAOPass } from "three/examples/jsm/postprocessing/SAOPass";
@@ -18,11 +19,14 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { GlobalAssetManager } from "./script/GlobalAssetManager";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
+import { MmdMaterialUtils, MMDToonMaterial } from "./script/MmdMaterialUtils";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { PostProcessDisposer } from "./script/PostProcessDisposer";
 import { Ui } from "./script/Ui";
+import EntranceHallHdr from "./texture/entrance_hall_1k.hdr";
 
 export class Bootstrapper4 extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -49,6 +53,8 @@ export class Bootstrapper4 extends BaseBootstrapper {
         const audioPlayer = new PrefabRef<AudioPlayer>();
 
         let bokehPass: BokehPass | null = null;
+
+        const assetManager = new PrefabRef<GlobalAssetManager>();
         
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -60,6 +66,16 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .make())
+
+                
+            .withChild(instantiater.buildGameObject("asset-manager")
+                .withComponent(GlobalAssetManager, c => {
+                    const env = new RGBELoader().load(EntranceHallHdr, () => {/*do nothing*/});
+                    env.mapping = THREE.EquirectangularReflectionMapping;
+                    env.encoding = THREE.sRGBEncoding;
+                    c.addAsset("env", env);
+                })
+                .getComponent(GlobalAssetManager, assetManager))
             
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
@@ -285,8 +301,32 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         });
 
                         const materials = model!.material instanceof Array ? model!.material : [model!.material];
+
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i];
+                            const name = material.name;
+                            if (name !== "金1" &&
+                            name !== "金の三つ編み　1" &&
+                            name !== "金の三つ編み　2" &&
+                            name !== "宝石" &&
+                            name !== "金の王冠") continue;
+
+                            console.log(assetManager.ref!.assets.get("env"));
+                            const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                            standardMaterial.roughness = 0;
+                            standardMaterial.metalness = 0.5;
+                            standardMaterial.envMap = assetManager.ref!.assets.get("env") as THREE.Texture;
+                            standardMaterial.envMapIntensity = 1;
+                        }
+
                         const eyeball = materials.find(m => m.name === "白い目")! as THREE.MeshStandardMaterial;
                         eyeball.emissive = new THREE.Color(0.5, 0.5, 0.5);
+                    });
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
                     });
                     c.asyncLoadAnimation("animation1", 
                         [
