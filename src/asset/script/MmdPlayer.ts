@@ -1,8 +1,9 @@
-import Ammo from "ammojs-typed";
 import { Component } from "the-world-engine";
-import { MMDAnimationHelper, MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
+import { MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 
+import { MMDAnimationHelperOverride } from "./MMDAnimationHelperOverride";
 import { SkinnedMeshContainer } from "./MmdModelLoader";
+import { MMdPhysicsOverride } from "./MMDPhysicsOverride";
 
 export interface MMDAnimationModelParameter extends Omit<MMDAnimationHelperAddParameter, "gravity"> {
     animation: THREE.AnimationClip | THREE.AnimationClip[];
@@ -15,7 +16,7 @@ export interface MMDAnimationCameraParameter extends
 }
 
 export class MmdPlayer extends Component {
-    private readonly _helper = new MMDAnimationHelper();
+    private readonly _helper = new MMDAnimationHelperOverride();
 
     private _isPlaying = false;
     private _elapsedTime = 0;
@@ -51,18 +52,8 @@ export class MmdPlayer extends Component {
 
     public onDestroy(): void {
         const mmdPhysics = this.mixer?.physics;
-        const world = mmdPhysics?.world as unknown as Ammo.btDiscreteDynamicsWorld;
-
-        if (mmdPhysics && world) {
-            const bodies = mmdPhysics.bodies;
-            for (let i = 0; i < bodies.length; ++i) {
-                world.removeRigidBody(bodies[i].body as Ammo.btRigidBody);
-            }
-
-            const constraints = mmdPhysics.constraints;
-            for (let i = 0; i < constraints.length; ++i) {
-                world.removeConstraint(constraints[i].params as Ammo.btTypedConstraint);
-            }
+        if (mmdPhysics) {
+            (mmdPhysics as MMdPhysicsOverride).dispose();
         }
 
         if (this._currentMesh) this._helper.remove(this._currentMesh);
