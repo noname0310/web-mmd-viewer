@@ -314,8 +314,22 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
                             standardMaterial.roughness = 0;
                             standardMaterial.metalness = 0.9;
+                            standardMaterial.envMap?.dispose();
                             standardMaterial.envMap = assetManager.ref!.assets.get("env") as THREE.Texture;
-                            standardMaterial.envMapIntensity = 1;
+                            standardMaterial.envMapIntensity = 0.5;
+                            standardMaterial.lightMapIntensity = 0.5;
+                        }
+                        
+                        {
+                            const eyeMatIndex = materials.findIndex(m => m.name === "eyes");
+                            const eyes = MmdMaterialUtils.convert(materials[eyeMatIndex] as MMDToonMaterial);
+                            eyes.roughness = 0;
+                            eyes.metalness = 0.8;
+                            eyes.envMapIntensity = 0.5;
+                            eyes.lightMapIntensity = 0.5;
+                            eyes.envMap?.dispose();
+                            eyes.envMap = assetManager.ref!.assets.get("env") as THREE.Texture;
+                            eyes.needsUpdate = true;
                         }
 
                         const eyeball = materials.find(m => m.name === "白い目")! as THREE.MeshStandardMaterial;
