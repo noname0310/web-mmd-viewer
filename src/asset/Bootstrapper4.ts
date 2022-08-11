@@ -311,10 +311,9 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             name !== "宝石" &&
                             name !== "金の王冠") continue;
 
-                            console.log(assetManager.ref!.assets.get("env"));
                             const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
                             standardMaterial.roughness = 0;
-                            standardMaterial.metalness = 0.5;
+                            standardMaterial.metalness = 0.9;
                             standardMaterial.envMap = assetManager.ref!.assets.get("env") as THREE.Texture;
                             standardMaterial.envMapIntensity = 1;
                         }
