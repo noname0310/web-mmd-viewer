@@ -332,6 +332,21 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             eyes.needsUpdate = true;
                         }
 
+                        {
+                            const hairs = ["髪　01", "髪　02", "髪　03"];
+                            for (let i = 0; i < hairs.length; ++i) {
+                                const hairIndex = materials.findIndex(m => m.name === hairs[i]);
+                                const hair = MmdMaterialUtils.convert(materials[hairIndex] as MMDToonMaterial);
+                                hair.roughness = 0.2;
+                                hair.metalness = 0.0;
+                                hair.envMapIntensity = 0.1;
+                                hair.lightMapIntensity = 0.9;
+                                hair.envMap?.dispose();
+                                hair.envMap = assetManager.ref!.assets.get("env") as THREE.Texture;
+                                hair.needsUpdate = true;
+                            }
+                        }
+
                         const eyeball = materials.find(m => m.name === "白い目")! as THREE.MeshStandardMaterial;
                         eyeball.emissive = new THREE.Color(0.5, 0.5, 0.5);
                     });
