@@ -6,6 +6,7 @@ export type MMDToonMaterial = THREE.Material & {
     envMap: THREE.Texture | null;
     gradientMap: THREE.Texture | null;
     matcap: THREE.Texture | null;
+    emissive?: THREE.ColorRepresentation;
 };
 
 export class MmdMaterialUtils {
@@ -19,6 +20,7 @@ export class MmdMaterialUtils {
         material.normalMap = null;
         material.roughness = 1;
         material.metalness = 0;
+        material.emissive = new THREE.Color(0x000000);
         material.needsUpdate = true;
 
         mmdMaterial.dispose();
@@ -37,6 +39,7 @@ export class MmdMaterialUtils {
     }
 
     public static disposeConvertedMaterialTexture(material: THREE.MeshStandardMaterial): void {
+        if (!material.isMeshStandardMaterial) return;
         material.map?.dispose();
         material.envMap?.dispose();
         material.normalMap?.dispose();
