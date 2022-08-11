@@ -14,6 +14,7 @@ import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/Adapt
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
 import { SAOPass } from "three/examples/jsm/postprocessing/SAOPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
+import { SSRPass } from "three/examples/jsm/postprocessing/SSRPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
@@ -33,7 +34,10 @@ export class Bootstrapper4 extends BaseBootstrapper {
         this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);
         this.setting.render.webGLRenderer(() => {
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            const renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                precision: "highp"
+            });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -55,6 +59,8 @@ export class Bootstrapper4 extends BaseBootstrapper {
         let bokehPass: BokehPass | null = null;
 
         const assetManager = new PrefabRef<GlobalAssetManager>();
+
+        const ssrPassSelects: THREE.Mesh[] = [];
         
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -82,7 +88,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
                     c.near = 1;
-                    c.far = 1500;
+                    c.far = 500;
                     c.priority = -1;
                 })
                 .withComponent(OrbitControls, c => {
@@ -100,7 +106,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.cameraType = CameraType.Perspective;
                     c.fov = 60;
                     c.near = 1;
-                    c.far = 1500;
+                    c.far = 500;
                 })
                 .withComponent(MmdCameraLoader, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -128,6 +134,18 @@ export class Bootstrapper4 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.initializer((scene, camera, screen) => {
+                        const ssrPass = new SSRPass({
+                            renderer: c.engine.webGL!.webglRenderer!,
+                            scene: scene,
+                            camera: camera,
+                            width: screen.width,
+                            height: screen.height,
+                            groundReflector: null,
+                            selects: ssrPassSelects,
+                            isPerspectiveCamera: true,
+                            isBouncing: false
+                        });
+
                         const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
                         adaptiveTonemappingPass.setMiddleGrey(8);
 
@@ -145,7 +163,8 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             maxblur: 0.02
                         });
                         
-                        return [[adaptiveTonemappingPass, smaaPass, aoPass, bloomPass, bokehPass], (): void => {
+                        return [[ssrPass, adaptiveTonemappingPass, smaaPass, aoPass, bloomPass, bokehPass], (): void => {
+                            PostProcessDisposer.disposePass(ssrPass);
                             PostProcessDisposer.disposePass(adaptiveTonemappingPass);
                             PostProcessDisposer.disposePass(smaaPass);
                             PostProcessDisposer.disposePass(aoPass);
@@ -256,6 +275,8 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         modelLoadingText.innerText = "stage2 loaded";
                         model.receiveShadow = true;
                         model.castShadow = false;
+                        model.position.z += 1;
+                        c.object3DContainer!.updateWorldMatrix();
                     });
                 })
                 .withComponent(MmdModelLoader, c => {
@@ -273,6 +294,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         modelLoadingText.innerText = "stage3 loaded";
                         model.receiveShadow = true;
                         model.castShadow = false;
+                        ssrPassSelects.push(model);
                     });
                 }))
 
@@ -301,15 +323,16 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         });
 
                         const materials = model!.material instanceof Array ? model!.material : [model!.material];
-
+                        
                         for (let i = 0; i < materials.length; ++i) {
                             const material = materials[i];
                             const name = material.name;
                             if (name !== "金1" &&
                             name !== "金の三つ編み　1" &&
                             name !== "金の三つ編み　2" &&
-                            name !== "宝石" &&
-                            name !== "金の王冠") continue;
+                            name !== "金の王冠" &&
+                            name !== "金　3" &&
+                            name !== "ボタン") continue;
 
                             const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
                             standardMaterial.roughness = 0;
@@ -319,12 +342,40 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             standardMaterial.envMapIntensity = 0.5;
                             standardMaterial.lightMapIntensity = 0.5;
                         }
-                        
+
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i];
+                            const name = material.name;
+                            if (name !== "宝石" &&
+                            name !== "銀の王冠" && 
+                            name !== "銀1") continue;
+
+                            const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                            standardMaterial.roughness = 0;
+                            standardMaterial.metalness = 0.4;
+                            standardMaterial.envMap?.dispose();
+                            standardMaterial.envMap = assetManager.ref!.assets.get("env") as THREE.Texture;
+                            standardMaterial.envMapIntensity = 0.5;
+                            standardMaterial.lightMapIntensity = 0.5;
+                        }
+
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i];
+                            const name = material.name;
+                            if (name !== "黒い" &&
+                            name !== "クローク" &&
+                            name !== "ショーツ" &&
+                            name !== "上着" &&
+                            name !== "上着の中") continue;
+
+                            materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                        }
+
                         {
                             const eyeMatIndex = materials.findIndex(m => m.name === "eyes");
-                            const eyes = MmdMaterialUtils.convert(materials[eyeMatIndex] as MMDToonMaterial);
+                            const eyes = materials[eyeMatIndex] = MmdMaterialUtils.convert(materials[eyeMatIndex] as MMDToonMaterial);
                             eyes.roughness = 0;
-                            eyes.metalness = 0.8;
+                            eyes.metalness = 0.3;
                             eyes.envMapIntensity = 0.5;
                             eyes.lightMapIntensity = 0.5;
                             eyes.envMap?.dispose();
