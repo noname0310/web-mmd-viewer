@@ -11,9 +11,8 @@ import {
 } from "the-world-engine";
 import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/AdaptiveToneMappingPass";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
-import { FullScreenQuad } from "three/examples/jsm/postprocessing/EffectComposer";
+import { SAOPass } from "three/examples/jsm/postprocessing/SAOPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
@@ -22,6 +21,7 @@ import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
+import { PostProcessDisposer } from "./script/PostProcessDisposer";
 import { Ui } from "./script/Ui";
 
 export class Bootstrapper4 extends BaseBootstrapper {
@@ -116,8 +116,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
 
                         const smaaPass = new SMAAPass(screen.width, screen.height);
 
-                        const ssaoPass = new SSAOPass(scene, camera);
-                        ssaoPass.kernelRadius = 8;
+                        const ssaoPass = new SAOPass(scene, camera);
 
                         const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 0.4, 0.4, 0.9);
 
@@ -127,52 +126,11 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         });
                         
                         return [[adaptiveTonemappingPass, smaaPass, ssaoPass, bloomPass, bokehPass], (): void => {
-                            adaptiveTonemappingPass.dispose();
-
-                            smaaPass.edgesRT.dispose();
-                            smaaPass.weightsRT.dispose();
-                            smaaPass.areaTexture.dispose();
-                            smaaPass.searchTexture.dispose();
-                            smaaPass.materialEdges.dispose();
-                            smaaPass.materialWeights.dispose();
-                            smaaPass.materialBlend.dispose();
-                            (smaaPass.fsQuad as FullScreenQuad).dispose();
-
-                            ssaoPass.beautyRenderTarget.dispose();
-                            ssaoPass.normalRenderTarget.dispose();
-                            ssaoPass.ssaoRenderTarget.dispose();
-                            ssaoPass.blurRenderTarget.dispose();
-                            ssaoPass.ssaoMaterial.dispose();
-                            ssaoPass.normalMaterial.dispose();
-                            ssaoPass.blurMaterial.dispose();
-                            ssaoPass.depthRenderMaterial.dispose();
-                            ssaoPass.copyMaterial.dispose();
-                            (ssaoPass.fsQuad as FullScreenQuad).dispose();
-
-                            const renderTargetsHorizontal = bloomPass.renderTargetsHorizontal;
-                            for (let i = 0; i < renderTargetsHorizontal.length; ++i) {
-                                renderTargetsHorizontal[i].dispose();
-                            }
-                            const renderTargetsVertical = bloomPass.renderTargetsVertical;
-                            for (let i = 0; i < renderTargetsVertical.length; ++i) {
-                                renderTargetsVertical[i].dispose();
-                            }
-                            bloomPass.renderTargetBright.dispose();
-                            bloomPass.materialHighPassFilter.dispose();
-                            const separableBlurMaterials = bloomPass.separableBlurMaterials;
-                            for (let i = 0; i < separableBlurMaterials.length; ++i) {
-                                separableBlurMaterials[i].dispose();
-                            }
-                            bloomPass.compositeMaterial.dispose();
-                            bloomPass.materialCopy.dispose();
-                            bloomPass.basic.dispose();
-                            (bloomPass.fsQuad as FullScreenQuad).dispose();
-
-                            bokehPass!.renderTargetColor?.dispose();
-                            bokehPass!.renderTargetDepth.dispose();
-                            bokehPass!.materialDepth.dispose();
-                            bokehPass!.materialBokeh.dispose();
-                            (bokehPass!.fsQuad as FullScreenQuad).dispose();
+                            PostProcessDisposer.disposePass(adaptiveTonemappingPass);
+                            PostProcessDisposer.disposePass(smaaPass);
+                            PostProcessDisposer.disposePass(ssaoPass);
+                            PostProcessDisposer.disposePass(bloomPass);
+                            PostProcessDisposer.disposePass(bokehPass!);
                         }];
                     });
                 }))
