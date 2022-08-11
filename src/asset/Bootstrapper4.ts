@@ -113,10 +113,14 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.initializer((scene, camera, screen) => {
                         const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
+                        adaptiveTonemappingPass.setMiddleGrey(8);
 
                         const smaaPass = new SMAAPass(screen.width, screen.height);
 
-                        const ssaoPass = new SAOPass(scene, camera);
+                        const aoPass = new SAOPass(scene, camera);
+                        aoPass.params.saoIntensity = 0.01;
+                        aoPass.params.saoScale = 20;
+                        (globalThis as any).ssaoPass = aoPass;
 
                         const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 0.4, 0.4, 0.9);
 
@@ -125,10 +129,10 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             maxblur: 0.02
                         });
                         
-                        return [[adaptiveTonemappingPass, smaaPass, ssaoPass, bloomPass, bokehPass], (): void => {
+                        return [[adaptiveTonemappingPass, smaaPass, aoPass, bloomPass, bokehPass], (): void => {
                             PostProcessDisposer.disposePass(adaptiveTonemappingPass);
                             PostProcessDisposer.disposePass(smaaPass);
-                            PostProcessDisposer.disposePass(ssaoPass);
+                            PostProcessDisposer.disposePass(aoPass);
                             PostProcessDisposer.disposePass(bloomPass);
                             PostProcessDisposer.disposePass(bokehPass!);
                         }];
@@ -279,6 +283,10 @@ export class Bootstrapper4 extends BaseBootstrapper {
                                 object.frustumCulled = false;
                             }
                         });
+
+                        const materials = model!.material instanceof Array ? model!.material : [model!.material];
+                        const eyeball = materials.find(m => m.name === "白い目")! as THREE.MeshStandardMaterial;
+                        eyeball.emissive = new THREE.Color(0.5, 0.5, 0.5);
                     });
                     c.asyncLoadAnimation("animation1", 
                         [
