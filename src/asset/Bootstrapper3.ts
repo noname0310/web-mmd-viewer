@@ -350,7 +350,8 @@ export class Bootstrapper3 extends BaseBootstrapper {
 
                         const materials = (model.material instanceof Array ? model.material : [model.material]);
                         for (let i = 0; i < materials.length; ++i) {
-                            materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            const material = materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            material.emissive = new THREE.Color(0.1, 0.1, 0.1);
                         }
                     });
 
