@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>threejs webgl - textures - custom mipmap generation</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				padding: 0;
+				overflow: hidden;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				color: #fff;
+			}
+
+			a {
+				color:#80CBC4;
+			}
+
+			#info {
+				position: absolute;
+				padding-top: 10px;
+				width: 100%;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="info">
+			<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - Custom Packed Mipmap Generation by <a href="http://gkjohnson.github.io" target="_blank" rel="noopener">Garrett Johnson</a>
+
+			<br/>
+
+			Utility for generating a custom packed mip map pyramid for a given texture. The built in mip mapping is
+
+			<br/>
+
+			on the left while custom built pyramid is sampled on the right.
+
+		</div>
+
+		<script type="module">
+
+			import * as THREE from '//cdn.skypack.dev/three@0.130.1/build/three.module.js';
+			import { OrbitControls } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/controls/OrbitControls.js';
+
+			import Stats from '//cdn.skypack.dev/three@0.130.1/examples/jsm/libs/stats.module.js';
+			import dat from '//cdn.skypack.dev/dat.gui/build/dat.gui.module.js';
+
+			import { PackedMipMapGenerator } from './src/PackedMipMapGenerator.js';
+			import { mipBiasShader, customSampleShader } from './shaders.js';
+
+			// globals
+			var stats;
+			var params = {
+				linearFilter: false,
+				mipLevel: 0,
+				sampleType: 0,
+				powerOfTwo: false
+			};
+			var camera, scene, renderer, controls;
+			var plane, mipPlane, fullPlane, ogTexture;
+			var nearestTarget, linearTarget;
+
+			init();
+			animate();
+
+			function init() {
+
+				// initialize renderer, scene, camera
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, .1, 2000 );
+				camera.position.set( 0.0, 2, 2 * 3.5 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x0d0912 );
+
+				const offset = .55;
+				plane = new THREE.Mesh( new THREE.PlaneBufferGeometry() );
+				plane.position.y = - offset;
+				plane.position.x = - offset;
+				plane.material = new THREE.ShaderMaterial( mipBiasShader );
+				plane.material.side = THREE.DoubleSide;
+				scene.add( plane );
+
+				mipPlane = new THREE.Mesh( new THREE.PlaneBufferGeometry() );
+				mipPlane.position.y = - offset;
+				mipPlane.position.x = offset;
+				mipPlane.material = new THREE.ShaderMaterial( customSampleShader );
+				mipPlane.material.side = THREE.DoubleSide;
+				scene.add( mipPlane );
+
+				fullPlane = new THREE.Mesh( new THREE.PlaneBufferGeometry() );
+				fullPlane.position.y = offset;
+				fullPlane.scale.x = 1.5;
+				fullPlane.material.side = THREE.DoubleSide;
+				scene.add( fullPlane );
+
+				new THREE.TextureLoader().load('./images/voyager-record-cover.jpg', texture => {
+
+					ogTexture = texture;
+					updateTexture();
+
+				} );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+				document.body.appendChild( renderer.domElement );
+
+				// camera controls
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.minDistance = 1;
+				controls.maxDistance = 200;
+
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				// dat gui
+				var gui = new dat.GUI();
+				gui.add( params, 'mipLevel' ).min( 0 ).max( 15 ).step( 0.01 );
+				gui.add( params, 'linearFilter' ).onChange( () => {
+
+					updateFilter();
+
+				} );
+				gui.add( params, 'powerOfTwo' ).onChange( () => {
+
+					updateTexture();
+					updateFilter();
+
+				} );
+				gui.width = 300;
+
+				gui.open();
+
+			}
+
+			function onWindowResize() {
+
+				var width = window.innerWidth;
+				var height = window.innerHeight;
+
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( width, height );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				stats.begin();
+				render();
+				stats.end();
+
+			}
+
+			function updateFilter() {
+
+				const val = params.linearFilter;
+
+				const planeMat = plane.material;
+				const mipMat = mipPlane.material;
+				if ( val ) {
+
+					planeMat.uniforms.map.value.minFilter = THREE.LinearMipMapLinearFilter;
+					planeMat.uniforms.map.value.needsUpdate = true;
+
+					mipMat.uniforms.map.value = linearTarget.texture;
+					delete mipMat.defines.NEAREST_FILTER;
+					mipMat.needsUpdate = true;
+
+				} else {
+
+
+					planeMat.uniforms.map.value.minFilter = THREE.NearestMipMapNearestFilter;
+					planeMat.uniforms.map.value.needsUpdate = true;
+
+					mipMat.uniforms.map.value = nearestTarget.texture;
+					mipMat.defines.NEAREST_FILTER = '';
+					mipMat.needsUpdate = true;
+
+				}
+
+			}
+
+			function updateTexture() {
+
+				let texture = ogTexture;
+				const forcePowerOfTwo = params.powerOfTwo;
+
+				// TODO: Add an option to enable or not forced power of two and regenerating this texture
+
+				texture.minFilter = THREE.NearestMipMapNearestFilter;
+				texture.generateMipMaps = true;
+
+				// const b = 255;
+				// texture = new THREE.DataTexture(
+				// 	new Uint8Array([
+				// 		b, 0, 0, 0, b, 0, 0, 0, b, b, b, b,
+				// 		0, 0, 0, b, 0, 0, b, b, 0, 0, b, 0,
+				// 		b, b, b, b, 0, b, b, b, 0, 0, b, b,
+				// 		0, 0, 0, b, b, 0, 0, b, b, b, 0, 0
+				// 	]),
+				// 	4, 4, THREE.RGBFormat
+				// );
+				// texture.minFilter = THREE.NearestFilter;
+
+				// const w = 43;
+				// const h = 17;
+				// const b = 255;
+				// texture = new THREE.DataTexture(
+				// 	new Uint8Array( w * h * 3 ),
+				// 	w, h, THREE.RGBFormat
+				// );
+				// texture.minFilter = THREE.NearestFilter;
+
+				// for ( let x = 0; x < w; x ++ ) {
+
+				// 	for ( let y = 0; y < h; y ++ ) {
+
+				// 		const offset = x % 2 === 0.0 ? 1 : 0;
+				// 		const index = ( y * w + x ) * 3;
+				// 		texture.image.data[ index + offset ] = x / w * 255;
+				// 		texture.image.data[ index + 2 ] = y % 2 == 0 ?  255 : 0;
+
+				// 	}
+
+				// }
+
+				plane.material.uniforms.map.value = texture;
+
+				if ( ! linearTarget ) {
+
+					linearTarget = new THREE.WebGLRenderTarget();
+					nearestTarget = new THREE.WebGLRenderTarget();
+					nearestTarget.texture.minFilter = THREE.NearestFilter;
+					nearestTarget.texture.magFilter = THREE.NearestFilter;
+
+				}
+
+				// render mip pyramids
+				const mipMapper = new PackedMipMapGenerator();
+				mipMapper.update( texture, nearestTarget, renderer, forcePowerOfTwo );
+				mipMapper.update( texture, linearTarget, renderer, forcePowerOfTwo );
+
+				// render original targets
+				const copyQuad = mipMapper._copyQuad;
+				copyQuad.material.uniforms.tDiffuse.value = texture;
+				copyQuad.camera.setViewOffset( 1, 1, 0, 0, 1, 1 );
+
+				renderer.setRenderTarget( null );
+
+				// dipose
+				mipMapper.dispose();
+
+				fullPlane.material.map = nearestTarget.texture;
+				fullPlane.material.needsUpdate = true;
+
+				mipPlane.material.uniforms.map.value = nearestTarget.texture;
+
+				if ( forcePowerOfTwo ) {
+
+					mipPlane.material.uniforms.originalSize.value.set(
+						THREE.MathUtils.floorPowerOfTwo( texture.image.width ),
+						THREE.MathUtils.floorPowerOfTwo( texture.image.height )
+					);
+
+				} else {
+
+					mipPlane.material.uniforms.originalSize.value.set(
+						texture.image.width,
+						texture.image.height
+					);
+
+				}
+				mipPlane.material.defines.NEAREST_FILTER = 1;
+				mipPlane.material.needsUpdate = true;
+
+				plane.material.uniforms.map.value = texture;
+
+			}
+
+			function render() {
+
+				plane.material.uniforms.level.value = params.mipLevel;
+				mipPlane.material.uniforms.level.value = params.mipLevel;
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+
+</html>
