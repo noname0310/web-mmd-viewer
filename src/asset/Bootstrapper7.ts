@@ -160,7 +160,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         // ssrPass.stride = 60;
                         (globalThis as any).ssrPass = ssrPass;
 
-                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
+                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(false, 256);
                         adaptiveTonemappingPass.setMiddleGrey(8);
 
                         const smaaPass = new SMAAPass(screen.width, screen.height);
@@ -189,7 +189,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
-                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5), object3D => object3D.dispose());
+                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9), object3D => object3D.dispose());
                 }))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-5, 30, 100))
@@ -271,6 +271,18 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         modelLoadingText.innerText = "stage1 loaded";
                         model.receiveShadow = true;
                         model.castShadow = false;
+
+                        const materials = model!.material instanceof Array ? model!.material : [model!.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            material.emissive = new THREE.Color(0.1, 0.1, 0.1);
+                        }
+                    });
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
                     });
                 })
                 .withComponent(MmdModelLoader, c => {
@@ -287,7 +299,18 @@ export class Bootstrapper7 extends BaseBootstrapper {
                     c.asyncLoadModel("mmd/舞踏会風ステージVer2/タペストリー.pmx", model => {
                         modelLoadingText.innerText = "stage2 loaded";
                         model.receiveShadow = true;
-                        model.castShadow = false;
+
+                        model.castShadow = false; const materials = model!.material instanceof Array ? model!.material : [model!.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            material.emissive = new THREE.Color(0.1, 0.1, 0.1);
+                        }
+                    });
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
                     });
                 })
                 .withComponent(MmdModelLoader, c => {
@@ -305,7 +328,18 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         modelLoadingText.innerText = "stage3 loaded";
                         model.receiveShadow = true;
                         model.castShadow = false;
+                        const materials = model!.material instanceof Array ? model!.material : [model!.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            material.emissive = new THREE.Color(0.1, 0.1, 0.1);
+                        }
                         ssrPassSelects.push(model);
+                    });
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
                     });
                 }))
 
@@ -334,7 +368,10 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         });
 
                         const materials = model!.material instanceof Array ? model!.material : [model!.material];
-                        
+                        for (let i = 0; i < materials.length; ++i) {
+                            materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                        }
+
                         for (let i = 0; i < materials.length; ++i) {
                             const material = materials[i];
                             const name = material.name;
@@ -345,7 +382,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                             name !== "金　3" &&
                             name !== "ボタン") continue;
 
-                            const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                            const standardMaterial = materials[i] as THREE.MeshStandardMaterial;
                             standardMaterial.roughness = 0;
                             standardMaterial.metalness = 0.9;
                             standardMaterial.envMap?.dispose();
@@ -361,7 +398,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                             name !== "銀の王冠" && 
                             name !== "銀1") continue;
 
-                            const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                            const standardMaterial = materials[i] as THREE.MeshStandardMaterial;
                             standardMaterial.roughness = 0;
                             standardMaterial.metalness = 0.4;
                             standardMaterial.envMap?.dispose();
@@ -370,21 +407,21 @@ export class Bootstrapper7 extends BaseBootstrapper {
                             standardMaterial.lightMapIntensity = 0.5;
                         }
 
-                        for (let i = 0; i < materials.length; ++i) {
-                            const material = materials[i];
-                            const name = material.name;
-                            if (name !== "黒い" &&
-                            name !== "クローク" &&
-                            name !== "ショーツ" &&
-                            name !== "上着" &&
-                            name !== "上着の中") continue;
+                        // for (let i = 0; i < materials.length; ++i) {
+                        //     const material = materials[i];
+                        //     const name = material.name;
+                        //     if (name !== "黒い" &&
+                        //     name !== "クローク" &&
+                        //     name !== "ショーツ" &&
+                        //     name !== "上着" &&
+                        //     name !== "上着の中") continue;
 
-                            materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
-                        }
+                        //     materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                        // }
 
                         {
                             const eyeMatIndex = materials.findIndex(m => m.name === "eyes");
-                            const eyes = materials[eyeMatIndex] = MmdMaterialUtils.convert(materials[eyeMatIndex] as MMDToonMaterial);
+                            const eyes = materials[eyeMatIndex] as THREE.MeshStandardMaterial;
                             eyes.roughness = 0;
                             eyes.metalness = 0.3;
                             eyes.envMapIntensity = 0.5;
@@ -398,7 +435,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                             const hairs = ["髪　01", "髪　02", "髪　03"];
                             for (let i = 0; i < hairs.length; ++i) {
                                 const hairIndex = materials.findIndex(m => m.name === hairs[i]);
-                                const hair = MmdMaterialUtils.convert(materials[hairIndex] as MMDToonMaterial);
+                                const hair = materials[hairIndex] as THREE.MeshStandardMaterial;
                                 hair.roughness = 0.2;
                                 hair.metalness = 0.0;
                                 hair.envMapIntensity = 0.1;
@@ -410,7 +447,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         }
 
                         const eyeball = materials.find(m => m.name === "白い目")! as THREE.MeshStandardMaterial;
-                        eyeball.emissive = new THREE.Color(0.4, 0.4, 0.4);
+                        eyeball.emissive = new THREE.Color(0.1, 0.1, 0.1);
                     });
                     c.onDisposeObject3D.addListener(mesh => {
                         const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
