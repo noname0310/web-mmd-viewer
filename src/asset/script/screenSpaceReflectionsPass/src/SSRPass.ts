@@ -149,7 +149,6 @@ export class SSRPass extends Pass {
     public scene: THREE.Scene;
     public camera: THREE.Camera;
     public debug: { display: number; };
-    public enableBlur?: boolean;
     
     private readonly _depthBuffer: WebGLRenderTarget;
     private readonly _depthReplacement: LinearDepthPass;
@@ -567,8 +566,8 @@ export class SSRPass extends Pass {
         resolveUniforms.marchSize.value.set(marchResultsBuffer.width, marchResultsBuffer.height);
         resolveUniforms.blurStride.value = this.blurStride;
 
-        if (this.enableBlur !== Boolean(resolveDefines!.ENABLE_BLUR)) {
-            resolveDefines!.ENABLE_BLUR = this.enableBlur ? 1.0 : 0.0;
+        if (this.useBlur !== Boolean(resolveDefines!.ENABLE_BLUR)) {
+            resolveDefines!.ENABLE_BLUR = this.useBlur ? 1.0 : 0.0;
             resolveMaterial.needsUpdate = true;
         }
 
