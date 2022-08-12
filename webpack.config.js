@@ -2,6 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
     entry: "./src/index.ts",
@@ -11,7 +12,7 @@ module.exports = {
         assetModuleFilename: "assets/[name][ext]"
     },
     optimization: {
-        minimize: false
+        minimize: true
     },
     module: {
         rules: [{
@@ -56,7 +57,8 @@ module.exports = {
         }),
         new CopyWebpackPlugin({
             patterns: [{ from: "mmd", to: "mmd" }]
-        })
+        }),
+        new BundleAnalyzerPlugin()
     ],
     devServer: {
         host: "0.0.0.0",
