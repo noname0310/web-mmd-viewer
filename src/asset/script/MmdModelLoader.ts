@@ -9,12 +9,6 @@ export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.Buf
 export class MmdModelLoader extends Component {
     private readonly _loader = new MMDLoader();
     private _object3DContainer: SkinnedMeshContainer|null = null;
-    private readonly _modelInitialPose: Map<THREE.Object3D, {
-        position: THREE.Vector3;
-        quaternion: THREE.Quaternion;
-        scale: THREE.Vector3;
-    }> = new Map();
-    private readonly _physicsBoneNames = new Set<string>();
     private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
     private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(objectType: "model"|"animation", event: ProgressEvent<EventTarget>) => void>();
@@ -119,24 +113,6 @@ export class MmdModelLoader extends Component {
             }
         }, onProgress);
         yield new WaitUntil(() => model !== null);
-
-        this._modelInitialPose.clear();
-        model!.traverse(object => {
-            this._modelInitialPose.set(object, {
-                position: object.position.clone(),
-                quaternion: object.quaternion.clone(),
-                scale: object.scale.clone()
-            });
-        });
-
-        this._physicsBoneNames.clear();
-        const bonesData = model!.geometry.userData.MMD.bones;
-        for (let i = 0; i < bonesData.length; ++i) {
-            if (0 < bonesData[i].rigidBodyType) {
-                this._physicsBoneNames.add(bonesData[i].name);
-            }
-        }
-
         this._object3DContainer!.setObject3D(model!, object3D => {
             object3D.geometry.dispose();
             if (object3D.material instanceof Array) {
@@ -174,52 +150,6 @@ export class MmdModelLoader extends Component {
 
     public isAnimationLoading(animationName: string): boolean {
         return this._loadingAnimations.has(animationName);
-    }
-
-    public resetModelPose(matrixUpdate = true): void {
-        if (this._object3DContainer!.object3D === null) {
-            throw new Error("Model is not loaded yet.");
-        }
-        
-        this._object3DContainer!.object3D.traverse(object => {
-            const initialPose = this._modelInitialPose.get(object);
-            if (initialPose === undefined) {
-                return;
-            }
-
-            object.position.copy(initialPose.position);
-            object.quaternion.copy(initialPose.quaternion);
-            object.scale.copy(initialPose.scale);
-            if (matrixUpdate) {
-                object.updateMatrix();
-            }
-        });
-
-        this._object3DContainer!.updateWorldMatrix();
-    }
-
-    public resetModelPhysicsPose(matrixUpdate = true): void {
-        if (this._object3DContainer!.object3D === null) {
-            throw new Error("Model is not loaded yet.");
-        }
-        
-        this._object3DContainer!.object3D.traverse(object => {
-            if (!this._physicsBoneNames.has(object.name)) return;
-
-            const initialPose = this._modelInitialPose.get(object);
-            if (initialPose === undefined) {
-                return;
-            }
-
-            object.position.copy(initialPose.position);
-            object.quaternion.copy(initialPose.quaternion);
-            object.scale.copy(initialPose.scale);
-            if (matrixUpdate) {
-                object.updateMatrix();
-            }
-        });
-
-        this._object3DContainer!.updateWorldMatrix();
     }
 
     public get skinnedMesh(): THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>|null {
