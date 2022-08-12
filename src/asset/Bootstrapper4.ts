@@ -409,7 +409,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         }
 
                         const eyeball = materials.find(m => m.name === "白い目")! as THREE.MeshStandardMaterial;
-                        eyeball.emissive = new THREE.Color(0.5, 0.5, 0.5);
+                        eyeball.emissive = new THREE.Color(0.4, 0.4, 0.4);
                     });
                     c.onDisposeObject3D.addListener(mesh => {
                         const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
