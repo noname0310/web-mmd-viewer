@@ -20,6 +20,8 @@ export class GameManagerPrefab extends Prefab {
     private _cameraLoader = new PrefabRef<MmdCameraLoader>();
     private _modelAnimationName = new PrefabRef<string>();
     private _cameraAnimationName = new PrefabRef<string>();
+    private _useIk = new PrefabRef<boolean>(true);
+    private _usePhysics = new PrefabRef<boolean>(true);
 
     private _animationPlayer = new PrefabRef<AnimationSequencePlayer>();
 
@@ -55,6 +57,16 @@ export class GameManagerPrefab extends Prefab {
 
     public withCameraAnimationName(cameraAnimationName: PrefabRef<string>): this {
         this._cameraAnimationName = cameraAnimationName;
+        return this;
+    }
+
+    public withUseIk(useIk: PrefabRef<boolean>): this {
+        this._useIk = useIk;
+        return this;
+    }
+
+    public withUsePhysics(usePhysics: PrefabRef<boolean>): this {
+        this._usePhysics = usePhysics;
         return this;
     }
 
@@ -103,7 +115,8 @@ export class GameManagerPrefab extends Prefab {
 
                             const mmdPlayer = c.gameObject.addComponent(MmdPlayer)!;
                             c.addMmdPlayer(mmdPlayer);
-                            mmdPlayer.usePhysics = true;
+                            mmdPlayer.usePhysics = this._usePhysics.ref!;
+                            mmdPlayer.useIk = this._useIk.ref!;
                         }
                     }
 
