@@ -38,6 +38,12 @@ export class MmdPlayer extends Component {
             .enable("ik", this._useIk)
             .enable("grant", this._useGrant)
             .enable("physics", this._usePhysics);
+
+        this._helper.onBeforePhysics = (mesh): void => {
+            if (!this._useIk) {
+                mesh.updateWorldMatrix(true, true);
+            }
+        };
     }
 
     public update(): void {
