@@ -14,7 +14,7 @@ import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/Adapt
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
 import { SAOPass } from "three/examples/jsm/postprocessing/SAOPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-//import { SSRPass } from "three/examples/jsm/postprocessing/SSRPass";
+import { SSRPass } from "three/examples/jsm/postprocessing/SSRPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
@@ -26,7 +26,7 @@ import { MmdMaterialUtils, MMDToonMaterial } from "./script/MmdMaterialUtils";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { PostProcessDisposer } from "./script/PostProcessDisposer";
-import { SSRPass } from "./script/screenSpaceReflectionsPass/src/SSRPass";
+//import { SSRPass } from "./script/screenSpaceReflectionsPass/src/SSRPass";
 import { Ui } from "./script/Ui";
 import EntranceHallHdr from "./texture/entrance_hall_1k.hdr";
 
@@ -135,7 +135,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.initializer((scene, camera, screen) => {
-                        const ssrPass = new SSRPass(scene, camera/*{
+                        const ssrPass = new SSRPass(/*scene, camera*/ {
                             renderer: c.engine.webGL!.webglRenderer!,
                             scene: scene,
                             camera: camera,
@@ -145,7 +145,16 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             selects: ssrPassSelects,
                             isPerspectiveCamera: true,
                             isBouncing: false
-                        }*/);
+                        });
+                        ssrPass.beautyRenderTarget.depthTexture.dispose();
+                        ssrPass.beautyRenderTarget.depthTexture = new THREE.DepthTexture(screen.width, screen.height);
+                        ssrPass.beautyRenderTarget.depthTexture.type = THREE.FloatType;
+                        ssrPass.beautyRenderTarget.depthTexture.minFilter = THREE.NearestFilter;
+                        ssrPass.beautyRenderTarget.depthTexture.magFilter = THREE.NearestFilter;
+                        // ssrPass.raymarchTargetScale = 1;
+                        // ssrPass.renderTargetScale = 1;
+                        // ssrPass.stride = 60;
+                        (globalThis as any).ssrPass = ssrPass;
 
                         const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
                         adaptiveTonemappingPass.setMiddleGrey(8);
@@ -155,7 +164,6 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         const aoPass = new SAOPass(scene, camera);
                         aoPass.params.saoIntensity = 0.01;
                         aoPass.params.saoScale = 20;
-                        (globalThis as any).ssaoPass = aoPass;
 
                         const bloomPass = new UnrealBloomPass(new THREE.Vector2(screen.width, screen.height), 0.4, 0.4, 0.9);
 
@@ -276,8 +284,6 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         modelLoadingText.innerText = "stage2 loaded";
                         model.receiveShadow = true;
                         model.castShadow = false;
-                        model.position.z += 1;
-                        c.object3DContainer!.updateWorldMatrix();
                     });
                 })
                 .withComponent(MmdModelLoader, c => {
