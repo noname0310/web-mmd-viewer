@@ -1,3 +1,4 @@
+import Ammo from "ammojs-typed";
 import { Component, CoroutineIterator, EventContainer, IEventContainer, ReadonlyVector3, WritableVector3 } from "the-world-engine";
 import { Vector3 } from "three/src/Three";
 import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
@@ -140,11 +141,36 @@ export class MmdController extends Component {
                 ]
             );
         }
+
+        this._animationSequencePlayer?.animationClock?.onJumped.addListener(this.resetPhysics);
         
         this._onLoadCompleteEvent.invoke();
 
         this._animationSequencePlayer!.play();
     }
+
+    private readonly resetPhysics = (): void => {
+        for (let i = 0; i < this._modelLoaders.length; ++i) {
+            this._modelLoaders[i].resetModelPhysicsPose();
+        }
+
+        for (let i = 0; i < this._mmdPlayers.length; ++i) {
+            const mmdPlayer = this._mmdPlayers[i];
+            if (!mmdPlayer.usePhysics) continue;
+
+            const bodies = mmdPlayer.mixer?.physics?.bodies;
+            if (bodies) {
+                const zero = new Ammo.btVector3(0, 0, 0);
+                for (let j = 0; j < bodies.length; ++j) {
+                    bodies[j].updateFromBone();
+                    const body = bodies[j].body as Ammo.btRigidBody;
+                    body.setLinearVelocity(zero);
+                    body.setAngularVelocity(zero);
+                }
+                Ammo.destroy(zero);
+            }
+        }
+    };
     
     public addMmdPlayer(mmdPlayer: MmdPlayer): void {
         this._mmdPlayers.push(mmdPlayer);
