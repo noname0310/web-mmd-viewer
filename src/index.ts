@@ -9,6 +9,7 @@ import { Bootstrapper3 } from "./asset/Bootstrapper3";
 import { Bootstrapper4 } from "./asset/Bootstrapper4";
 import { Bootstrapper5 } from "./asset/Bootstrapper5";
 import { Bootstrapper6 } from "./asset/Bootstrapper6";
+import { Bootstrapper7 } from "./asset/Bootstrapper7";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
@@ -56,16 +57,21 @@ function startGame(): void {
         button6.innerText = "notitle";
         button6.onclick = (): void => runGame(Bootstrapper6);
 
+        const button7 = document.createElement("button");
+        button7.innerText = "conqueror";
+        button7.onclick = (): void => runGame(Bootstrapper7);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
         bootstrapperSelectPanel.appendChild(button4);
         bootstrapperSelectPanel.appendChild(button5);
         bootstrapperSelectPanel.appendChild(button6);
+        bootstrapperSelectPanel.appendChild(button7);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        runGame(Bootstrapper4);
+        runGame(Bootstrapper7);
     });
 }
 
