@@ -13,6 +13,7 @@ export class NormalPass extends ShaderReplacement {
             defines: {
                 // USE_NORMALMAP : '',
                 // TANGENTSPACE_NORMALMAP : '',
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 USE_UV: ""
             },
             uniforms: {
@@ -62,13 +63,13 @@ export class NormalPass extends ShaderReplacement {
         this.useNormalMaps = false;
     }
 
-    public createMaterial(object: THREE.Object3D) {
+    public createMaterial(object: THREE.Object3D): THREE.ShaderMaterial {
         const mat = super.createMaterial(object);
 
         return mat;
     }
 
-    updateUniforms(object: THREE.Object3D, material: THREE.Material, target: THREE.ShaderMaterial) {
+    public updateUniforms(object: THREE.Object3D, material: THREE.Material, target: THREE.ShaderMaterial): void {
 
         super.updateUniforms(object, material, target);
 

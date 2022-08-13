@@ -2,6 +2,7 @@ import { Matrix4, ShaderChunk } from "three/src/Three";
 
 // Modified ShaderChunk.skinning_pars_vertex to handle
 // a second set of bone information from the previou frame
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const prev_skinning_pars_vertex =
 	`
 		#ifdef USE_SKINNING
@@ -33,6 +34,7 @@ export const prev_skinning_pars_vertex =
 
 // Returns the body of the vertex shader for the velocity buffer and
 // outputs the position of the current and last frame positions
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const velocity_vertex =
 	`
 		vec3 transformed;
