@@ -71,7 +71,7 @@ function startGame(): void {
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        runGame(Bootstrapper7);
+        runGame(Bootstrapper2);
     });
 }
 
