@@ -1,13 +1,13 @@
 import { Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, Object3DContainer, WaitUntil } from "the-world-engine";
-import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
+import { MMDLoaderOverride } from "./MmdLoaderOverride";
 import { MmdMaterialUtils, MMDToonMaterial } from "./MmdMaterialUtils";
 
 export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>;
 
 export class MmdModelLoader extends Component {
-    private readonly _loader = new MMDLoader();
+    private readonly _loader = new MMDLoaderOverride();
     private _object3DContainer: SkinnedMeshContainer|null = null;
     private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
     private readonly _loadingAnimations = new Set<string>();

@@ -1,0 +1,475 @@
+import { Vmd } from "three/examples/jsm/libs/mmdparser.module";
+import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
+import * as THREE from "three/src/Three";
+
+export class MMDLoaderOverride extends MMDLoader {
+    public constructor(manager?: THREE.LoadingManager) {
+        super(manager);
+
+        this.animationBuilder = new AnimationBuilder();
+    }
+}
+
+class AnimationBuilder {
+    public build(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
+        // combine skeletal and morph animations
+
+        const tracks = this.buildSkeletalAnimation(vmd, mesh).tracks;
+        const tracks2 = this.buildMorphAnimation(vmd, mesh).tracks;
+
+        for (let i = 0, il = tracks2.length; i < il; ++i) {
+            tracks.push(tracks2[i]);
+        }
+
+        return new THREE.AnimationClip("", - 1, tracks);
+    }
+
+    public buildSkeletalAnimation(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
+        const rigidBodies: { name: string; }[] = mesh.geometry.userData.MMD.rigidBodies;
+        const rigidBodyNameSet = new Set<string>();
+        for (let i = 0, il = rigidBodies.length; i < il; ++i) {
+            rigidBodyNameSet.add(rigidBodies[i].name);
+        }
+
+        function pushInterpolation(array: number[], interpolation: number[], index: number): void {
+            array.push(interpolation[index + 0] / 127); // x1
+            array.push(interpolation[index + 8] / 127); // x2
+            array.push(interpolation[index + 4] / 127); // y1
+            array.push(interpolation[index + 12] / 127); // y2
+        }
+
+        const tracks = [];
+
+        const motions: { [key: string]: Vmd["motions"] } = {};
+        const bones = mesh.skeleton.bones;
+        const boneNameDictionary: { [key: string]: boolean } = {};
+
+        for (let i = 0, il = bones.length; i < il; ++i) {
+            boneNameDictionary[bones[i].name] = true;
+        }
+
+        for (let i = 0; i < vmd.metadata.motionCount; ++i) {
+            const motion = vmd.motions[i];
+            const boneName = motion.boneName;
+
+            if (boneNameDictionary[boneName] === undefined) continue;
+
+            motions[boneName] = motions[boneName] || [];
+            motions[boneName].push(motion);
+        }
+
+        for (const key in motions) {
+            const array = motions[key];
+
+            array.sort(function (a, b) {
+                return a.frameNum - b.frameNum;
+            });
+
+            const times: number[] = [];
+            const positions: number[] = [];
+            const rotations: number[] = [];
+            const pInterpolations: number[] = [];
+            const rInterpolations: number[] = [];
+
+            const basePosition = mesh.skeleton.getBoneByName(key)!.position.toArray();
+
+            for (let i = 0, il = array.length; i < il; ++i) {
+
+                const time = array[i].frameNum / 30;
+                const position = array[i].position;
+                const rotation = array[i].rotation;
+                const interpolation = array[i].interpolation;
+
+                times.push(time);
+
+                for (let j = 0; j < 3; j++) positions.push(basePosition[j] + position[j]);
+                for (let j = 0; j < 4; j++) rotations.push(rotation[j]);
+                for (let j = 0; j < 3; j++) pushInterpolation(pInterpolations, interpolation, j);
+
+                pushInterpolation(rInterpolations, interpolation, 3);
+            }
+
+            const targetName = ".bones[" + key + "]";
+            const boneHasRigidBody = rigidBodyNameSet.has(key);
+
+            tracks.push(this.createTrack(targetName + ".position", THREE.VectorKeyframeTrack, times, positions, pInterpolations, !boneHasRigidBody));
+            tracks.push(this.createTrack(targetName + ".quaternion", THREE.QuaternionKeyframeTrack, times, rotations, rInterpolations, !boneHasRigidBody));
+        }
+
+        return new THREE.AnimationClip("", - 1, tracks);
+    }
+
+    public buildMorphAnimation(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
+        const tracks: THREE.NumberKeyframeTrack[] = [];
+
+        const morphs: { [key: string]: Vmd["morphs"] } = {};
+        const morphTargetDictionary = mesh.morphTargetDictionary!;
+
+        for (let i = 0; i < vmd.metadata.morphCount; ++i) {
+            const morph = vmd.morphs[i];
+            const morphName = morph.morphName;
+
+            if (morphTargetDictionary[morphName] === undefined) continue;
+
+            morphs[morphName] = morphs[morphName] || [];
+            morphs[morphName].push(morph);
+        }
+
+        for (const key in morphs) {
+            const array = morphs[key];
+
+            array.sort(function (a, b) {
+                return a.frameNum - b.frameNum;
+            });
+
+            const times = [];
+            const values = [];
+
+            for (let i = 0, il = array.length; i < il; ++i) {
+                times.push(array[i].frameNum / 30);
+                values.push(array[i].weight);
+            }
+
+            tracks.push(new THREE.NumberKeyframeTrack(".morphTargetInfluences[" + morphTargetDictionary[key] + "]", times, values));
+        }
+
+        return new THREE.AnimationClip("", - 1, tracks);
+    }
+
+    public buildCameraAnimation(vmd: Vmd): THREE.AnimationClip {
+
+        function pushVector3(array: number[], vec: THREE.Vector3): void {
+            array.push(vec.x);
+            array.push(vec.y);
+            array.push(vec.z);
+        }
+
+        function pushQuaternion(array: number[], q: THREE.Quaternion): void {
+            array.push(q.x);
+            array.push(q.y);
+            array.push(q.z);
+            array.push(q.w);
+        }
+
+        function pushInterpolation(array: number[], interpolation: number[], index: number): void {
+            array.push(interpolation[index * 4 + 0] / 127); // x1
+            array.push(interpolation[index * 4 + 1] / 127); // x2
+            array.push(interpolation[index * 4 + 2] / 127); // y1
+            array.push(interpolation[index * 4 + 3] / 127); // y2
+        }
+
+        const cameras = vmd.cameras === undefined ? [] : vmd.cameras.slice();
+
+        cameras.sort(function (a, b) {
+            return a.frameNum - b.frameNum;
+        });
+
+        const times: number[] = [];
+        const centers: number[] = [];
+        const quaternions: number[] = [];
+        const positions: number[] = [];
+        const fovs: number[] = [];
+
+        const cInterpolations: number[] = [];
+        const qInterpolations: number[] = [];
+        const pInterpolations: number[] = [];
+        const fInterpolations: number[] = [];
+
+        const quaternion = new THREE.Quaternion();
+        const euler = new THREE.Euler();
+        const position = new THREE.Vector3();
+        const center = new THREE.Vector3();
+
+        for (let i = 0, il = cameras.length; i < il; ++i) {
+
+            const motion = cameras[i];
+
+            const time = motion.frameNum / 30;
+            const pos = motion.position;
+            const rot = motion.rotation;
+            const distance = motion.distance;
+            const fov = motion.fov;
+            const interpolation = motion.interpolation;
+
+            times.push(time);
+
+            position.set(0, 0, - distance);
+            center.set(pos[0], pos[1], pos[2]);
+
+            euler.set(- rot[0], - rot[1], - rot[2]);
+            quaternion.setFromEuler(euler);
+
+            position.add(center);
+            position.applyQuaternion(quaternion);
+
+            pushVector3(centers, center);
+            pushQuaternion(quaternions, quaternion);
+            pushVector3(positions, position);
+
+            fovs.push(fov);
+
+            for (let j = 0; j < 3; j++) {
+
+                pushInterpolation(cInterpolations, interpolation, j);
+
+            }
+
+            pushInterpolation(qInterpolations, interpolation, 3);
+
+            // use the same parameter for x, y, z axis.
+            for (let j = 0; j < 3; j++) {
+
+                pushInterpolation(pInterpolations, interpolation, 4);
+
+            }
+
+            pushInterpolation(fInterpolations, interpolation, 5);
+
+        }
+
+        const tracks: THREE.KeyframeTrack[] = [];
+
+        // I expect an object whose name 'target' exists under THREE.Camera
+        tracks.push(this.createTrack("target.position", THREE.VectorKeyframeTrack, times, centers, cInterpolations, true));
+
+        tracks.push(this.createTrack(".quaternion", THREE.QuaternionKeyframeTrack, times, quaternions, qInterpolations, true));
+        tracks.push(this.createTrack(".position", THREE.VectorKeyframeTrack, times, positions, pInterpolations, true));
+        tracks.push(this.createTrack(".fov", THREE.NumberKeyframeTrack, times, fovs, fInterpolations, true));
+
+        return new THREE.AnimationClip("", - 1, tracks);
+    }
+
+    private createTrack(
+        node: string,
+        typedKeyframeTrack: typeof THREE.KeyframeTrack,
+        times: number[],
+        values: number[],
+        interpolations: number[],
+        useStepInterpolation: boolean
+    ): THREE.KeyframeTrack {
+        /*
+         * optimizes here not to let KeyframeTrackPrototype optimize
+         * because KeyframeTrackPrototype optimizes times and values but
+         * doesn't optimize interpolations.
+         */
+        if (times.length > 2) {
+            times = times.slice();
+            values = values.slice();
+            interpolations = interpolations.slice();
+
+            const stride = values.length / times.length;
+            const interpolateStride = interpolations.length / times.length;
+
+            let index = 1;
+
+            for (let aheadIndex = 2, endIndex = times.length; aheadIndex < endIndex; aheadIndex++) {
+                for (let i = 0; i < stride; ++i) {
+                    if (values[index * stride + i] !== values[(index - 1) * stride + i] ||
+                        values[index * stride + i] !== values[aheadIndex * stride + i]) {
+
+                        index++;
+                        break;
+                    }
+                }
+
+                if (aheadIndex > index) {
+                    times[index] = times[aheadIndex];
+
+                    for (let i = 0; i < stride; ++i) {
+                        values[index * stride + i] = values[aheadIndex * stride + i];
+                    }
+
+                    for (let i = 0; i < interpolateStride; ++i) {
+                        interpolations[index * interpolateStride + i] = interpolations[aheadIndex * interpolateStride + i];
+                    }
+                }
+            }
+
+            times.length = index + 1;
+            values.length = (index + 1) * stride;
+            interpolations.length = (index + 1) * interpolateStride;
+        }
+
+        const track = new typedKeyframeTrack(node, times, values);
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        (track as any).createInterpolant = function InterpolantFactoryMethodCubicBezier(result: any): CubicBezierStepInterpolation | CubicBezierInterpolation {
+            const interpolationCtor = useStepInterpolation ? CubicBezierStepInterpolation : CubicBezierInterpolation;
+            return new interpolationCtor(this.times, this.values, this.getValueSize(), result, new Float32Array(interpolations));
+        };
+
+        return track;
+    }
+}
+
+class CubicBezierInterpolation extends THREE.Interpolant {
+    public interpolationParams: Float32Array;
+
+    public constructor(parameterPositions: any, sampleValues: any, sampleSize: number, resultBuffer: any, params: Float32Array) {
+        super(parameterPositions, sampleValues, sampleSize, resultBuffer);
+
+        this.interpolationParams = params;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public interpolate_(i1: number, t0: number, t: number, t1: number): number[] {
+        const result = this.resultBuffer;
+        const values = this.sampleValues;
+        const stride = this.valueSize;
+        const params = this.interpolationParams;
+
+        const offset1 = i1 * stride;
+        const offset0 = offset1 - stride;
+
+        const weight1 = (t - t0) / (t1 - t0);
+
+        if (stride === 4) { // Quaternion
+            const x1 = params[i1 * 4 + 0];
+            const x2 = params[i1 * 4 + 1];
+            const y1 = params[i1 * 4 + 2];
+            const y2 = params[i1 * 4 + 3];
+
+            const ratio = this._calculate(x1, x2, y1, y2, weight1);
+
+            THREE.Quaternion.slerpFlat(result, 0, values, offset0, values, offset1, ratio);
+        } else if (stride === 3) { // Vector3
+            for (let i = 0; i !== stride; ++i) {
+                const x1 = params[i1 * 12 + i * 4 + 0];
+                const x2 = params[i1 * 12 + i * 4 + 1];
+                const y1 = params[i1 * 12 + i * 4 + 2];
+                const y2 = params[i1 * 12 + i * 4 + 3];
+
+                const ratio = this._calculate(x1, x2, y1, y2, weight1);
+
+                result[i] = values[offset0 + i] * (1 - ratio) + values[offset1 + i] * ratio;
+            }
+        } else { // Number
+            const x1 = params[i1 * 4 + 0];
+            const x2 = params[i1 * 4 + 1];
+            const y1 = params[i1 * 4 + 2];
+            const y2 = params[i1 * 4 + 3];
+
+            const ratio = this._calculate(x1, x2, y1, y2, weight1);
+
+            result[0] = values[offset0] * (1 - ratio) + values[offset1] * ratio;
+        }
+
+        return result;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private _calculate(x1: number, x2: number, y1: number, y2: number, x: number): number {
+        let c = 0.5;
+        let t = c;
+        let s = 1.0 - t;
+        const loop = 15;
+        const eps = 1e-5;
+        const math = Math;
+
+        let sst3: number, stt3: number, ttt: number;
+
+        for (let i = 0; i < loop; ++i) {
+            sst3 = 3.0 * s * s * t;
+            stt3 = 3.0 * s * t * t;
+            ttt = t * t * t;
+
+            const ft = (sst3 * x1) + (stt3 * x2) + (ttt) - x;
+
+            if (math.abs(ft) < eps) break;
+
+            c /= 2.0;
+
+            t += (ft < 0) ? c : - c;
+            s = 1.0 - t;
+        }
+        return (sst3! * y1) + (stt3! * y2) + ttt!;
+    }
+}
+
+
+class CubicBezierStepInterpolation extends THREE.Interpolant {
+    public interpolationParams: Float32Array;
+
+    public constructor(parameterPositions: any, sampleValues: any, sampleSize: number, resultBuffer: any, params: Float32Array) {
+        super(parameterPositions, sampleValues, sampleSize, resultBuffer);
+
+        this.interpolationParams = params;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public interpolate_(i1: number, t0: number, t: number, t1: number): number[] {
+        const result = this.resultBuffer;
+        const values = this.sampleValues;
+        const stride = this.valueSize;
+        const params = this.interpolationParams;
+
+        const offset1 = i1 * stride;
+        const offset0 = offset1 - stride;
+
+        // No interpolation if next key frame is in one frame in 30fps.
+        // This is from MMD animation spec.
+        // '1.5' is for precision loss. times are Float32 in Three.js Animation system.
+        const weight1 = ((t1 - t0) < 1 / 30 * 1.5) ? 0.0 : (t - t0) / (t1 - t0);
+
+        if (stride === 4) { // Quaternion
+            const x1 = params[i1 * 4 + 0];
+            const x2 = params[i1 * 4 + 1];
+            const y1 = params[i1 * 4 + 2];
+            const y2 = params[i1 * 4 + 3];
+
+            const ratio = this._calculate(x1, x2, y1, y2, weight1);
+
+            THREE.Quaternion.slerpFlat(result, 0, values, offset0, values, offset1, ratio);
+        } else if (stride === 3) { // Vector3
+            for (let i = 0; i !== stride; ++i) {
+                const x1 = params[i1 * 12 + i * 4 + 0];
+                const x2 = params[i1 * 12 + i * 4 + 1];
+                const y1 = params[i1 * 12 + i * 4 + 2];
+                const y2 = params[i1 * 12 + i * 4 + 3];
+
+                const ratio = this._calculate(x1, x2, y1, y2, weight1);
+
+                result[i] = values[offset0 + i] * (1 - ratio) + values[offset1 + i] * ratio;
+            }
+        } else { // Number
+            const x1 = params[i1 * 4 + 0];
+            const x2 = params[i1 * 4 + 1];
+            const y1 = params[i1 * 4 + 2];
+            const y2 = params[i1 * 4 + 3];
+
+            const ratio = this._calculate(x1, x2, y1, y2, weight1);
+
+            result[0] = values[offset0] * (1 - ratio) + values[offset1] * ratio;
+        }
+
+        return result;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private _calculate(x1: number, x2: number, y1: number, y2: number, x: number): number {
+        let c = 0.5;
+        let t = c;
+        let s = 1.0 - t;
+        const loop = 15;
+        const eps = 1e-5;
+        const math = Math;
+
+        let sst3: number, stt3: number, ttt: number;
+
+        for (let i = 0; i < loop; ++i) {
+            sst3 = 3.0 * s * s * t;
+            stt3 = 3.0 * s * t * t;
+            ttt = t * t * t;
+
+            const ft = (sst3 * x1) + (stt3 * x2) + (ttt) - x;
+
+            if (math.abs(ft) < eps) break;
+
+            c /= 2.0;
+
+            t += (ft < 0) ? c : - c;
+            s = 1.0 - t;
+        }
+        return (sst3! * y1) + (stt3! * y2) + ttt!;
+    }
+}

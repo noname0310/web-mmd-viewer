@@ -81,6 +81,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .withUseIk(new PrefabRef(false))
+                .withUsePhysics(new PrefabRef(false))
                 .getAnimationPlayer(animationPlayer)
                 .make())
 
@@ -496,7 +497,8 @@ export class Bootstrapper7 extends BaseBootstrapper {
                     });
                     c.asyncLoadAnimation("animation1", 
                         [
-                            "mmd/conqueror/model.vmd"
+                            "mmd/conqueror/model.vmd",
+                            "mmd/conqueror/physics.vmd"
                         ], () => {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
