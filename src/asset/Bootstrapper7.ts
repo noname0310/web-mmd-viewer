@@ -2,6 +2,7 @@ import {
     Bootstrapper as BaseBootstrapper,
     Camera,
     CameraType,
+    Component,
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
@@ -17,8 +18,10 @@ import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { SSRPass } from "three/examples/jsm/postprocessing/SSRPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
+import { ConquerorLightAnimation } from "./animation/ConquerorLightAnimation";
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { GlobalAssetManager } from "./script/GlobalAssetManager";
 import { MmdCameraLoader } from "./script/MmdCameraLoader";
@@ -62,6 +65,10 @@ export class Bootstrapper7 extends BaseBootstrapper {
         const assetManager = new PrefabRef<GlobalAssetManager>();
 
         const ssrPassSelects: THREE.Mesh[] = [];
+
+        const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
+        const ambientLight = new PrefabRef<Object3DContainer<THREE.HemisphereLight>>();
+        const spotLight = new PrefabRef<Object3DContainer<THREE.SpotLight>>();
         
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -73,8 +80,21 @@ export class Bootstrapper7 extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .withUseIk(new PrefabRef(false))
+                .getAnimationPlayer(animationPlayer)
                 .make())
 
+            .withChild(instantiater.buildGameObject("custom-animation-override")
+                .withComponent(class extends Component {
+                    public awake(): void {
+                        const lightAnimationInstance = ConquerorLightAnimation.sequence.createInstance(
+                            ConquerorLightAnimation.createBindInfo(ambientLight.ref!.object3D!, spotLight.ref!.object3D!)
+                        );
+
+                        animationPlayer.ref!.onAnimationProcess.addListener((frameTime) => {
+                            lightAnimationInstance.process(frameTime);
+                        });
+                    }
+                }))
                 
             .withChild(instantiater.buildGameObject("asset-manager")
                 .withComponent(GlobalAssetManager, c => {
@@ -190,7 +210,8 @@ export class Bootstrapper7 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9), object3D => object3D.dispose());
-                }))
+                })
+                .getComponent(Object3DContainer<THREE.HemisphereLight>, ambientLight))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-5, 30, 100))
                 .withComponent(Object3DContainer<THREE.DirectionalLight>, c => {
@@ -218,6 +239,20 @@ export class Bootstrapper7 extends BaseBootstrapper {
                     }());
                 })
                 .getComponent(Object3DContainer, directionalLight))
+
+            .withChild(instantiater.buildGameObject("spot-light", new THREE.Vector3(24, 22.600, -25.950))
+                .withComponent(Object3DContainer<THREE.SpotLight>, c => {
+                    const light = new THREE.SpotLight(0xffffff, 0.5);
+                    light.castShadow = true;
+                    light.shadow.mapSize.width = 1024 * 8;
+                    light.shadow.mapSize.height = 1024 * 8;
+                    light.shadow.camera.near = 0.1;
+                    light.shadow.camera.far = 400;
+                    light.power = 12;
+                    light.intensity = 7;
+                    c.setObject3D(light, object3D => object3D.dispose());
+                })
+                .getComponent(Object3DContainer, spotLight))
 
             .withChild(instantiater.buildGameObject("polar-grid-helper")
                 .active(false)
