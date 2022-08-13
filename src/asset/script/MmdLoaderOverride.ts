@@ -3,14 +3,22 @@ import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
 export class MMDLoaderOverride extends MMDLoader {
+    public forceAllInterpolateToCubic = false;
+
     public constructor(manager?: THREE.LoadingManager) {
         super(manager);
 
-        this.animationBuilder = new AnimationBuilder();
+        this.animationBuilder = new AnimationBuilder(this);
     }
 }
 
 class AnimationBuilder {
+    private readonly _mmdLoader: MMDLoaderOverride;
+
+    public constructor(mmdLoader: MMDLoaderOverride) {
+        this._mmdLoader = mmdLoader;
+    }
+
     public build(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
         // combine skeletal and morph animations
 
@@ -58,6 +66,8 @@ class AnimationBuilder {
             motions[boneName].push(motion);
         }
 
+        const forceAllInterpolateToCubic = this._mmdLoader.forceAllInterpolateToCubic;
+
         for (const key in motions) {
             const array = motions[key];
 
@@ -92,8 +102,8 @@ class AnimationBuilder {
             const targetName = ".bones[" + key + "]";
             const boneHasRigidBody = rigidBodyNameSet.has(key);
 
-            tracks.push(this.createTrack(targetName + ".position", THREE.VectorKeyframeTrack, times, positions, pInterpolations, !boneHasRigidBody));
-            tracks.push(this.createTrack(targetName + ".quaternion", THREE.QuaternionKeyframeTrack, times, rotations, rInterpolations, !boneHasRigidBody));
+            tracks.push(this.createTrack(targetName + ".position", THREE.VectorKeyframeTrack, times, positions, pInterpolations, !forceAllInterpolateToCubic && !boneHasRigidBody));
+            tracks.push(this.createTrack(targetName + ".quaternion", THREE.QuaternionKeyframeTrack, times, rotations, rInterpolations, !forceAllInterpolateToCubic && !boneHasRigidBody));
         }
 
         return new THREE.AnimationClip("", - 1, tracks);

@@ -171,4 +171,15 @@ export class MmdModelLoader extends Component {
     public get onDisposeObject3D(): IEventContainer<(object3D: THREE.SkinnedMesh) => void> {
         return this._onDisposeObject3DEvent;
     }
+
+    public get forceAllInterpolateToCubic(): boolean {
+        return this._loader.forceAllInterpolateToCubic;
+    }
+
+    public set forceAllInterpolateToCubic(value: boolean) {
+        if (this._isReadyToLoad) {
+            throw new Error("Cannot set forceAllInterpolateToCubic after awake.");
+        }
+        this._loader.forceAllInterpolateToCubic = value;
+    }
 }
