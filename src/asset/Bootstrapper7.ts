@@ -69,6 +69,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
         const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
         const ambientLight = new PrefabRef<Object3DContainer<THREE.HemisphereLight>>();
         const spotLight = new PrefabRef<Object3DContainer<THREE.SpotLight>>();
+        const stageLoader = new PrefabRef<MmdModelLoader[]>();
         
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -85,9 +86,11 @@ export class Bootstrapper7 extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("custom-animation-override")
                 .withComponent(class extends Component {
-                    public awake(): void {
+                    public start(): void {
+                        const stage = stageLoader.ref!.map(loader => loader.object3DContainer!);
+                        
                         const lightAnimationInstance = ConquerorLightAnimation.sequence.createInstance(
-                            ConquerorLightAnimation.createBindInfo(ambientLight.ref!.object3D!, spotLight.ref!.object3D!)
+                            ConquerorLightAnimation.createBindInfo(ambientLight.ref!.object3D!, spotLight.ref!.object3D!, stage)
                         );
 
                         animationPlayer.ref!.onAnimationProcess.addListener((frameTime) => {
@@ -376,7 +379,8 @@ export class Bootstrapper7 extends BaseBootstrapper {
                             MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
                         }
                     });
-                }))
+                })
+                .getComponents(stageLoader, MmdModelLoader))
 
             .withChild(instantiater.buildGameObject("mmd-model")
                 .withComponent(MmdModelLoader, c => {

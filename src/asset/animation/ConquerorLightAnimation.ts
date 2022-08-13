@@ -1,3 +1,4 @@
+import { Object3DContainer } from "the-world-engine";
 import { AnimationClip, AnimationClipBindInfo, AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
 
 type RemoveReadonly<T> = {
@@ -25,9 +26,9 @@ export class ConquerorLightAnimation {
                 AnimationKey.createValueType(10404, 0.900, InterpolationKind.Linear),
                 AnimationKey.createValueType(10538, 0.150, InterpolationKind.Linear),
                 AnimationKey.createValueType(11203, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(11218, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(13339, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(13473, 0.000, InterpolationKind.Linear)
+                AnimationKey.createValueType(11218, 0.800, InterpolationKind.Linear),
+                AnimationKey.createValueType(13339, 0.800, InterpolationKind.Linear),
+                AnimationKey.createValueType(13473, 0.200, InterpolationKind.Linear)
             ])
         }
     ]);
@@ -58,16 +59,28 @@ export class ConquerorLightAnimation {
             ])
         }
     ]);
+
+    private static readonly _stageAnimationClip = new AnimationClip([
+        {
+            name: "stage_activation" as const,
+            track: AnimationTrack.createScalarTrack([
+                AnimationKey.createValueType(11203, 1.000, InterpolationKind.Linear),
+                AnimationKey.createValueType(11218, 0.000, InterpolationKind.Linear)
+            ])
+        }
+    ]);
     
     public static readonly sequence = new AnimationSequence([
         new RangedAnimation(this._ambientLightAnimationClip),
-        new RangedAnimation(this._spotLightAnimationClip)
+        new RangedAnimation(this._spotLightAnimationClip),
+        new RangedAnimation(this._stageAnimationClip)
     ]);
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     public static createBindInfo(
         ambientLight: THREE.Light,
-        spotLight: THREE.Light
+        spotLight: THREE.Light,
+        stage: Object3DContainer<THREE.Object3D>[]
     ) {
         const ambientLightClipBindInfo = new AnimationClipBindInfo([
             {
@@ -87,9 +100,20 @@ export class ConquerorLightAnimation {
             }
         ]);
 
+        const stageClipBindInfo = new AnimationClipBindInfo([
+            {
+                trackName: "stage_activation" as const,
+                target: (value: number): void => {
+                    stage[0].enabled = value > 0;
+                    stage[1].enabled = value > 0;
+                }
+            }
+        ]);
+
         const bindInfo = [
             ambientLightClipBindInfo,
-            spotLightClipBindInfo
+            spotLightClipBindInfo,
+            stageClipBindInfo
         ] as const;
         return bindInfo as RemoveReadonly<typeof bindInfo>;
     }
