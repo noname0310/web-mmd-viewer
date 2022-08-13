@@ -82,6 +82,7 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 .withAudioPlayer(audioPlayer)
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
+                .withUsePhysics(new PrefabRef(false))
                 .make())
 
             .withChild(instantiater.buildGameObject("asset-manager")
@@ -372,6 +373,8 @@ export class Bootstrapper3 extends BaseBootstrapper {
                     const modelAnimationLoadingText = document.createElement("div");
                     loadingText.appendChild(modelAnimationLoadingText);
 
+                    c.forceAllInterpolateToCubic = true;
+
                     c.onProgress.addListener((type, e) => {
                         if (e.lengthComputable) {
                             const percentComplete = e.loaded / e.total * 100;
@@ -445,7 +448,12 @@ export class Bootstrapper3 extends BaseBootstrapper {
                         }
                     });
 
-                    c.asyncLoadAnimation("animation1", "mmd/flos/flos_model.vmd", () => {
+                    c.asyncLoadAnimation("animation1", [
+                        // "mmd/flos/flos_model.vmd",
+                        // "mmd/flos/baked_motion.vmd",
+                        // "mmd/flos/flos_physics.vmd"
+                        "mmd/flos/combined.vmd"
+                    ], () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
 
