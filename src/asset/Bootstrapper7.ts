@@ -15,7 +15,6 @@ import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/Adapt
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
 import { SAOPass } from "three/examples/jsm/postprocessing/SAOPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-import { SSRPass } from "three/examples/jsm/postprocessing/SSRPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
@@ -29,6 +28,7 @@ import { MmdMaterialUtils, MMDToonMaterial } from "./script/MmdMaterialUtils";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { PostProcessDisposer } from "./script/PostProcessDisposer";
+import { SSRPassOverride } from "./script/SSRPassOverride";
 //import { SSRPass } from "./script/screenSpaceReflectionsPass/src/SSRPass";
 import { Ui } from "./script/Ui";
 import EntranceHallHdr from "./texture/entrance_hall_1k.hdr";
@@ -133,6 +133,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                     c.fov = 60;
                     c.near = 1;
                     c.far = 500;
+                    (globalThis as any).camera = c;
                 })
                 .withComponent(MmdCameraLoader, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -160,7 +161,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.initializer((scene, camera, screen) => {
-                        const ssrPass = new SSRPass(/*scene, camera*/ {
+                        const ssrPass = new SSRPassOverride(/*scene, camera*/ {
                             renderer: c.engine.webGL!.webglRenderer!,
                             scene: scene,
                             camera: camera,
