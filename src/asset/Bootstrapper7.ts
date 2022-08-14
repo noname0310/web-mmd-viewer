@@ -133,7 +133,6 @@ export class Bootstrapper7 extends BaseBootstrapper {
                     c.fov = 60;
                     c.near = 1;
                     c.far = 500;
-                    (globalThis as any).camera = c;
                 })
                 .withComponent(MmdCameraLoader, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
