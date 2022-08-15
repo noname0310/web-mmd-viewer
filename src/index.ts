@@ -21,18 +21,21 @@ function startGame(): void {
 
         let currentGame: Game|null = null;
         let currentBootsrapper: BootstrapperConstructor<any, BaseBootstrapper<any>>|null = null;
+        let currentInteropObject: any = null;
 
         function runGame<T, U extends BaseBootstrapper<T> = BaseBootstrapper<T>>(
             bootstrapperCtor: BootstrapperConstructor<T, U>,
             interopObject?: T
         ): void {
-            if (currentBootsrapper === bootstrapperCtor) {
+            if (currentBootsrapper === bootstrapperCtor && JSON.stringify(currentInteropObject) === JSON.stringify(interopObject)) {
                 return;
             }
             if (currentGame) {
                 currentGame.dispose();
             }
             currentBootsrapper = bootstrapperCtor;
+            currentInteropObject = interopObject;
+            
             currentGame = new Game(document.getElementById("game_view")!);
             currentGame.run(bootstrapperCtor, interopObject);
             currentGame.inputHandler.startHandleEvents();
@@ -79,6 +82,23 @@ function startGame(): void {
             audioUrl: "mmd/never_ender/never ender.mp3"
         } as MmdLoadParams);
 
+        const button9 = document.createElement("button");
+        button9.innerText = "kimini totte";
+        button9.onclick = (): void => runGame(MmdGenericBootstrapper, {
+            models: [
+                {
+                    modelUrl: "mmd/YYB Hatsune Miku Default fanmade by HB-Squiddy - phys edit/Miku phys edit for skirt - faceforward.pmx",
+                    modelMotionUrl: "mmd/kimini_totte/motion_a.vmd"
+                },
+                {
+                    modelUrl: "mmd/YYB Hatsune Miku_10th - faceforward/YYB Hatsune Miku_10th_v1.02 - faceforward-physedit2.pmx",
+                    modelMotionUrl: "mmd/kimini_totte/motion_b_edited.vmd"
+                }
+            ],
+            cameraMotionUrl: "mmd/kimini_totte/camera_edited.vmd",
+            audioUrl: "mmd/kimini_totte/kimini totte.mp3"
+        } as MmdLoadParams);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -87,10 +107,11 @@ function startGame(): void {
         bootstrapperSelectPanel.appendChild(button6);
         bootstrapperSelectPanel.appendChild(button7);
         bootstrapperSelectPanel.appendChild(button8);
+        bootstrapperSelectPanel.appendChild(button9);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button8.onclick(new MouseEvent("click"));
+        button9.onclick(new MouseEvent("click"));
     });
 }
 
