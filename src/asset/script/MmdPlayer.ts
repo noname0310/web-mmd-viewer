@@ -194,6 +194,8 @@ export class MmdPlayer extends Component {
     }
     
     public process(frameTime: number): void {
+        frameTime = Math.min(frameTime, this._animationEndFrame);
+
         const time = frameTime / this._manualUpdateFps;
         this._helper.update(time - this._elapsedTime);
         this._model!.updateWorldMatrix();
