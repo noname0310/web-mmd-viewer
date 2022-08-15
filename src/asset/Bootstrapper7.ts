@@ -492,7 +492,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                     c.asyncLoadAnimation("animation1", 
                         [
                             "mmd/conqueror/model.vmd",
-                            "mmd/conqueror/physics.vmd"
+                            "mmd/conqueror/physics_reduce2.vmd"
                         ], () => {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
