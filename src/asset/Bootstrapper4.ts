@@ -14,7 +14,6 @@ import { AdaptiveToneMappingPass } from "three/examples/jsm/postprocessing/Adapt
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
 import { SAOPass } from "three/examples/jsm/postprocessing/SAOPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-import { SSRPass } from "three/examples/jsm/postprocessing/SSRPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
@@ -26,6 +25,7 @@ import { MmdMaterialUtils, MMDToonMaterial } from "./script/MmdMaterialUtils";
 import { MmdModelLoader } from "./script/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { PostProcessDisposer } from "./script/PostProcessDisposer";
+import { SSRPassOverride } from "./script/SSRPassOverride";
 //import { SSRPass } from "./script/screenSpaceReflectionsPass/src/SSRPass";
 import { Ui } from "./script/Ui";
 import EntranceHallHdr from "./texture/entrance_hall_1k.hdr";
@@ -135,7 +135,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.initializer((scene, camera, screen) => {
-                        const ssrPass = new SSRPass(/*scene, camera*/ {
+                        const ssrPass = new SSRPassOverride(/*scene, camera*/ {
                             renderer: c.engine.webGL!.webglRenderer!,
                             scene: scene,
                             camera: camera,
@@ -147,13 +147,6 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             isBouncing: false
                         });
                         ssrPass.maxDistance = 100;
-                        ssrPass.beautyRenderTarget.depthTexture.dispose();
-                        ssrPass.beautyRenderTarget.depthTexture = new THREE.DepthTexture(screen.width, screen.height);
-                        ssrPass.beautyRenderTarget.depthTexture.type = THREE.FloatType;
-                        ssrPass.beautyRenderTarget.depthTexture.minFilter = THREE.NearestFilter;
-                        ssrPass.beautyRenderTarget.depthTexture.magFilter = THREE.NearestFilter;
-                        ssrPass.ssrMaterial.uniforms["tDepth"].value = ssrPass.beautyRenderTarget.depthTexture;
-                        ssrPass.depthRenderMaterial.uniforms["tDepth"].value = ssrPass.beautyRenderTarget.depthTexture;
                         // ssrPass.raymarchTargetScale = 1;
                         // ssrPass.renderTargetScale = 1;
                         // ssrPass.stride = 60;

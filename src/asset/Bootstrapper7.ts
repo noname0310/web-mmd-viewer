@@ -172,13 +172,6 @@ export class Bootstrapper7 extends BaseBootstrapper {
                             isBouncing: false
                         });
                         ssrPass.maxDistance = 100;
-                        ssrPass.beautyRenderTarget.depthTexture.dispose();
-                        ssrPass.beautyRenderTarget.depthTexture = new THREE.DepthTexture(screen.width, screen.height);
-                        ssrPass.beautyRenderTarget.depthTexture.type = THREE.FloatType;
-                        ssrPass.beautyRenderTarget.depthTexture.minFilter = THREE.NearestFilter;
-                        ssrPass.beautyRenderTarget.depthTexture.magFilter = THREE.NearestFilter;
-                        ssrPass.ssrMaterial.uniforms["tDepth"].value = ssrPass.beautyRenderTarget.depthTexture;
-                        ssrPass.depthRenderMaterial.uniforms["tDepth"].value = ssrPass.beautyRenderTarget.depthTexture;
                         // ssrPass.raymarchTargetScale = 1;
                         // ssrPass.renderTargetScale = 1;
                         // ssrPass.stride = 60;
