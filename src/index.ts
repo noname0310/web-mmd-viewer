@@ -10,6 +10,7 @@ import { Bootstrapper4 } from "./asset/Bootstrapper4";
 import { Bootstrapper5 } from "./asset/Bootstrapper5";
 import { Bootstrapper6 } from "./asset/Bootstrapper6";
 import { Bootstrapper7 } from "./asset/Bootstrapper7";
+import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/MmdGenericBootstrapper";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
@@ -19,17 +20,21 @@ function startGame(): void {
         bootstrapperSelectPanel.style.right = "0px";
 
         let currentGame: Game|null = null;
-        let currentBootsrapper: BootstrapperConstructor<unknown, BaseBootstrapper<unknown>>|null = null;
-        function runGame(bootstrapper: BootstrapperConstructor<unknown, BaseBootstrapper<unknown>>): void {
-            if (currentBootsrapper === bootstrapper) {
+        let currentBootsrapper: BootstrapperConstructor<any, BaseBootstrapper<any>>|null = null;
+
+        function runGame<T, U extends BaseBootstrapper<T> = BaseBootstrapper<T>>(
+            bootstrapperCtor: BootstrapperConstructor<T, U>,
+            interopObject?: T
+        ): void {
+            if (currentBootsrapper === bootstrapperCtor) {
                 return;
             }
             if (currentGame) {
                 currentGame.dispose();
             }
-            currentBootsrapper = bootstrapper;
+            currentBootsrapper = bootstrapperCtor;
             currentGame = new Game(document.getElementById("game_view")!);
-            currentGame.run(bootstrapper);
+            currentGame.run(bootstrapperCtor, interopObject);
             currentGame.inputHandler.startHandleEvents();
         }
 
@@ -61,6 +66,19 @@ function startGame(): void {
         button7.innerText = "conqueror";
         button7.onclick = (): void => runGame(Bootstrapper7);
 
+        const button8 = document.createElement("button");
+        button8.innerText = "never ender";
+        button8.onclick = (): void => runGame(MmdGenericBootstrapper, {
+            models: [
+                {
+                    modelUrl: "mmd/YYB Hatsune Miku Default fanmade by HB-Squiddy - phys edit/Miku phys edit for skirt - faceforward.pmx",
+                    modelMotionUrl: ["mmd/never_ender/motion.vmd", "mmd/never_ender/facial.vmd"]
+                }
+            ],
+            cameraMotionUrl: "mmd/never_ender/camera.vmd",
+            audioUrl: "mmd/never_ender/never ender.mp3"
+        } as MmdLoadParams);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -68,10 +86,11 @@ function startGame(): void {
         bootstrapperSelectPanel.appendChild(button5);
         bootstrapperSelectPanel.appendChild(button6);
         bootstrapperSelectPanel.appendChild(button7);
+        bootstrapperSelectPanel.appendChild(button8);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        runGame(Bootstrapper2);
+        button8.onclick(new MouseEvent("click"));
     });
 }
 

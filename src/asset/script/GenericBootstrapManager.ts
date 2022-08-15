@@ -1,0 +1,80 @@
+import { Camera, Component, PrefabRef } from "the-world-engine";
+import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
+
+import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
+import { MmdCameraLoader } from "./MmdCameraLoader";
+import { MmdModelLoader } from "./MmdModelLoader";
+import { Ui } from "./Ui";
+
+export class GenericBootstrapManager extends Component {
+    public models: {
+        modelUrl: string;
+        modelMotionUrl: string|string[];
+    }[] = [];
+
+    public camera = new PrefabRef<Camera>();
+    public orbitCamera = new PrefabRef<Camera>();
+    public mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
+    public audioPlayer = new PrefabRef<AudioPlayer>();
+
+    public awake(): void {
+        const models = this.models;
+        const modelLoaders: MmdModelLoader[] = [];
+        for (let i = 0; i < models.length; ++i) {
+            const model = models[i];
+            const modelLoader = this.spawnModelLoader(model.modelUrl, model.modelMotionUrl);
+            modelLoaders.push(modelLoader);
+        }
+
+        const prefab = this.engine.instantiater.buildPrefab("game-manager", GameManagerPrefab)
+            .withCamera(this.camera)
+            .withOrbitCamera(this.orbitCamera)
+            .withCameraLoader(this.mmdCameraLoader)
+            .withAudioPlayer(this.audioPlayer)
+            .withCameraAnimationName(new PrefabRef("animation1"))
+            .withModelAnimationName(new PrefabRef("animation1"));
+        
+        for (let i = 0; i < modelLoaders.length; ++i) {
+            prefab.withModelLoader(new PrefabRef(modelLoaders[i]));
+        }
+
+        this.engine.scene.addChildFromBuilder(prefab.make());
+    }
+
+    private spawnModelLoader(modelUrl: string, modelMotionUrl: string|string[]): MmdModelLoader {
+        const mmdModelLoader = new PrefabRef<MmdModelLoader>();
+
+        this.engine.scene.addChildFromBuilder(
+            this.engine.instantiater.buildGameObject("mmd-model")
+                .withComponent(MmdModelLoader, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const modelLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelLoadingText);
+                    const modelAnimationLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelAnimationLoadingText);
+
+                    c.onProgress.addListener((type, e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            (type === "model" ? modelLoadingText : modelAnimationLoadingText)
+                                .innerText = type + ": " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
+                    c.asyncLoadModel(modelUrl, model => {
+                        modelLoadingText.innerText = "model loaded";
+                    model!.traverse(object => {
+                        if ((object as THREE.Mesh).isMesh) {
+                            object.castShadow = true;
+                            object.frustumCulled = false;
+                        }
+                    });
+                    });
+                    c.asyncLoadAnimation("animation1", modelMotionUrl, () => {
+                        modelAnimationLoadingText.innerText = "animation loaded";
+                    });
+                })
+                .getComponent(MmdModelLoader, mmdModelLoader));
+
+        return mmdModelLoader.ref!;
+    }
+}
