@@ -126,6 +126,23 @@ function startGame(): void {
             }
         } as MmdLoadParams);
 
+        const button11 = document.createElement("button");
+        button11.className = "select_bootstrapper_button";
+        button11.innerText = "the truth of planetariums";
+        button11.onclick = (): void => runGame(MmdGenericBootstrapper, {
+            models: [
+                {
+                    modelUrl: "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx",
+                    modelMotionUrl: ["mmd/the_truth_of_planetariums/motion.vmd", "mmd/the_truth_of_planetariums/physics_reduce4.vmd"]
+                }
+            ],
+            cameraMotionUrl: "mmd/the_truth_of_planetariums/camera.vmd",
+            audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3",
+            settings: {
+                usePhysics: false
+            }
+        } as MmdLoadParams);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -136,10 +153,11 @@ function startGame(): void {
         bootstrapperSelectPanel.appendChild(button8);
         bootstrapperSelectPanel.appendChild(button9);
         bootstrapperSelectPanel.appendChild(button10);
+        bootstrapperSelectPanel.appendChild(button11);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button10.onclick(new MouseEvent("click"));
+        button11.onclick(new MouseEvent("click"));
     });
 }
 
