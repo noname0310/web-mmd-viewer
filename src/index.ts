@@ -42,34 +42,42 @@ function startGame(): void {
         }
 
         const button1 = document.createElement("button");
+        button1.className = "select_bootstrapper_button";
         button1.innerText = "pizzicato drops";
         button1.onclick = (): void => runGame(Bootstrapper);
 
         const button2 = document.createElement("button");
+        button2.className = "select_bootstrapper_button";
         button2.innerText = "as you like it";
         button2.onclick = (): void => runGame(Bootstrapper2);
 
         const button3 = document.createElement("button");
+        button3.className = "select_bootstrapper_button";
         button3.innerText = "flos";
         button3.onclick = (): void => runGame(Bootstrapper3);
 
         const button4 = document.createElement("button");
+        button4.className = "select_bootstrapper_button";
         button4.innerText = "ru se";
         button4.onclick = (): void => runGame(Bootstrapper4);
 
         const button5 = document.createElement("button");
+        button5.className = "select_bootstrapper_button";
         button5.innerText = "daybreak frontline";
         button5.onclick = (): void => runGame(Bootstrapper5);
 
         const button6 = document.createElement("button");
+        button6.className = "select_bootstrapper_button";
         button6.innerText = "notitle";
         button6.onclick = (): void => runGame(Bootstrapper6);
 
         const button7 = document.createElement("button");
+        button7.className = "select_bootstrapper_button";
         button7.innerText = "conqueror";
         button7.onclick = (): void => runGame(Bootstrapper7);
 
         const button8 = document.createElement("button");
+        button8.className = "select_bootstrapper_button";
         button8.innerText = "never ender";
         button8.onclick = (): void => runGame(MmdGenericBootstrapper, {
             models: [
@@ -83,6 +91,7 @@ function startGame(): void {
         } as MmdLoadParams);
 
         const button9 = document.createElement("button");
+        button9.className = "select_bootstrapper_button";
         button9.innerText = "kimini totte";
         button9.onclick = (): void => runGame(MmdGenericBootstrapper, {
             models: [
@@ -100,6 +109,7 @@ function startGame(): void {
         } as MmdLoadParams);
 
         const button10 = document.createElement("button");
+        button10.className = "select_bootstrapper_button";
         button10.innerText = "deep blue town";
         button10.onclick = (): void => runGame(MmdGenericBootstrapper, {
             models: [

@@ -13,16 +13,24 @@
             padding: 0;
         }
 
+        body {
+            position: relative;
+        }
+
         #switch-camera-button {
-            width: 230px;
+            width: 190px;
             height: 30px;
             margin-left: 10px;
             font-size: 16px;
         }
 
+        #fullscreen_button {
+            width: 95px;
+        }
+
         .game_view {
             width: 100%;
-            height: calc(100% - 30px);
+            height: 100%;
             margin: 0;
             padding: 0;
         }
@@ -35,13 +43,16 @@
         }
 
         .game_controls {
+            position: absolute;
+            bottom: 0;
+
             width: 100%;
             height: 30px;
             display: flex;
             flex-direction: row;
             justify-content: space-around;
             align-items: center;
-            background-color: #ffffff;
+            background-color: rgba(0, 0, 0, 0);
         }
 
         .control_button {
@@ -52,26 +63,53 @@
             padding: 5px;
             font-size: 15px;
             width: 80px;
+            opacity: 0.5;
+            overflow: hidden;
         }
 
         .control_button:active {
             background-color: #e0e0e0;
         }
 
+        .control_button:hover {
+            opacity: 1;
+        }
+
         .animation_slider {
             width: 100%;
             margin: 0px 10px 0px 10px;
+            opacity: 0.5;
+        }
+
+        .animation_slider:hover {
+            opacity: 1;
         }
 
         .playback_rate_slider {
             width: 10%;
             margin: 0px 10px 0px 10px;
+            opacity: 0.5;
+        }
+
+        .playback_rate_slider:hover {
+            opacity: 1;
         }
 
         .control_text {
             margin: 0px 10px 0px 10px;
             width: 80px;
             text-align: center;
+        }
+
+        .select_bootstrapper_button {
+            border: none;
+            margin: 0px 10px 0px 10px;
+            background-color: rgba(0, 0, 0, 0);
+            opacity: 0.5;
+        }
+
+        .select_bootstrapper_button:hover {
+            opacity: 1;
         }
     </style>
     <link rel="icon" href="data:,">
