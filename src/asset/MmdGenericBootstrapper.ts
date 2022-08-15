@@ -28,8 +28,9 @@ export interface MmdLoadParams {
 }
 
 export interface MmdSettings {
-    useIk: boolean;
-    usePhysics: boolean;
+    useIk?: boolean;
+    usePhysics?: boolean;
+    forceAllInterpolateToCubic?: boolean;
 }
 
 export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {

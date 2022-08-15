@@ -48,11 +48,14 @@ export class GenericBootstrapManager extends Component {
     }
 
     private spawnModelLoader(modelUrl: string, modelMotionUrl: string|string[]): MmdModelLoader {
+        const mmdSettings = this.mmdSettings.ref;
         const mmdModelLoader = new PrefabRef<MmdModelLoader>();
 
         this.engine.scene.addChildFromBuilder(
             this.engine.instantiater.buildGameObject("mmd-model")
                 .withComponent(MmdModelLoader, c => {
+                    c.forceAllInterpolateToCubic = mmdSettings?.forceAllInterpolateToCubic ?? false;
+
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -68,12 +71,12 @@ export class GenericBootstrapManager extends Component {
                     });
                     c.asyncLoadModel(modelUrl, model => {
                         modelLoadingText.innerText = "model loaded";
-                    model!.traverse(object => {
-                        if ((object as THREE.Mesh).isMesh) {
-                            object.castShadow = true;
-                            object.frustumCulled = false;
-                        }
-                    });
+                        model!.traverse(object => {
+                            if ((object as THREE.Mesh).isMesh) {
+                                object.castShadow = true;
+                                object.frustumCulled = false;
+                            }
+                        });
                     });
                     c.asyncLoadAnimation("animation1", modelMotionUrl, () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
