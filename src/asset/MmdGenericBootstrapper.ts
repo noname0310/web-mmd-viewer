@@ -24,6 +24,12 @@ export interface MmdLoadParams {
     }[];
     cameraMotionUrl: string;
     audioUrl: string;
+    settings?: MmdSettings;
+}
+
+export interface MmdSettings {
+    useIk: boolean;
+    usePhysics: boolean;
 }
 
 export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
@@ -59,6 +65,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
                     c.orbitCamera = orbitCamera;
                     c.mmdCameraLoader = mmdCameraLoader;
                     c.audioPlayer = audioPlayer;
+                    c.mmdSettings = new PrefabRef(interopObject.settings ?? null);
                 }))
             
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))

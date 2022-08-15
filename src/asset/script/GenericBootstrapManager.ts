@@ -1,6 +1,7 @@
 import { Camera, Component, PrefabRef } from "the-world-engine";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
+import { MmdSettings } from "../MmdGenericBootstrapper";
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraLoader } from "./MmdCameraLoader";
 import { MmdModelLoader } from "./MmdModelLoader";
@@ -16,6 +17,7 @@ export class GenericBootstrapManager extends Component {
     public orbitCamera = new PrefabRef<Camera>();
     public mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
     public audioPlayer = new PrefabRef<AudioPlayer>();
+    public mmdSettings = new PrefabRef<MmdSettings>();
 
     public awake(): void {
         const models = this.models;
@@ -26,13 +28,17 @@ export class GenericBootstrapManager extends Component {
             modelLoaders.push(modelLoader);
         }
 
+        const mmdSettings = this.mmdSettings.ref;
+
         const prefab = this.engine.instantiater.buildPrefab("game-manager", GameManagerPrefab)
             .withCamera(this.camera)
             .withOrbitCamera(this.orbitCamera)
             .withCameraLoader(this.mmdCameraLoader)
             .withAudioPlayer(this.audioPlayer)
             .withCameraAnimationName(new PrefabRef("animation1"))
-            .withModelAnimationName(new PrefabRef("animation1"));
+            .withModelAnimationName(new PrefabRef("animation1"))
+            .withUsePhysics(new PrefabRef(mmdSettings?.usePhysics ?? true))
+            .withUseIk(new PrefabRef(mmdSettings?.useIk ?? true));
         
         for (let i = 0; i < modelLoaders.length; ++i) {
             prefab.withModelLoader(new PrefabRef(modelLoaders[i]));
