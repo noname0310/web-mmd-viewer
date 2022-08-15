@@ -403,6 +403,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         model!.traverse(object => {
                             if ((object as THREE.Mesh).isMesh) {
                                 object.castShadow = true;
+                                object.receiveShadow = true;
                                 object.frustumCulled = false;
                             }
                         });
