@@ -99,6 +99,22 @@ function startGame(): void {
             audioUrl: "mmd/kimini_totte/kimini totte.mp3"
         } as MmdLoadParams);
 
+        const button10 = document.createElement("button");
+        button10.innerText = "deep blue town";
+        button10.onclick = (): void => runGame(MmdGenericBootstrapper, {
+            models: [
+                {
+                    modelUrl: "mmd/YYB Hatsune Miku Default fanmade by HB-Squiddy - phys edit/Miku phys edit for skirt - faceforward.pmx",
+                    modelMotionUrl: "mmd/deep_blue_town/motion.vmd"
+                }
+            ],
+            cameraMotionUrl: "mmd/deep_blue_town/camera.vmd",
+            audioUrl: "mmd/deep_blue_town/deep blue town.mp3",
+            settings: {
+                useIk: false
+            }
+        } as MmdLoadParams);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -108,10 +124,11 @@ function startGame(): void {
         bootstrapperSelectPanel.appendChild(button7);
         bootstrapperSelectPanel.appendChild(button8);
         bootstrapperSelectPanel.appendChild(button9);
+        bootstrapperSelectPanel.appendChild(button10);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button9.onclick(new MouseEvent("click"));
+        button10.onclick(new MouseEvent("click"));
     });
 }
 
