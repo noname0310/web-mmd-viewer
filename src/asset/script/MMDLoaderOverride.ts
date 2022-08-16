@@ -209,8 +209,8 @@ class AnimationBuilder {
             euler.set(- rot[0], - rot[1], - rot[2]);
             quaternion.setFromEuler(euler);
 
-            position.add(center);
             position.applyQuaternion(quaternion);
+            position.add(center);
 
             pushVector3(centers, center);
             pushQuaternion(quaternions, quaternion);
