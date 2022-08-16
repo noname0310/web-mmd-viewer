@@ -1,10 +1,11 @@
 import { Camera, Component, Coroutine, CoroutineIterator, DuckThreeCamera, EventContainer, IEventContainer, WaitUntil } from "the-world-engine";
-import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
+
+import { MMDLoaderOverride } from "./MMDLoaderOverride";
 
 export class MmdCameraLoader extends Component {
     public override readonly requiredComponents = [Camera];
 
-    private readonly _loader = new MMDLoader();
+    private readonly _loader = new MMDLoaderOverride();
 
     private _camera: THREE.Camera|null = null;
     private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
