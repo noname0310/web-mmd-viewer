@@ -193,7 +193,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                             maxblur: 0.02
                         });
                         
-                        return [[ssrPass, adaptiveTonemappingPass, smaaPass, aoPass, bloomPass, bokehPass], (): void => {
+                        return [[/*ssrPass,*/ adaptiveTonemappingPass, smaaPass, /*aoPass,*/ bloomPass, bokehPass], (): void => {
                             PostProcessDisposer.disposePass(ssrPass);
                             PostProcessDisposer.disposePass(adaptiveTonemappingPass);
                             PostProcessDisposer.disposePass(smaaPass);
