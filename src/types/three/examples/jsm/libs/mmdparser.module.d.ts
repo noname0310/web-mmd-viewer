@@ -9972,6 +9972,8 @@ export type Vmd = {
         position: [number, number, number];
         rotation: [number, number, number];
         interpolation: [
+            //range: 0..127
+            //default linear interpolation is 20, 107, 20, 107
             //x_ax, x_bx, x_ay, x_by
             number, number, number, number,
             //y_ax, y_bx, y_ay, y_by
