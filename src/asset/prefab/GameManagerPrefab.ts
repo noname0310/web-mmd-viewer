@@ -99,7 +99,6 @@ export class GameManagerPrefab extends Prefab {
             .withChild(instantiater.buildGameObject("mmd-player")
                 .withComponent(AnimationSequencePlayer, c => {
                     c.animationClock = new ClockCalibrator(this._audioPlayer.ref!);
-                    c.frameRate = 60;
                     c.loopMode = AnimationLoopMode.None;
                 })
                 .withComponent(MmdController, c => {

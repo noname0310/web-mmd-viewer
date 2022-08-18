@@ -92,8 +92,8 @@ export class MmdController extends Component {
             this._animationSequencePlayer!.setAnimationAndBind(
                 new AnimationSequence([
                     new RangedAnimation(AnimationTrack.createScalarTrack([
-                        AnimationKey.createValueType(0, 0, InterpolationKind.Linear),
-                        AnimationKey.createValueType(endFrame, endFrame, InterpolationKind.Linear)
+                        new AnimationKey(0, 0, InterpolationKind.Linear),
+                        new AnimationKey(endFrame, endFrame, InterpolationKind.Linear)
                     ]))
                 ]), [
                     (frame: number): void => {
@@ -128,8 +128,8 @@ export class MmdController extends Component {
             this._animationSequencePlayer!.setAnimationAndBind(
                 new AnimationSequence([
                     new RangedAnimation(AnimationTrack.createScalarTrack([
-                        AnimationKey.createValueType(0, 0, InterpolationKind.Linear),
-                        AnimationKey.createValueType(endFrame, endFrame, InterpolationKind.Linear)
+                        new AnimationKey(0, 0, InterpolationKind.Linear),
+                        new AnimationKey(endFrame, endFrame, InterpolationKind.Linear)
                     ]))
                 ]), [
                     (frame: number): void => {

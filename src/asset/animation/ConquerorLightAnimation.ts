@@ -10,25 +10,25 @@ export class ConquerorLightAnimation {
         {
             name: "ambientLight_intensity" as const,
             track: AnimationTrack.createScalarTrack([
-                AnimationKey.createValueType(0.00, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(3906, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(4053, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(4151, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(4252, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(6041, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(6068, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(6506, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(6522, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(8241, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(8357, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(8467, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(8532, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(10404, 0.900, InterpolationKind.Linear),
-                AnimationKey.createValueType(10538, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(11203, 0.150, InterpolationKind.Linear),
-                AnimationKey.createValueType(11218, 0.800, InterpolationKind.Linear),
-                AnimationKey.createValueType(13339, 0.800, InterpolationKind.Linear),
-                AnimationKey.createValueType(13473, 0.200, InterpolationKind.Linear)
+                new AnimationKey(0.00, 0.900, InterpolationKind.Linear),
+                new AnimationKey(3906, 0.900, InterpolationKind.Linear),
+                new AnimationKey(4053, 0.150, InterpolationKind.Linear),
+                new AnimationKey(4151, 0.150, InterpolationKind.Linear),
+                new AnimationKey(4252, 0.900, InterpolationKind.Linear),
+                new AnimationKey(6041, 0.900, InterpolationKind.Linear),
+                new AnimationKey(6068, 0.150, InterpolationKind.Linear),
+                new AnimationKey(6506, 0.150, InterpolationKind.Linear),
+                new AnimationKey(6522, 0.900, InterpolationKind.Linear),
+                new AnimationKey(8241, 0.900, InterpolationKind.Linear),
+                new AnimationKey(8357, 0.150, InterpolationKind.Linear),
+                new AnimationKey(8467, 0.150, InterpolationKind.Linear),
+                new AnimationKey(8532, 0.900, InterpolationKind.Linear),
+                new AnimationKey(10404, 0.900, InterpolationKind.Linear),
+                new AnimationKey(10538, 0.150, InterpolationKind.Linear),
+                new AnimationKey(11203, 0.150, InterpolationKind.Linear),
+                new AnimationKey(11218, 0.800, InterpolationKind.Linear),
+                new AnimationKey(13339, 0.800, InterpolationKind.Linear),
+                new AnimationKey(13473, 0.200, InterpolationKind.Linear)
             ])
         }
     ]);
@@ -37,25 +37,25 @@ export class ConquerorLightAnimation {
         {
             name: "spotLight_intensity" as const,
             track: AnimationTrack.createScalarTrack([
-                AnimationKey.createValueType(0.00, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(3906, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(4053, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(4151, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(4151, 0.000, InterpolationKind.Step),
-                AnimationKey.createValueType(6041, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(6068, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(6506, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(6522, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(8241, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(8357, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(8467, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(8467, 0.000, InterpolationKind.Step),
-                AnimationKey.createValueType(10404, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(10538, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(11203, 7.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(11218, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(13339, 0.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(13473, 0.000, InterpolationKind.Linear)
+                new AnimationKey(0.00, 0.000, InterpolationKind.Linear),
+                new AnimationKey(3906, 0.000, InterpolationKind.Linear),
+                new AnimationKey(4053, 7.000, InterpolationKind.Linear),
+                new AnimationKey(4151, 7.000, InterpolationKind.Linear),
+                new AnimationKey(4151, 0.000, InterpolationKind.Step),
+                new AnimationKey(6041, 0.000, InterpolationKind.Linear),
+                new AnimationKey(6068, 7.000, InterpolationKind.Linear),
+                new AnimationKey(6506, 7.000, InterpolationKind.Linear),
+                new AnimationKey(6522, 0.000, InterpolationKind.Linear),
+                new AnimationKey(8241, 0.000, InterpolationKind.Linear),
+                new AnimationKey(8357, 7.000, InterpolationKind.Linear),
+                new AnimationKey(8467, 7.000, InterpolationKind.Linear),
+                new AnimationKey(8467, 0.000, InterpolationKind.Step),
+                new AnimationKey(10404, 0.000, InterpolationKind.Linear),
+                new AnimationKey(10538, 7.000, InterpolationKind.Linear),
+                new AnimationKey(11203, 7.000, InterpolationKind.Linear),
+                new AnimationKey(11218, 0.000, InterpolationKind.Linear),
+                new AnimationKey(13339, 0.000, InterpolationKind.Linear),
+                new AnimationKey(13473, 0.000, InterpolationKind.Linear)
             ])
         }
     ]);
@@ -64,8 +64,8 @@ export class ConquerorLightAnimation {
         {
             name: "stage_activation" as const,
             track: AnimationTrack.createScalarTrack([
-                AnimationKey.createValueType(11203, 1.000, InterpolationKind.Linear),
-                AnimationKey.createValueType(11218, 0.000, InterpolationKind.Linear)
+                new AnimationKey(11203, 1.000, InterpolationKind.Linear),
+                new AnimationKey(11218, 0.000, InterpolationKind.Linear)
             ])
         }
     ]);
