@@ -1,5 +1,11 @@
 import { Quaternion, Vector2, Vector3 } from "three/src/Three";
-import { IAnimationInterpolator, ScalarHermiteInterpolator } from "tw-engine-498tokio/dist/asset/script/animation/AnimationInterpolator";
+import { 
+    IAnimationInterpolator,
+    ScalarHermiteInterpolator,
+    Vector2HermiteInterpolator,
+    Vector3HermiteInterpolator,
+    QuaternionHermiteInterpolator
+} from "tw-engine-498tokio/dist/asset/script/animation/AnimationInterpolator";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const ScalarBezierInterpolator = new class implements IAnimationInterpolator<number, Vector2> {
@@ -7,115 +13,129 @@ export const ScalarBezierInterpolator = new class implements IAnimationInterpola
     public linearTangent = ScalarHermiteInterpolator.linearTangent;
 
     public cubic(start: number, end: number, inTangent: Vector2, outTangent: Vector2, gradient: number): number {
-        //bezier curve equation
-        return (1 - gradient) * (1 - gradient) * (1 - gradient) * start + 3 * (1 - gradient) * (1 - gradient) * gradient * inTangent.x + 3 * (1 - gradient) * gradient * gradient * outTangent.x + gradient * gradient * gradient * end;
+        const t = gradient;
+        const x1 = start;
+        const x2 = end;
+        const y1 = inTangent.x;
+        const y2 = outTangent.x;
+
+        return BezierCurve.interpolate(x1, y1, x2, y2, t);
+    }
+}; 
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const Vector2BezierInterpolator = new class implements IAnimationInterpolator<Vector2, Vector2> {
+    public readonly tangentTempInstance = new Vector2();
+    public readonly tempInstance = new Vector2();
+    public lerp = Vector2HermiteInterpolator.lerp;
+    public linearTangent = Vector2HermiteInterpolator.linearTangent;
+
+    public cubic(start: Vector2, end: Vector2, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector2): Vector2 {
+        if (!out) out = new Vector2();
+
+        const t = gradient;
+        const x1 = start.x;
+        const x2 = end.x;
+        const y1 = start.y;
+        const y2 = end.y;
+        const tx1 = inTangent.x;
+        const tx2 = outTangent.x;
+        const ty1 = inTangent.y;
+        const ty2 = outTangent.y;
+        const x = BezierCurve.interpolate(x1, tx1, x2, tx2, t);
+        const y = BezierCurve.interpolate(y1, ty1, y2, ty2, t);
+        return out.set(x, y);
     }
 };
 
-const NEWTON_ITERATIONS = 4;
-const NEWTON_MIN_SLOPE = 0.001;
-const SUBDIVISION_PRECISION = 0.0000001;
-const SUBDIVISION_MAX_ITERATIONS = 10;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const Vector3BezierInterpolator = new class implements IAnimationInterpolator<Vector3, Vector2> {
+    public readonly tangentTempInstance = new Vector3();
+    public readonly tempInstance = new Vector3();
+    public lerp = Vector3HermiteInterpolator.lerp;
+    public linearTangent = Vector3HermiteInterpolator.linearTangent;
 
-const kSplineTableSize = 11;
-const kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
-
-const float32ArraySupported = typeof Float32Array === "function";
-
-function A(aA1: number, aA2: number): number {
-    return 1.0 - 3.0 * aA2 + 3.0 * aA1; 
-}
-function B(aA1: number, aA2: number): number {
-    return 3.0 * aA2 - 6.0 * aA1; 
-}
-function C(aA1: number): number {
-    return 3.0 * aA1;
-}
-
-// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
-function calcBezier(aT: number, aA1: number, aA2: number): number {
-    return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT; 
-}
-
-// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
-function getSlope(aT: number, aA1: number, aA2: number): number {
-    return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1); 
-}
-
-function binarySubdivide(aX: number, aA: number, aB: number, mX1: number, mX2: number): number {
-    let currentX, currentT, i = 0;
-    do {
-        currentT = aA + (aB - aA) / 2.0;
-        currentX = calcBezier(currentT, mX1, mX2) - aX;
-        if (currentX > 0.0) {
-            aB = currentT;
-        } else {
-            aA = currentT;
-        }
-    } while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
-    return currentT;
-}
-
-function newtonRaphsonIterate(aX: number, aGuessT: number, mX1: number, mX2: number): number {
-    for (let i = 0; i < NEWTON_ITERATIONS; ++i) {
-        const currentSlope = getSlope(aGuessT, mX1, mX2);
-        if (currentSlope === 0.0) {
-            return aGuessT;
-        }
-        const currentX = calcBezier(aGuessT, mX1, mX2) - aX;
-        aGuessT -= currentX / currentSlope;
+    public cubic(start: Vector3, end: Vector3, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector3): Vector3 {
+        if (!out) out = new Vector3();
+        
+        const t = gradient;
+        const x1 = start.x;
+        const x2 = end.x;
+        const y1 = start.y;
+        const y2 = end.y;
+        const z1 = start.z;
+        const z2 = end.z;
+        const tx1 = inTangent.x;
+        const tx2 = outTangent.x;
+        const ty1 = inTangent.y;
+        const ty2 = outTangent.y;
+        const x = BezierCurve.interpolate(x1, tx1, x2, tx2, t);
+        const y = BezierCurve.interpolate(y1, ty1, y2, ty2, t);
+        const z = BezierCurve.interpolate(z1, 0, z2, 0, t);
+        return out.set(x, y, z);
     }
-    return aGuessT;
-}
+};
 
-function LinearEasing(x: number): number {
-    return x;
-}
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const QuaternionBezierInterpolator = new class implements IAnimationInterpolator<Quaternion, Vector2> {
+    public readonly tangentTempInstance = new Quaternion();
+    public readonly tempInstance = new Quaternion();
+    public lerp = QuaternionHermiteInterpolator.lerp;
+    public linearTangent = QuaternionHermiteInterpolator.linearTangent;
 
-export function bezier(mX1: number, mY1: number, mX2: number, mY2: number): (x: number) => number {
-    if (!(0 <= mX1 && mX1 <= 1 && 0 <= mX2 && mX2 <= 1)) {
-        throw new Error("bezier x values must be in [0, 1] range");
+    public cubic(start: Quaternion, end: Quaternion, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Quaternion): Quaternion {
+        if (!out) out = new Quaternion();
+
+        const t = gradient;
+        const x1 = start.x;
+        const x2 = end.x;
+        const y1 = start.y;
+        const y2 = end.y;
+        const z1 = start.z;
+        const z2 = end.z;
+        const w1 = start.w;
+        const w2 = end.w;
+        const tx1 = inTangent.x;
+        const tx2 = outTangent.x;
+        const ty1 = inTangent.y;
+        const ty2 = outTangent.y;
+        const x = BezierCurve.interpolate(x1, tx1, x2, tx2, t);
+        const y = BezierCurve.interpolate(y1, ty1, y2, ty2, t);
+        const z = BezierCurve.interpolate(z1, 0, z2, 0, t);
+        const w = BezierCurve.interpolate(w1, 0, w2, 0, t);
+        return out.set(x, y, z, w);
     }
+};
 
-    if (mX1 === mY1 && mX2 === mY2) {
-        return LinearEasing;
-    }
+/** Class used to represent a Bezier curve */
+export class BezierCurve {
+    /**
+     * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats
+     * @param t defines the time
+     * @param x1 defines the left coordinate on X axis
+     * @param y1 defines the left coordinate on Y axis
+     * @param x2 defines the right coordinate on X axis
+     * @param y2 defines the right coordinate on Y axis
+     * @returns the interpolated value
+     */
+    public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
+        // Extract X (which is equal to time here)
+        const f0 = 1 - 3 * x2 + 3 * x1;
+        const f1 = 3 * x2 - 6 * x1;
+        const f2 = 3 * x1;
 
-    // Precompute samples table
-    const sampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize);
-    for (let i = 0; i < kSplineTableSize; ++i) {
-        sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
-    }
+        let refinedT = t;
+        for (let i = 0; i < 5; i++) {
+            const refinedT2 = refinedT * refinedT;
+            const refinedT3 = refinedT2 * refinedT;
 
-    function getTForX(aX: number) {
-        let intervalStart = 0.0;
-        let currentSample = 1;
-        const lastSample = kSplineTableSize - 1;
-
-        for (; currentSample !== lastSample && sampleValues[currentSample] <= aX; ++currentSample) {
-            intervalStart += kSampleStepSize;
+            const x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
+            const slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
+            refinedT -= (x - t) * slope;
+            refinedT = Math.min(1, Math.max(0, refinedT));
         }
-        --currentSample;
 
-        // Interpolate to provide an initial guess for t
-        const dist = (aX - sampleValues[currentSample]) / (sampleValues[currentSample + 1] - sampleValues[currentSample]);
-        const guessForT = intervalStart + dist * kSampleStepSize;
-
-        const initialSlope = getSlope(guessForT, mX1, mX2);
-        if (initialSlope >= NEWTON_MIN_SLOPE) {
-            return newtonRaphsonIterate(aX, guessForT, mX1, mX2);
-        } else if (initialSlope === 0.0) {
-            return guessForT;
-        } else {
-            return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
-        }
+        // Resolve cubic bezier for the given x
+        return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 + 3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 + Math.pow(refinedT, 3);
     }
-
-    return function BezierEasing(x: number): number {
-        // Because JavaScript number are imprecise, we should guarantee the extremes are right.
-        if (x === 0 || x === 1) {
-            return x;
-        }
-        return calcBezier(getTForX(x), mY1, mY2);
-    };
 }
