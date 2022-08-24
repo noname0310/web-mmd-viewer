@@ -10,6 +10,7 @@ import { Bootstrapper4 } from "./asset/Bootstrapper4";
 import { Bootstrapper5 } from "./asset/Bootstrapper5";
 import { Bootstrapper6 } from "./asset/Bootstrapper6";
 import { Bootstrapper7 } from "./asset/Bootstrapper7";
+import { InterpolationTestBootstrapper } from "./asset/InterpolationTestBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/MmdGenericBootstrapper";
 
 function startGame(): void {
@@ -157,7 +158,8 @@ function startGame(): void {
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button11.onclick(new MouseEvent("click"));
+        //button11.onclick(new MouseEvent("click"));
+        runGame(InterpolationTestBootstrapper);
     });
 }
 
