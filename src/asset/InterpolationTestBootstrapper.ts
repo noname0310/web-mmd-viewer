@@ -106,30 +106,6 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                         p4.set(1, 1);
                         return MmmInterpolator.interpolate2(p1, p2, p3, p4, t, 1);
                     };
-                    /*
-                    samples
-                    00 0
-                    05 0.1
-                    10 0.4
-                    15 0.9
-                    20 1.7
-                    25 3.0
-                    30 4.7
-                    35 7.3
-                    40 11.1
-                    45 17.7
-                    50 50.9
-                    55 82.3
-                    60 88.9
-                    65 92.7
-                    70 95.3
-                    75 97.0
-                    80 98.3
-                    85 99.1
-                    90 99.6
-                    95 99.9
-                    100 100
-                    */
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-samples")
