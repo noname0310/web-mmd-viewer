@@ -34,8 +34,8 @@ import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
+import { WebGLGlobalPostProcessVolume } from "./script/render/WebGLGlobalPostProcessVolume";
 import { Ui } from "./script/Ui";
-import { WebGLGlobalPostProcessVolume } from "./script/WebGLGlobalPostProcessVolume";
 import WaterNormal from "./texture/waternormals.jpg";
 
 export class Bootstrapper5 extends BaseBootstrapper {

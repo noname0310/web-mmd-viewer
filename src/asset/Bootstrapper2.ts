@@ -13,11 +13,11 @@ import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/an
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { VideoAnimationInstance } from "./script/animation/VideoAnimationInstance";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
-import { VideoAnimationInstance } from "./script/VideoAnimationInstance";
 
 export class Bootstrapper2 extends BaseBootstrapper {
     public override run(): SceneBuilder {

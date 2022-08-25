@@ -4,7 +4,7 @@ import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/an
 import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/AnimationControl";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { ClockCalibrator } from "../script/ClockCalibrator";
+import { ClockCalibrator } from "../script/animation/ClockCalibrator";
 import { MmdCameraLoader } from "../script/mmd/MmdCameraLoader";
 import { MmdController } from "../script/mmd/MmdController";
 import { MmdModelLoader } from "../script/mmd/MmdModelLoader";
