@@ -27,6 +27,7 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("babylon-interpolation-test")
+                .active(false)
                 .withComponent(InterpolateSampler, c => {
                     c.interpolator = (t: number): number => {
                         const x1 = 1;
@@ -44,6 +45,7 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-interpolation-test")
+                .active(false)
                 .withComponent(InterpolateSampler, c => {
                     c.sampleColor = "green";
                     c.interpolator = (t: number): number => {
@@ -84,6 +86,24 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                         const outValue = { out: t };
                         MmmInterpolator.interpolate(tempVector1.set(x1, y1), tempVector2.set(x2, y2), t, 0, 1, outValue);
                         return outValue.out;
+                    };
+                }))
+
+            .withChild(instantiater.buildGameObject("mmm-interpolation2-test")
+                .withComponent(InterpolateSampler, c => {
+                    c.sampleColor = "red";
+                    const p1 = new Vector2();
+                    const p2 = new Vector2();
+                    const p3 = new Vector2();
+                    const p4 = new Vector2();
+                    c.interpolator = (t: number): number => {
+                        p1.set(0, 0);
+
+                        p2.set(1, 0);
+                        p3.set(0, 1);
+
+                        p4.set(1, 1);
+                        return MmmInterpolator.interpolate2(p1, p2, p3, p4, t, 1);
                     };
                 }))
         ;
