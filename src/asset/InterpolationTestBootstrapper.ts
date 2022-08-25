@@ -1,7 +1,10 @@
 import { Bootstrapper, Camera, EditorCameraController, EditorGridRenderer, SceneBuilder } from "the-world-engine";
+import { Vector2 } from "three/src/Three";
 
 import { BezierCurve } from "./script/mmd/interpolation/BezierInterpolator";
 import { InterpolateSampler } from "./script/mmd/interpolation/InterpolateSampler";
+import { MmdInterpolator } from "./script/mmd/interpolation/MmdInterpolator";
+import { MmmInterpolator } from "./script/mmd/interpolation/MmmInterpolator";
 
 export class InterpolationTestBootstrapper extends Bootstrapper {
     public run(): SceneBuilder {
@@ -27,10 +30,60 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                 .withComponent(InterpolateSampler, c => {
                     c.interpolator = (t: number): number => {
                         const x1 = 1;
-                        const y1 = 1;
-                        const x2 = 2;
-                        const y2 = 2;
+                        const y1 = 0;
+                        const x2 = 0;
+                        const y2 = 1;
                         return BezierCurve.interpolate(t, x1, y1, x2, y2);
+                    };
+
+                    (globalThis as any).updateBabylonInterpolation = (x1: number, y1: number, x2: number, y2: number): void => {
+                        c.interpolator = (t: number): number => {
+                            return BezierCurve.interpolate(t, x1, y1, x2, y2);
+                        };
+                    };
+                }))
+
+            .withChild(instantiater.buildGameObject("mmd-interpolation-test")
+                .withComponent(InterpolateSampler, c => {
+                    c.sampleColor = "green";
+                    c.interpolator = (t: number): number => {
+                        const x1 = 1;
+                        const y1 = 0;
+                        const x2 = 0;
+                        const y2 = 1;
+                        return MmdInterpolator.interpolate(x1, x2, y1, y2, t);
+                    };
+                }))
+
+            .withChild(instantiater.buildGameObject("mmm-interpolation-test")
+                .withComponent(InterpolateSampler, c => {
+                    c.sampleColor = "blue";
+                    const tempVector1 = new Vector2();
+                    const tempVector2 = new Vector2();
+                    c.interpolator = (t: number): number => {
+                        const x1 = 127;
+                        const y1 = 0;
+                        const x2 = 0;
+                        const y2 = 127;
+                        const outValue = { out: t };
+                        const result = MmmInterpolator.interpolate(tempVector1.set(x1, y1), tempVector2.set(x2, y2), t, 0, 1, outValue);
+                        return result;
+                    };
+                }))
+
+            .withChild(instantiater.buildGameObject("mmm-interpolation-test2")
+                .withComponent(InterpolateSampler, c => {
+                    c.sampleColor = "yellow";
+                    const tempVector1 = new Vector2();
+                    const tempVector2 = new Vector2();
+                    c.interpolator = (t: number): number => {
+                        const x1 = 127;
+                        const y1 = 0;
+                        const x2 = 0;
+                        const y2 = 127;
+                        const outValue = { out: t };
+                        MmmInterpolator.interpolate(tempVector1.set(x1, y1), tempVector2.set(x2, y2), t, 0, 1, outValue);
+                        return outValue.out;
                     };
                 }))
         ;
