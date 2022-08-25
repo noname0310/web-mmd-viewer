@@ -320,13 +320,6 @@ class CubicBezierInterpolation extends THREE.Interpolant {
 
         this.interpolationParams = params;
     }
-    
-    private readonly _tempQuaternion1 = new THREE.Quaternion();
-    private readonly _tempQuaternion2 = new THREE.Quaternion();
-    private readonly _tempQuaternion3 = new THREE.Quaternion();
-    private readonly _tempEuler1 = new THREE.Euler();
-    private readonly _tempEuler2 = new THREE.Euler();
-    private readonly _tempEuler3 = new THREE.Euler();
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public interpolate_(i1: number, t0: number, t: number, t1: number): number[] {
@@ -338,62 +331,17 @@ class CubicBezierInterpolation extends THREE.Interpolant {
         const offset1 = i1 * stride;
         const offset0 = offset1 - stride;
 
-        // No interpolation if next key frame is in one frame in 30fps.
-        // This is from MMD animation spec.
-        // '1.5' is for precision loss. times are Float32 in Three.js Animation system.
-        const weight1 = ((t1 - t0) < 1 / 30 * 1.5) ? 0.0 : (t - t0) / (t1 - t0);
+        const weight1 = (t - t0) / (t1 - t0);
 
         if (stride === 4) { // Quaternion
             const x1 = params[i1 * 4 + 0];
             const x2 = params[i1 * 4 + 1];
             const y1 = params[i1 * 4 + 2];
             const y2 = params[i1 * 4 + 3];
-            
+
             const ratio = this._calculate(x1, x2, y1, y2, weight1);
 
-            const startQuaternion = this._tempQuaternion1.set(
-                values[offset0 + 0],
-                values[offset0 + 1],
-                values[offset0 + 2],
-                values[offset0 + 3]
-            );
-
-            const startEuler = this._tempEuler1.setFromQuaternion(startQuaternion);
-
-            const endQuaternion = this._tempQuaternion2.set(
-                values[offset1 + 0],
-                values[offset1 + 1],
-                values[offset1 + 2],
-                values[offset1 + 3]
-            );
-
-            const endEuler = this._tempEuler2.setFromQuaternion(endQuaternion);
-            
-            //Blender: rot(x) = prev_rot*(1 - bezier(t)) + curr_rot*bezier(t)
-
-            const oneMinusRatio = 1 - ratio;
-            startEuler.x *= oneMinusRatio;
-            startEuler.y *= oneMinusRatio;
-            startEuler.z *= oneMinusRatio;
-
-            endEuler.x *= ratio;
-            endEuler.y *= ratio;
-            endEuler.z *= ratio;
-
-            const resultEuler = this._tempEuler3.set(
-                startEuler.x + endEuler.x,
-                startEuler.y + endEuler.y,
-                startEuler.z + endEuler.z
-            );
-
-            const resultQuaternion = this._tempQuaternion3.setFromEuler(resultEuler);
-
-            result[0] = resultQuaternion.x;
-            result[1] = resultQuaternion.y;
-            result[2] = resultQuaternion.z;
-            result[3] = resultQuaternion.w;
-
-            //THREE.Quaternion.slerpFlat(result, 0, values, offset0, values, offset1, ratio);
+            THREE.Quaternion.slerpFlat(result, 0, values, offset0, values, offset1, ratio);
         } else if (stride === 3) { // Vector3
             for (let i = 0; i !== stride; ++i) {
                 const x1 = params[i1 * 12 + i * 4 + 0];
@@ -458,13 +406,6 @@ class CubicBezierStepInterpolation extends THREE.Interpolant {
         this.interpolationParams = params;
     }
 
-    private readonly _tempQuaternion1 = new THREE.Quaternion();
-    private readonly _tempQuaternion2 = new THREE.Quaternion();
-    private readonly _tempQuaternion3 = new THREE.Quaternion();
-    private readonly _tempEuler1 = new THREE.Euler();
-    private readonly _tempEuler2 = new THREE.Euler();
-    private readonly _tempEuler3 = new THREE.Euler();
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public interpolate_(i1: number, t0: number, t: number, t1: number): number[] {
         const result = this.resultBuffer;
@@ -485,52 +426,10 @@ class CubicBezierStepInterpolation extends THREE.Interpolant {
             const x2 = params[i1 * 4 + 1];
             const y1 = params[i1 * 4 + 2];
             const y2 = params[i1 * 4 + 3];
-            
+
             const ratio = this._calculate(x1, x2, y1, y2, weight1);
 
-            const startQuaternion = this._tempQuaternion1.set(
-                values[offset0 + 0],
-                values[offset0 + 1],
-                values[offset0 + 2],
-                values[offset0 + 3]
-            );
-
-            const startEuler = this._tempEuler1.setFromQuaternion(startQuaternion);
-
-            const endQuaternion = this._tempQuaternion2.set(
-                values[offset1 + 0],
-                values[offset1 + 1],
-                values[offset1 + 2],
-                values[offset1 + 3]
-            );
-
-            const endEuler = this._tempEuler2.setFromQuaternion(endQuaternion);
-            
-            //Blender: rot(x) = prev_rot*(1 - bezier(t)) + curr_rot*bezier(t)
-
-            const oneMinusRatio = 1 - ratio;
-            startEuler.x *= oneMinusRatio;
-            startEuler.y *= oneMinusRatio;
-            startEuler.z *= oneMinusRatio;
-
-            endEuler.x *= ratio;
-            endEuler.y *= ratio;
-            endEuler.z *= ratio;
-
-            const resultEuler = this._tempEuler3.set(
-                startEuler.x + endEuler.x,
-                startEuler.y + endEuler.y,
-                startEuler.z + endEuler.z
-            );
-
-            const resultQuaternion = this._tempQuaternion3.setFromEuler(resultEuler);
-
-            result[0] = resultQuaternion.x;
-            result[1] = resultQuaternion.y;
-            result[2] = resultQuaternion.z;
-            result[3] = resultQuaternion.w;
-
-            //THREE.Quaternion.slerpFlat(result, 0, values, offset0, values, offset1, ratio);
+            THREE.Quaternion.slerpFlat(result, 0, values, offset0, values, offset1, ratio);
         } else if (stride === 3) { // Vector3
             for (let i = 0; i !== stride; ++i) {
                 const x1 = params[i1 * 12 + i * 4 + 0];
