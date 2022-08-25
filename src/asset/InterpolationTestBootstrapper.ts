@@ -3,6 +3,7 @@ import { Vector2 } from "three/src/Three";
 
 import { BezierCurve } from "./script/mmd/interpolation/BezierInterpolator";
 import { InterpolateSampler } from "./script/mmd/interpolation/InterpolateSampler";
+import { ManualSampler } from "./script/mmd/interpolation/ManualSampler";
 import { MmdInterpolator } from "./script/mmd/interpolation/MmdInterpolator";
 import { MmmInterpolator } from "./script/mmd/interpolation/MmmInterpolator";
 
@@ -129,6 +130,36 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                     95 99.9
                     100 100
                     */
+                }))
+
+            .withChild(instantiater.buildGameObject("mmd-samples")
+                .withComponent(ManualSampler, c => {
+                    c.samples = [
+                        new Vector2(0, 0),
+                        new Vector2(5, 0.1),
+                        new Vector2(10, 0.4),
+                        new Vector2(15, 0.9),
+                        new Vector2(20, 1.7),
+                        new Vector2(25, 3.0),
+                        new Vector2(30, 4.7),
+                        new Vector2(35, 7.3),
+                        new Vector2(40, 11.1),
+                        new Vector2(45, 17.7),
+                        new Vector2(50, 50.9),
+                        new Vector2(55, 82.3),
+                        new Vector2(60, 88.9),
+                        new Vector2(65, 92.7),
+                        new Vector2(70, 95.3),
+                        new Vector2(75, 97.0),
+                        new Vector2(80, 98.3),
+                        new Vector2(85, 99.1),
+                        new Vector2(90, 99.6),
+                        new Vector2(95, 99.9),
+                        new Vector2(100, 100)
+                    ];
+
+                    c.sampleColor = "green";
+                    c.unitScale = 0.1;
                 }))
         ;
     }
