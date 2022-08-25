@@ -2,6 +2,8 @@ import { Vmd } from "three/examples/jsm/libs/mmdparser.module";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
+import { QuaternionUtils } from "./QuaternionUtils";
+
 export class MMDLoaderOverride extends MMDLoader {
     public forceAllInterpolateToCubic = false;
 
@@ -186,7 +188,7 @@ class AnimationBuilder {
         const fInterpolations: number[] = [];
 
         const quaternion = new THREE.Quaternion();
-        const euler = new THREE.Euler();
+        // const euler = new THREE.Euler();
         const position = new THREE.Vector3();
         const center = new THREE.Vector3();
 
@@ -206,8 +208,9 @@ class AnimationBuilder {
             position.set(0, 0, - distance);
             center.set(pos[0], pos[1], pos[2]);
 
-            euler.set(- rot[0], - rot[1], - rot[2]);
-            quaternion.setFromEuler(euler);
+            // euler.set(- rot[0], - rot[1], - rot[2]);
+            // quaternion.setFromEuler(euler);
+            QuaternionUtils.rotationYawPitchRoll(2 * Math.PI - rot[1], 2 * Math.PI - rot[0], 2 * Math.PI - rot[2], quaternion);
 
             position.applyQuaternion(quaternion);
             position.add(center);
