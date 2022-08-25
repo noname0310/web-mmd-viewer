@@ -46,7 +46,6 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-interpolation-test")
-                .active(false)
                 .withComponent(InterpolateSampler, c => {
                     c.sampleColor = "green";
                     c.interpolator = (t: number): number => {
@@ -59,6 +58,7 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmm-interpolation-test")
+                .active(false)
                 .withComponent(InterpolateSampler, c => {
                     c.sampleColor = "blue";
                     const tempVector1 = new Vector2();
@@ -75,6 +75,7 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmm-interpolation-test2")
+                .active(false)
                 .withComponent(InterpolateSampler, c => {
                     c.sampleColor = "yellow";
                     const tempVector1 = new Vector2();
@@ -91,6 +92,7 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmm-interpolation2-test")
+                .active(false)
                 .withComponent(InterpolateSampler, c => {
                     c.sampleColor = "red";
                     const p1 = new Vector2();
@@ -134,7 +136,7 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                         new Vector2(100, 100)
                     ];
 
-                    c.sampleColor = "green";
+                    c.sampleColor = "blue";
                     c.unitScale = 0.1;
                 }))
         ;
