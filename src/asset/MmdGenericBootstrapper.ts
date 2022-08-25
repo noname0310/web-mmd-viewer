@@ -12,8 +12,8 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GenericBootstrapManager } from "./script/GenericBootstrapManager";
-import { MmdCameraLoader } from "./script/MmdCameraLoader";
-import { MmdModelLoader } from "./script/MmdModelLoader";
+import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
+import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
 

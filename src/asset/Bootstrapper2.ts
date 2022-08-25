@@ -13,8 +13,8 @@ import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/an
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
-import { MmdCameraLoader } from "./script/MmdCameraLoader";
-import { MmdModelLoader } from "./script/MmdModelLoader";
+import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
+import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
 import { VideoAnimationInstance } from "./script/VideoAnimationInstance";

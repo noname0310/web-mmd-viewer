@@ -3,8 +3,8 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 
 import { MmdSettings } from "../MmdGenericBootstrapper";
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
-import { MmdCameraLoader } from "./MmdCameraLoader";
-import { MmdModelLoader } from "./MmdModelLoader";
+import { MmdCameraLoader } from "./mmd/MmdCameraLoader";
+import { MmdModelLoader } from "./mmd/MmdModelLoader";
 import { Ui } from "./Ui";
 
 export class GenericBootstrapManager extends Component {

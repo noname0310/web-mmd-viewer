@@ -5,10 +5,10 @@ import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/Animation
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { ClockCalibrator } from "../script/ClockCalibrator";
-import { MmdCameraLoader } from "../script/MmdCameraLoader";
-import { MmdController } from "../script/MmdController";
-import { MmdModelLoader } from "../script/MmdModelLoader";
-import { MmdPlayer } from "../script/MmdPlayer";
+import { MmdCameraLoader } from "../script/mmd/MmdCameraLoader";
+import { MmdController } from "../script/mmd/MmdController";
+import { MmdModelLoader } from "../script/mmd/MmdModelLoader";
+import { MmdPlayer } from "../script/mmd/MmdPlayer";
 import { Ui } from "../script/Ui";
 import { UiController } from "../script/UiController";
 
