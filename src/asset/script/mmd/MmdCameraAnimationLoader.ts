@@ -73,7 +73,13 @@ export class MmdCameraAnimationLoader {
 
         for (let i = 0, il = frames.length; i < il; i++) {
             const frame = frames[i];
-            const frameNumber = frame.frameNum / 30 * this.frameRate;
+
+            const nonScaledFrameNumber = frame.frameNum;
+            const nonScaledNextFrameNumber = i + 1 < il ? frames[i + 1].frameNum : Infinity;
+            const nonScaledFrameDiff = nonScaledNextFrameNumber - nonScaledFrameNumber;
+            const interpolationKind = nonScaledFrameDiff < 1.0001 ? InterpolationKind.Step : InterpolationKind.Cubic;
+
+            const frameNumber = nonScaledFrameNumber / 30 * this.frameRate;
 
             const inInterpolation = frame.interpolation;
             const outInterpolation = frames[i + 1]?.interpolation ?? defaultInterpolation;
@@ -85,7 +91,7 @@ export class MmdCameraAnimationLoader {
                 centerKeyframes.push(new AnimationKey(
                     frameNumber,
                     center,
-                    InterpolationKind.Cubic,
+                    interpolationKind,
                     [
                         new THREE.Vector2(inInterpolation[2], inInterpolation[3]),
                         new THREE.Vector2(inInterpolation[6], inInterpolation[7]),
@@ -106,7 +112,7 @@ export class MmdCameraAnimationLoader {
                 quaternionKeyframes.push(new AnimationKey(
                     frameNumber,
                     quaternion,
-                    InterpolationKind.Cubic,
+                    interpolationKind,
                     new THREE.Vector2(inInterpolation[14], inInterpolation[15]),
                     new THREE.Vector2(outInterpolation[12], outInterpolation[13])
                 ));
@@ -116,7 +122,7 @@ export class MmdCameraAnimationLoader {
                 distanceKeyframes.push(new AnimationKey(
                     frameNumber,
                     frame.distance,
-                    InterpolationKind.Cubic,
+                    interpolationKind,
                     new THREE.Vector2(inInterpolation[18], inInterpolation[19]),
                     new THREE.Vector2(outInterpolation[16], outInterpolation[17])
                 ));
@@ -126,7 +132,7 @@ export class MmdCameraAnimationLoader {
                 fovKeyframes.push(new AnimationKey(
                     frameNumber,
                     frame.fov,
-                    InterpolationKind.Cubic,
+                    interpolationKind,
                     new THREE.Vector2(inInterpolation[22], inInterpolation[23]),
                     new THREE.Vector2(outInterpolation[20], outInterpolation[21])
                 ));

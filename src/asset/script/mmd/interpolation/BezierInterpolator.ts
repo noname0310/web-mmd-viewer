@@ -8,8 +8,8 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const ScalarBezierInterpolator = new class implements IAnimationInterpolator<number, Vector2> {
+    public readonly linearTangent = new Vector2(20 / 127, 20 / 127);
     public lerp = ScalarHermiteInterpolator.lerp;
-    public linearTangent = ScalarHermiteInterpolator.linearTangent;
 
     public cubic(start: number, end: number, inTangent: Vector2, outTangent: Vector2, gradient: number): number {
         const bezierGradient = BezierCurve.interpolate(gradient, inTangent.x, inTangent.y, outTangent.x, outTangent.y);
@@ -19,10 +19,9 @@ export const ScalarBezierInterpolator = new class implements IAnimationInterpola
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Vector2BezierInterpolator = new class implements IAnimationInterpolator<Vector2, Vector2> {
-    public readonly tangentTempInstance = new Vector2();
     public readonly tempInstance = new Vector2();
+    public readonly linearTangent = ScalarBezierInterpolator.linearTangent;
     public lerp = Vector2HermiteInterpolator.lerp;
-    public linearTangent = Vector2HermiteInterpolator.linearTangent;
 
     public cubic(start: Vector2, end: Vector2, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector2): Vector2 {
         if (!out) out = new Vector2();
@@ -34,10 +33,9 @@ export const Vector2BezierInterpolator = new class implements IAnimationInterpol
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Vector3BezierInterpolator = new class implements IAnimationInterpolator<Vector3, Vector2> {
-    public readonly tangentTempInstance = new Vector3();
     public readonly tempInstance = new Vector3();
+    public readonly linearTangent = ScalarBezierInterpolator.linearTangent;
     public lerp = Vector3HermiteInterpolator.lerp;
-    public linearTangent = Vector3HermiteInterpolator.linearTangent;
 
     public cubic(start: Vector3, end: Vector3, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector3): Vector3 {
         if (!out) out = new Vector3();
@@ -49,10 +47,9 @@ export const Vector3BezierInterpolator = new class implements IAnimationInterpol
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Vector3IndependentBezierInterpolator = new class implements IAnimationInterpolator<Vector3, readonly [Vector2, Vector2, Vector2]> {
-    public readonly tangentTempInstance = new Vector3();
     public readonly tempInstance = new Vector3();
+    public readonly linearTangent = [ScalarBezierInterpolator.linearTangent, ScalarBezierInterpolator.linearTangent, ScalarBezierInterpolator.linearTangent] as const;
     public lerp = Vector3HermiteInterpolator.lerp;
-    public linearTangent = Vector3HermiteInterpolator.linearTangent;
 
     public cubic(start: Vector3, end: Vector3, inTangents: readonly [Vector2, Vector2, Vector2], outTangents: readonly [Vector2, Vector2, Vector2], gradient: number, out?: Vector3): Vector3 {
         if (!out) out = new Vector3();
@@ -71,10 +68,9 @@ export const Vector3IndependentBezierInterpolator = new class implements IAnimat
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const QuaternionBezierInterpolator = new class implements IAnimationInterpolator<Quaternion, Vector2> {
-    public readonly tangentTempInstance = new Quaternion();
     public readonly tempInstance = new Quaternion();
+    public readonly linearTangent = ScalarBezierInterpolator.linearTangent;
     public lerp = QuaternionHermiteInterpolator.lerp;
-    public linearTangent = QuaternionHermiteInterpolator.linearTangent;
 
     public cubic(start: Quaternion, end: Quaternion, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Quaternion): Quaternion {
         if (!out) out = new Quaternion();
