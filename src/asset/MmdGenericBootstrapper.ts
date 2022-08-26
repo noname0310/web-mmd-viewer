@@ -11,6 +11,7 @@ import {
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
+import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { GenericBootstrapManager } from "./script/GenericBootstrapManager";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
@@ -86,15 +87,9 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
                 })
                 .getComponent(Camera, orbitCamera))
             
-            .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => {
-                    c.priority = -2;
-                    c.cameraType = CameraType.Perspective;
-                    c.fov = 60;
-                    c.near = 1;
-                    c.far = 1500;
-                })
-                .withComponent(MmdCameraLoader, c => {
+            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
+                .withAudioUrl(new PrefabRef(interopObject.audioUrl))
+                .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const cameraLoadingText = document.createElement("div");
                     loadingText.appendChild(cameraLoadingText);
@@ -110,10 +105,10 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
-                .withComponent(AudioPlayer, c => c.asyncSetAudioFromUrl(interopObject.audioUrl))
-                .getComponent(Camera, camera)
-                .getComponent(MmdCameraLoader, mmdCameraLoader)
-                .getComponent(AudioPlayer, audioPlayer))
+                .getCamera(camera)
+                .getCameraLoader(mmdCameraLoader)
+                .getAudioPlayer(audioPlayer)
+                .make())
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {

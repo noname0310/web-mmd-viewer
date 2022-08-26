@@ -14,6 +14,7 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
@@ -73,15 +74,9 @@ export class Bootstrapper extends BaseBootstrapper {
                 })
                 .getComponent(Camera, orbitCamera))
             
-            .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => {
-                    c.priority = -2;
-                    c.cameraType = CameraType.Perspective;
-                    c.fov = 60;
-                    c.near = 1;
-                    c.far = 1500;
-                })
-                .withComponent(MmdCameraLoader, c => {
+            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
+                .withAudioUrl(new PrefabRef("mmd/pizzicato_drops/pizzicato_drops.mp3"))
+                .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const cameraLoadingText = document.createElement("div");
                     loadingText.appendChild(cameraLoadingText);
@@ -97,13 +92,11 @@ export class Bootstrapper extends BaseBootstrapper {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
-                .withComponent(AudioPlayer, c => {
-                    c.asyncSetAudioFromUrl("mmd/pizzicato_drops/pizzicato_drops.mp3");
-                })
-                .getComponent(Camera, camera)
-                .getComponent(MmdCameraLoader, mmdCameraLoader)
-                .getComponent(AudioPlayer, audioPlayer))
-            
+                .getCamera(camera)
+                .getCameraLoader(mmdCameraLoader)
+                .getAudioPlayer(audioPlayer)
+                .make())
+                
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());

@@ -19,6 +19,7 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "./script/GlobalAssetManager";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdMaterialUtils, MMDToonMaterial } from "./script/mmd/MmdMaterialUtils";
@@ -101,15 +102,9 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 })
                 .getComponent(Camera, orbitCamera))
             
-            .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => {
-                    c.priority = -2;
-                    c.cameraType = CameraType.Perspective;
-                    c.fov = 60;
-                    c.near = 1;
-                    c.far = 500;
-                })
-                .withComponent(MmdCameraLoader, c => {
+            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
+                .withAudioUrl(new PrefabRef("mmd/ruse/ruse.mp3"))
+                .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const cameraLoadingText = document.createElement("div");
                     loadingText.appendChild(cameraLoadingText);
@@ -125,12 +120,10 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
-                .withComponent(AudioPlayer, c => {
-                    c.asyncSetAudioFromUrl("mmd/ruse/ruse.mp3");
-                })
-                .getComponent(Camera, camera)
-                .getComponent(MmdCameraLoader, mmdCameraLoader)
-                .getComponent(AudioPlayer, audioPlayer))
+                .getCamera(camera)
+                .getCameraLoader(mmdCameraLoader)
+                .getAudioPlayer(audioPlayer)
+                .make())
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {

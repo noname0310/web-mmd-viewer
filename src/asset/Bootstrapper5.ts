@@ -31,6 +31,7 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
 import { OrbitControls } from "./script/OrbitControls";
@@ -103,16 +104,15 @@ export class Bootstrapper5 extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-
-            .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => {
+                
+            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
+                .withAudioUrl(new PrefabRef("mmd/daybreak_frontline/Daybreak Frontline miku.mp3"))
+                .withCameraInitializer(c => {
                     c.near = 1;
                     c.far = 2000;
-                    c.priority = -2;
-                    c.cameraType = CameraType.Perspective;
                     c.backgroundColor = Color.fromHex("#a9caeb");
                 })
-                .withComponent(MmdCameraLoader, c => {
+                .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const cameraLoadingText = document.createElement("div");
                     loadingText.appendChild(cameraLoadingText);
@@ -128,12 +128,10 @@ export class Bootstrapper5 extends BaseBootstrapper {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
-                .withComponent(AudioPlayer, c => {
-                    c.asyncSetAudioFromUrl("mmd/daybreak_frontline/Daybreak Frontline miku.mp3");
-                })
-                .getComponent(Camera, camera)
-                .getComponent(MmdCameraLoader, mmdCameraLoader)
-                .getComponent(AudioPlayer, audioPlayer))
+                .getCamera(camera)
+                .getCameraLoader(mmdCameraLoader)
+                .getAudioPlayer(audioPlayer)
+                .make())
 
             .withChild(instantiater.buildGameObject("sun", sunVector.clone().multiplyScalar(30))
                 .withComponent(Object3DContainer<THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>>, c => {
