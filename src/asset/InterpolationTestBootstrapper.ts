@@ -1,5 +1,6 @@
 import { Bootstrapper, Camera, EditorCameraController, EditorGridRenderer, SceneBuilder } from "the-world-engine";
 import { Vector2 } from "three/src/Three";
+import { ScalarHermiteInterpolator } from "tw-engine-498tokio/dist/asset/script/animation/AnimationInterpolator";
 
 import { BezierCurve } from "./script/mmd/interpolation/BezierInterpolator";
 import { InterpolateSampler } from "./script/mmd/interpolation/InterpolateSampler";
@@ -138,6 +139,19 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
 
                     c.sampleColor = "blue";
                     c.unitScale = 0.1;
+                }))
+
+            .withChild(instantiater.buildGameObject("hermite-interpolation-test")
+                .withComponent(InterpolateSampler, c => {
+                    c.sampleColor = "red";
+                    c.interpolator = (t: number): number => {
+                        return ScalarHermiteInterpolator.cubic(0, 1, 90 * Math.PI / 180, 270 * Math.PI / 180, t);
+                    };
+                    (globalThis as any).updateHermiteInterpolation = (x1: number, y1: number): void => {
+                        c.interpolator = (t: number): number => {
+                            return ScalarHermiteInterpolator.cubic(0, 2, x1 * Math.PI / 180, y1 * Math.PI / 180, t);
+                        };
+                    };
                 }))
         ;
     }
