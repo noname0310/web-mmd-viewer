@@ -1,4 +1,4 @@
-import { Quaternion, Vector2, Vector3 } from "three/src/Three";
+import { Euler, Quaternion, Vector2, Vector3 } from "three/src/Three";
 import { 
     IAnimationInterpolator,
     QuaternionHermiteInterpolator,
@@ -79,6 +79,34 @@ export const QuaternionBezierInterpolator = new class implements IAnimationInter
         
         const bezierGradient = MmdInterpolator.interpolate(inTangent.x, inTangent.y, outTangent.x, outTangent.y, gradient);
         return this.lerp(start, end, bezierGradient, out);
+    }
+};
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const EulerBezierInterpolator = new class implements IAnimationInterpolator<Euler, Vector2> {
+    public readonly tempInstance = new Euler();
+    public readonly linearTangent = ScalarBezierInterpolator.linearTangent;
+    public lerp(start: Euler, end: Euler, gradient: number, out?: Euler): Euler {
+        if (!out) out = new Euler();
+
+        out.x = start.x + (end.x - start.x) * gradient;
+        out.y = start.y + (end.y - start.y) * gradient;
+        out.z = start.z + (end.z - start.z) * gradient;
+        return out;
+    }
+
+    public cubic(start: Euler, end: Euler, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Euler): Euler {
+        if (!out) out = new Euler();
+
+        const bezierGradient = MmdInterpolator.interpolate(inTangent.x, inTangent.y, outTangent.x, outTangent.y, gradient);
+        const oneMinusGradient = 1 - bezierGradient;
+
+        out.set(
+            start.x * oneMinusGradient + end.x * bezierGradient,
+            start.y * oneMinusGradient + end.y * bezierGradient,
+            start.z * oneMinusGradient + end.z * bezierGradient
+        );
+        return out;
     }
 };
 

@@ -3,7 +3,7 @@ import { MMDParser } from "three/examples/jsm/libs/mmdparser.module";
 import * as THREE from "three/src/Three";
 import { AnimationClip, AnimationClipBindInfo, AnimationClipInstance, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
 
-import { QuaternionBezierInterpolator, ScalarBezierInterpolator, Vector3IndependentBezierInterpolator } from "./interpolation/BezierInterpolator";
+import { EulerBezierInterpolator, ScalarBezierInterpolator, Vector3IndependentBezierInterpolator } from "./interpolation/BezierInterpolator";
 import { QuaternionUtils } from "./QuaternionUtils";
 
 type CameraTrackData = [
@@ -12,8 +12,8 @@ type CameraTrackData = [
         track: AnimationTrack<THREE.Vector3>;
     },
     {
-        name: "quaternion";
-        track: AnimationTrack<THREE.Quaternion>;
+        name: "rotation";
+        track: AnimationTrack<THREE.Euler>;
     },
     {
         name: "distance";
@@ -57,11 +57,11 @@ export class MmdCameraAnimationLoader {
         frames.sort((a, b) => a.frameNum - b.frameNum);
 
         const center = new THREE.Vector3();
-        const quaternion = new THREE.Quaternion();
+        const euler = new THREE.Euler();
 
         const centerKeyframes: AnimationKey<THREE.Vector3, readonly [THREE.Vector2, THREE.Vector2, THREE.Vector2]>[] = [];
         const distanceKeyframes: AnimationKey<number, THREE.Vector2>[] = [];
-        const quaternionKeyframes: AnimationKey<THREE.Quaternion, THREE.Vector2>[] = [];
+        const rotationKeyframes: AnimationKey<THREE.Euler, THREE.Vector2>[] = [];
         const fovKeyframes: AnimationKey<number, THREE.Vector2>[] = [];
 
         const defaultInterpolation = [
@@ -109,11 +109,11 @@ export class MmdCameraAnimationLoader {
 
             {
                 const aRotation = frame.rotation;
-                QuaternionUtils.rotationYawPitchRoll(-aRotation[1], -aRotation[0], -aRotation[2], quaternion);
+                euler.set(-aRotation[0], -aRotation[1], -aRotation[2]);
 
-                quaternionKeyframes.push(new AnimationKey(
+                rotationKeyframes.push(new AnimationKey(
                     frameNumber,
-                    quaternion,
+                    euler,
                     interpolationKind,
                     new THREE.Vector2(inInterpolation[14] / 127, inInterpolation[15] / 127),
                     new THREE.Vector2(outInterpolation[12] / 127, outInterpolation[13] / 127)
@@ -147,8 +147,8 @@ export class MmdCameraAnimationLoader {
                 track: AnimationTrack.createTrack(centerKeyframes, Vector3IndependentBezierInterpolator, this.frameRate)
             },
             {
-                name: "quaternion",
-                track: AnimationTrack.createTrack(quaternionKeyframes, QuaternionBezierInterpolator, this.frameRate)
+                name: "rotation",
+                track: AnimationTrack.createTrack(rotationKeyframes, EulerBezierInterpolator, this.frameRate)
             },
             {
                 name: "distance",
@@ -172,8 +172,8 @@ export class MmdCameraAnimationLoader {
                 target: position => cameraCenterPositon.copy(position)
             },
             {
-                trackName: "quaternion",
-                target: quaternion => cameraRotation.copy(quaternion)
+                trackName: "rotation",
+                target: euler => QuaternionUtils.rotationYawPitchRoll(euler.y, euler.x, euler.z, cameraRotation)
             },
             {
                 trackName: "distance",
