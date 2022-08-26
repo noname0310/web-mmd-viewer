@@ -10,7 +10,7 @@ import { Bootstrapper4 } from "./asset/Bootstrapper4";
 import { Bootstrapper5 } from "./asset/Bootstrapper5";
 import { Bootstrapper6 } from "./asset/Bootstrapper6";
 import { Bootstrapper7 } from "./asset/Bootstrapper7";
-import { InterpolationTestBootstrapper } from "./asset/InterpolationTestBootstrapper";
+//import { InterpolationTestBootstrapper } from "./asset/InterpolationTestBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/MmdGenericBootstrapper";
 
 function startGame(): void {
@@ -159,7 +159,18 @@ function startGame(): void {
         document.body.appendChild(bootstrapperSelectPanel);
 
         //button11.onclick(new MouseEvent("click"));
-        runGame(InterpolationTestBootstrapper);
+        //runGame(InterpolationTestBootstrapper);
+
+        runGame(MmdGenericBootstrapper, {
+            models: [
+                {
+                    modelUrl: "mmd/box_motion/Box10.pmx",
+                    modelMotionUrl: "mmd/box_motion/motion.vmd"
+                }
+            ],
+            cameraMotionUrl: "mmd/box_motion/empty_camera.vmd",
+            audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3"
+        });
     });
 }
 

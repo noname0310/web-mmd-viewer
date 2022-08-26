@@ -96,9 +96,9 @@ class AnimationBuilder {
 
                 for (let j = 0; j < 3; j++) positions.push(basePosition[j] + position[j]);
                 for (let j = 0; j < 4; j++) rotations.push(rotation[j]);
-                for (let j = 0; j < 3; j++) pushInterpolation(pInterpolations, interpolation, j);
+                for (let j = 0; j < 3; j++) pushInterpolation(pInterpolations, interpolation, j * 16);
 
-                pushInterpolation(rInterpolations, interpolation, 3);
+                pushInterpolation(rInterpolations, interpolation, 3 * 16);
             }
 
             const targetName = ".bones[" + key + "]";
