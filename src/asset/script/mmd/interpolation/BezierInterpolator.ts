@@ -12,13 +12,8 @@ export const ScalarBezierInterpolator = new class implements IAnimationInterpola
     public linearTangent = ScalarHermiteInterpolator.linearTangent;
 
     public cubic(start: number, end: number, inTangent: Vector2, outTangent: Vector2, gradient: number): number {
-        const t = gradient;
-        const x1 = start;
-        const x2 = end;
-        const y1 = inTangent.x;
-        const y2 = outTangent.x;
-
-        return BezierCurve.interpolate(x1, y1, x2, y2, t);
+        const bezierGradient = BezierCurve.interpolate(gradient, inTangent.x, inTangent.y, outTangent.x, outTangent.y);
+        return this.lerp(start, end, bezierGradient);
     }
 }; 
 
@@ -31,19 +26,9 @@ export const Vector2BezierInterpolator = new class implements IAnimationInterpol
 
     public cubic(start: Vector2, end: Vector2, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector2): Vector2 {
         if (!out) out = new Vector2();
-
-        const t = gradient;
-        const x1 = start.x;
-        const x2 = end.x;
-        const y1 = start.y;
-        const y2 = end.y;
-        const tx1 = inTangent.x;
-        const tx2 = outTangent.x;
-        const ty1 = inTangent.y;
-        const ty2 = outTangent.y;
-        const x = BezierCurve.interpolate(x1, tx1, x2, tx2, t);
-        const y = BezierCurve.interpolate(y1, ty1, y2, ty2, t);
-        return out.set(x, y);
+        
+        const bezierGradient = BezierCurve.interpolate(gradient, inTangent.x, inTangent.y, outTangent.x, outTangent.y);
+        return this.lerp(start, end, bezierGradient, out);
     }
 };
 
@@ -57,21 +42,8 @@ export const Vector3BezierInterpolator = new class implements IAnimationInterpol
     public cubic(start: Vector3, end: Vector3, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector3): Vector3 {
         if (!out) out = new Vector3();
         
-        const t = gradient;
-        const x1 = start.x;
-        const x2 = end.x;
-        const y1 = start.y;
-        const y2 = end.y;
-        const z1 = start.z;
-        const z2 = end.z;
-        const tx1 = inTangent.x;
-        const tx2 = outTangent.x;
-        const ty1 = inTangent.y;
-        const ty2 = outTangent.y;
-        const x = BezierCurve.interpolate(x1, tx1, x2, tx2, t);
-        const y = BezierCurve.interpolate(y1, ty1, y2, ty2, t);
-        const z = BezierCurve.interpolate(z1, 0, z2, 0, t);
-        return out.set(x, y, z);
+        const bezierGradient = BezierCurve.interpolate(gradient, inTangent.x, inTangent.y, outTangent.x, outTangent.y);
+        return this.lerp(start, end, bezierGradient, out);
     }
 };
 
@@ -84,25 +56,9 @@ export const QuaternionBezierInterpolator = new class implements IAnimationInter
 
     public cubic(start: Quaternion, end: Quaternion, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Quaternion): Quaternion {
         if (!out) out = new Quaternion();
-
-        const t = gradient;
-        const x1 = start.x;
-        const x2 = end.x;
-        const y1 = start.y;
-        const y2 = end.y;
-        const z1 = start.z;
-        const z2 = end.z;
-        const w1 = start.w;
-        const w2 = end.w;
-        const tx1 = inTangent.x;
-        const tx2 = outTangent.x;
-        const ty1 = inTangent.y;
-        const ty2 = outTangent.y;
-        const x = BezierCurve.interpolate(x1, tx1, x2, tx2, t);
-        const y = BezierCurve.interpolate(y1, ty1, y2, ty2, t);
-        const z = BezierCurve.interpolate(z1, 0, z2, 0, t);
-        const w = BezierCurve.interpolate(w1, 0, w2, 0, t);
-        return out.set(x, y, z, w);
+        
+        const bezierGradient = BezierCurve.interpolate(gradient, inTangent.x, inTangent.y, outTangent.x, outTangent.y);
+        return this.lerp(start, end, bezierGradient, out);
     }
 };
 
