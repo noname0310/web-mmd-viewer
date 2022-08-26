@@ -1,10 +1,11 @@
-import { Camera, CameraType, Color, GameObjectBuilder, Prefab, PrefabRef } from "the-world-engine";
+import { Camera, CameraType, GameObjectBuilder, Prefab, PrefabRef } from "the-world-engine";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCameraLoader } from "../script/mmd/MmdCameraLoader";
 
 export class MmdCameraPrefab extends Prefab {
-    private _cameraLoaderInitializer = new PrefabRef<(c: MmdCameraLoader) => void>();
+    private _cameraInitializer: ((c: Camera) => void)|null = null;
+    private _cameraLoaderInitializer: ((c: MmdCameraLoader) => void)|null = null;
     private _audioUrl = new PrefabRef<string>();
     private _cameraChildBuilder: GameObjectBuilder|null = null;
 
@@ -12,7 +13,14 @@ export class MmdCameraPrefab extends Prefab {
     private _camera = new PrefabRef<Camera>();
     private _audioPlayer = new PrefabRef<AudioPlayer>();
 
-    public withCameraLoaderInitializer(initializer: PrefabRef<(c: MmdCameraLoader) => void>): this {
+    public withCameraInitializer(initializer: (c: Camera) => void): this {
+        if (this._cameraInitializer !== null) throw new Error("cameraInitializer is already set");
+        this._cameraInitializer = initializer;
+        return this;
+    }
+
+    public withCameraLoaderInitializer(initializer: (c: MmdCameraLoader) => void): this {
+        if (this._cameraLoaderInitializer !== null) throw new Error("cameraLoaderInitializer is already set");
         this._cameraLoaderInitializer = initializer;
         return this;
     }
@@ -46,30 +54,29 @@ export class MmdCameraPrefab extends Prefab {
     public make(): GameObjectBuilder {
         const instantiater = this.instantiater;
 
-        const builder = this.gameObjectBuilder
-            .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => {
-                    c.near = 1;
-                    c.far = 1000;
-                    c.priority = -2;
-                    c.cameraType = CameraType.Perspective;
-                    c.backgroundColor = Color.fromHex("#a9caeb");
-                })
-                .withComponent(MmdCameraLoader, c => {
-                    this._cameraLoaderInitializer.ref?.(c);
-                })
-                .withComponent(AudioPlayer, c => {
-                    if (this._audioUrl.ref) c.asyncSetAudioFromUrl(this._audioUrl.ref);
-                })
-                .getComponent(Camera, this._camera)
-                .getComponent(MmdCameraLoader, this._cameraLoader)
-                .getComponent(AudioPlayer, this._audioPlayer))
-        ;
-
+        const cameraBuilder = instantiater.buildGameObject("camera")
+            .withComponent(Camera, c => {
+                c.near = 1;
+                c.far = 1000;
+                c.priority = -2;
+                c.cameraType = CameraType.Perspective;
+                this._cameraInitializer?.(c);
+            })
+            .withComponent(MmdCameraLoader, c => {
+                this._cameraLoaderInitializer?.(c);
+            })
+            .withComponent(AudioPlayer, c => {
+                if (this._audioUrl.ref) c.asyncSetAudioFromUrl(this._audioUrl.ref);
+            })
+            .getComponent(Camera, this._camera)
+            .getComponent(MmdCameraLoader, this._cameraLoader)
+            .getComponent(AudioPlayer, this._audioPlayer);
+        
         if (this._cameraChildBuilder !== null) {
-            builder.withChild(this._cameraChildBuilder);
+            cameraBuilder.withChild(this._cameraChildBuilder);
         }
-
-        return builder;
+        
+        return this.gameObjectBuilder
+            .withChild(cameraBuilder);
     }
 }
