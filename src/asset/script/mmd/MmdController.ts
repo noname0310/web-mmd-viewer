@@ -1,8 +1,9 @@
-import { Component, CoroutineIterator, EventContainer, IEventContainer, ReadonlyVector3, WritableVector3 } from "the-world-engine";
+import { Camera, Component, CoroutineIterator, EventContainer, IEventContainer, ReadonlyVector3, WritableVector3 } from "the-world-engine";
 import { Vector3 } from "three/src/Three";
 import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
+import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./MmdCameraAnimationLoader";
 import { MmdCameraLoader } from "./MmdCameraLoader";
 import { MmdModelLoader } from "./MmdModelLoader";
 import { MmdPlayer } from "./MmdPlayer";
@@ -54,16 +55,20 @@ export class MmdController extends Component {
     }
 
     private *playInternal(modelAnimationName: string, cameraAnimationName?: string): CoroutineIterator {
-        let threeCamera: THREE.Camera|null = null;
-        let cameraAnimation: THREE.AnimationClip|null = null;
+        let camera: Camera|null = null;
+        let cameraAnimation: MmdCameraAnimationClip|null = null;
 
         if (cameraAnimationName) {
             const cameraLoader = this._cameraLoader!;
             while (cameraLoader.isAnimationLoading(cameraAnimationName)) yield null;
 
-            threeCamera = cameraLoader.threeCamera;
+            camera = cameraLoader.camera;
             cameraAnimation = cameraLoader.animations.get(cameraAnimationName)!;
         }
+
+        const cameraAnimationInstance = camera !== null && cameraAnimation !== null 
+            ? MmdCameraAnimationLoader.createInstance(camera, cameraAnimation)
+            : null;
 
         const modelLoaders = this._modelLoaders!;
         for (let i = 0; i < modelLoaders.length; ++i) {
@@ -71,75 +76,49 @@ export class MmdController extends Component {
             while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(modelAnimationName)) yield null;
         }
 
-        if (modelLoaders.length === 1) {
-            const modelLoader = modelLoaders[0];
+        const mmdPlayers = this._mmdPlayers;
+        const mmdPlayerCount = mmdPlayers.length;
+        if (mmdPlayerCount !== modelLoaders.length) {
+            throw new Error("mmdPlayer count must be equal to modelLoader count");
+        }
+
+        let endFrame = 0;
+        for (let i = 0; i < mmdPlayerCount; ++i) {
+            const mmdPlayer = mmdPlayers[i];
+            const modelLoader = modelLoaders[i];
             const model = modelLoader.object3DContainer!;
             const modelAnimation = modelLoader.animations.get(modelAnimationName)!;
 
-            if (this._mmdPlayers.length === 0) {
-                throw new Error("you need one or more MmdPlayer for playing animation");
-            }
-            const mmdPlayer = this._mmdPlayers[0];
             mmdPlayer.manualUpdate = true;
             mmdPlayer.play(
                 model,
-                { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount },
-                threeCamera ?? undefined,
-                cameraAnimation ? { animation: cameraAnimation } : undefined
+                { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
             );
-            const endFrame = mmdPlayer.animationEndFrame;
+            endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
+        }
 
-            this._animationSequencePlayer!.setAnimationAndBind(
-                new AnimationSequence([
-                    new RangedAnimation(AnimationTrack.createScalarTrack([
-                        new AnimationKey(0, 0, InterpolationKind.Linear),
-                        new AnimationKey(endFrame, endFrame, InterpolationKind.Linear)
-                    ]))
-                ]), [
-                    (frame: number): void => {
-                        mmdPlayer.process(frame);
+        const firstMmdPlayer = mmdPlayers[0];
+
+        this._animationSequencePlayer!.setAnimationAndBind(
+            new AnimationSequence([
+                new RangedAnimation(AnimationTrack.createScalarTrack([
+                    new AnimationKey(0, 0, InterpolationKind.Linear),
+                    new AnimationKey(endFrame, endFrame, InterpolationKind.Linear)
+                ]))
+            ]), [
+                modelLoaders.length === 1
+                    ? (frame: number): void => {
+                        firstMmdPlayer.process(frame);
+                        cameraAnimationInstance?.process(frame);
                     }
-                ]
-            );
-        } else {
-            const mmdPlayers = this._mmdPlayers;
-            const mmdPlayerCount = mmdPlayers.length;
-            if (mmdPlayerCount !== modelLoaders.length) {
-                throw new Error("mmdPlayer count must be equal to modelLoader count");
-            }
-
-            let endFrame = 0;
-            for (let i = 0; i < mmdPlayerCount; ++i) {
-                const mmdPlayer = mmdPlayers[i];
-                const modelLoader = modelLoaders[i];
-                const model = modelLoader.object3DContainer!;
-                const modelAnimation = modelLoader.animations.get(modelAnimationName)!;
-
-                mmdPlayer.manualUpdate = true;
-                mmdPlayer.play(
-                    model,
-                    { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount },
-                    threeCamera && i == 0 ? threeCamera : undefined,
-                    cameraAnimation && i == 0 ? { animation: cameraAnimation } : undefined
-                );
-                endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
-            }
-
-            this._animationSequencePlayer!.setAnimationAndBind(
-                new AnimationSequence([
-                    new RangedAnimation(AnimationTrack.createScalarTrack([
-                        new AnimationKey(0, 0, InterpolationKind.Linear),
-                        new AnimationKey(endFrame, endFrame, InterpolationKind.Linear)
-                    ]))
-                ]), [
-                    (frame: number): void => {
+                    : (frame: number): void => {
                         for (let i = 0; i < mmdPlayerCount; ++i) {
                             mmdPlayers[i].process(frame);
+                            cameraAnimationInstance?.process(frame);
                         }
                     }
-                ]
-            );
-        }
+            ]
+        );
         
         this._onLoadCompleteEvent.invoke();
 

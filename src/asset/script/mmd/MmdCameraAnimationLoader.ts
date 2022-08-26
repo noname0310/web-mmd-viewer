@@ -2,6 +2,7 @@ import { Camera } from "the-world-engine";
 import { MMDParser } from "three/examples/jsm/libs/mmdparser.module";
 import * as THREE from "three/src/Three";
 import { AnimationClip, AnimationClipBindInfo, AnimationClipInstance, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
+
 import { QuaternionBezierInterpolator, ScalarBezierInterpolator, Vector3IndependentBezierInterpolator } from "./interpolation/BezierInterpolator";
 import { QuaternionUtils } from "./QuaternionUtils";
 
