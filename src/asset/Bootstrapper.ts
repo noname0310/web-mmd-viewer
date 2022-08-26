@@ -15,8 +15,8 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
-import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
-import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
+import { MmdCamera } from "./script/mmd/MmdCamera";
+import { MmdModel } from "./script/mmd/MmdModel";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
 
@@ -41,8 +41,8 @@ export class Bootstrapper extends BaseBootstrapper {
         const orbitCamera = new PrefabRef<Camera>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
 
-        const mmdModelLoader = new PrefabRef<MmdModelLoader>();
-        const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
+        const mmdModelLoader = new PrefabRef<MmdModel>();
+        const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
         
@@ -205,7 +205,7 @@ export class Bootstrapper extends BaseBootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, -30))
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -222,7 +222,7 @@ export class Bootstrapper extends BaseBootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-model")
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -252,7 +252,7 @@ export class Bootstrapper extends BaseBootstrapper {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
                 })
-                .getComponent(MmdModelLoader, mmdModelLoader))
+                .getComponent(MmdModel, mmdModelLoader))
         ;
     }
 }

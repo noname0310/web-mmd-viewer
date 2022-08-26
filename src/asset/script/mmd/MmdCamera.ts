@@ -3,7 +3,7 @@ import { Camera, Component, Coroutine, CoroutineIterator, EventContainer, IEvent
 import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./MmdCameraAnimationLoader";
 
 
-export class MmdCameraLoader extends Component {
+export class MmdCamera extends Component {
     public override readonly requiredComponents = [Camera];
 
     private readonly _loader = new MmdCameraAnimationLoader();

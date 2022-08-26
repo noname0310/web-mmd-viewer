@@ -24,9 +24,9 @@ import { ConquerorLightAnimation } from "./animation/ConquerorLightAnimation";
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "./script/GlobalAssetManager";
-import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
+import { MmdCamera } from "./script/mmd/MmdCamera";
 import { MmdMaterialUtils, MMDToonMaterial } from "./script/mmd/MmdMaterialUtils";
-import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
+import { MmdModel } from "./script/mmd/MmdModel";
 import { OrbitControls } from "./script/OrbitControls";
 import { PostProcessDisposer } from "./script/render/PostProcessDisposer";
 import { SSRPassOverride } from "./script/render/SSRPassOverride";
@@ -56,8 +56,8 @@ export class Bootstrapper7 extends BaseBootstrapper {
         const orbitCamera = new PrefabRef<Camera>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
 
-        const mmdModelLoader = new PrefabRef<MmdModelLoader>();
-        const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
+        const mmdModelLoader = new PrefabRef<MmdModel>();
+        const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
 
@@ -70,7 +70,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
         const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
         const ambientLight = new PrefabRef<Object3DContainer<THREE.HemisphereLight>>();
         const spotLight = new PrefabRef<Object3DContainer<THREE.SpotLight>>();
-        const stageLoader = new PrefabRef<MmdModelLoader[]>();
+        const stageLoader = new PrefabRef<MmdModel[]>();
         
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -281,7 +281,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                 new THREE.Vector3(0, 0, 0), 
                 new THREE.Quaternion()//.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2)
             )
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -310,7 +310,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         }
                     });
                 })
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -338,7 +338,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         }
                     });
                 })
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -367,10 +367,10 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         }
                     });
                 })
-                .getComponents(stageLoader, MmdModelLoader))
+                .getComponents(stageLoader, MmdModel))
 
             .withChild(instantiater.buildGameObject("mmd-model")
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -546,7 +546,7 @@ export class Bootstrapper7 extends BaseBootstrapper {
                         }
                     }());
                 })
-                .getComponent(MmdModelLoader, mmdModelLoader))
+                .getComponent(MmdModel, mmdModelLoader))
         ;
     }
 }

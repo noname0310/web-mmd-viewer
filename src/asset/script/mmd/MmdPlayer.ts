@@ -2,7 +2,7 @@ import { Component } from "the-world-engine";
 import { MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 
 import { MMDAnimationHelperOverride } from "./MMDAnimationHelperOverride";
-import { SkinnedMeshContainer } from "./MmdModelLoader";
+import { SkinnedMeshContainer } from "./MmdModel";
 import { MMdPhysicsOverride } from "./MMDPhysicsOverride";
 
 export interface MMDAnimationModelParameter extends Omit<MMDAnimationHelperAddParameter, "gravity"> {

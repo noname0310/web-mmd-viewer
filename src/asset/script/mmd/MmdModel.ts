@@ -6,7 +6,7 @@ import { MmdMaterialUtils, MMDToonMaterial } from "./MmdMaterialUtils";
 
 export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>;
 
-export class MmdModelLoader extends Component {
+export class MmdModel extends Component {
     private readonly _loader = new MMDLoaderOverride();
     private _object3DContainer: SkinnedMeshContainer|null = null;
     private readonly _animations: Map<string, THREE.AnimationClip> = new Map();

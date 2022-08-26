@@ -3,8 +3,8 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 
 import { MmdSettings } from "../MmdGenericBootstrapper";
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
-import { MmdCameraLoader } from "./mmd/MmdCameraLoader";
-import { MmdModelLoader } from "./mmd/MmdModelLoader";
+import { MmdCamera } from "./mmd/MmdCamera";
+import { MmdModel } from "./mmd/MmdModel";
 import { Ui } from "./Ui";
 
 export class GenericBootstrapManager extends Component {
@@ -15,13 +15,13 @@ export class GenericBootstrapManager extends Component {
 
     public camera = new PrefabRef<Camera>();
     public orbitCamera = new PrefabRef<Camera>();
-    public mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
+    public mmdCameraLoader = new PrefabRef<MmdCamera>();
     public audioPlayer = new PrefabRef<AudioPlayer>();
     public mmdSettings = new PrefabRef<MmdSettings>();
 
     public awake(): void {
         const models = this.models;
-        const modelLoaders: MmdModelLoader[] = [];
+        const modelLoaders: MmdModel[] = [];
         for (let i = 0; i < models.length; ++i) {
             const model = models[i];
             const modelLoader = this.spawnModelLoader(model.modelUrl, model.modelMotionUrl);
@@ -47,13 +47,13 @@ export class GenericBootstrapManager extends Component {
         this.engine.scene.addChildFromBuilder(prefab.make());
     }
 
-    private spawnModelLoader(modelUrl: string, modelMotionUrl: string|string[]): MmdModelLoader {
+    private spawnModelLoader(modelUrl: string, modelMotionUrl: string|string[]): MmdModel {
         const mmdSettings = this.mmdSettings.ref;
-        const mmdModelLoader = new PrefabRef<MmdModelLoader>();
+        const mmdModelLoader = new PrefabRef<MmdModel>();
 
         this.engine.scene.addChildFromBuilder(
             this.engine.instantiater.buildGameObject("mmd-model")
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     c.forceAllInterpolateToCubic = mmdSettings?.forceAllInterpolateToCubic ?? false;
 
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -82,7 +82,7 @@ export class GenericBootstrapManager extends Component {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
                 })
-                .getComponent(MmdModelLoader, mmdModelLoader));
+                .getComponent(MmdModel, mmdModelLoader));
 
         return mmdModelLoader.ref!;
     }

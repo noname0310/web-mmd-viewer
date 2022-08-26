@@ -3,9 +3,9 @@ import { Vector3 } from "three/src/Three";
 import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
+import { MmdCamera } from "./MmdCamera";
 import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./MmdCameraAnimationLoader";
-import { MmdCameraLoader } from "./MmdCameraLoader";
-import { MmdModelLoader } from "./MmdModelLoader";
+import { MmdModel } from "./MmdModel";
 import { MmdPlayer } from "./MmdPlayer";
 
 export class MmdController extends Component {
@@ -14,8 +14,8 @@ export class MmdController extends Component {
     private readonly _mmdPlayers: MmdPlayer[] = [];
     private _animationSequencePlayer: AnimationSequencePlayer|null = null;
 
-    private readonly _modelLoaders: MmdModelLoader[] = [];
-    private _cameraLoader: MmdCameraLoader|null = null;
+    private readonly _modelLoaders: MmdModel[] = [];
+    private _cameraLoader: MmdCamera|null = null;
 
     private _physicsUnitStep = 1 / 65;
     private _physicsMaximumStepCount = 3;
@@ -140,19 +140,19 @@ export class MmdController extends Component {
         this._mmdPlayers.length = 0;
     }
 
-    public get modelLoaders(): readonly MmdModelLoader[] {
+    public get modelLoaders(): readonly MmdModel[] {
         return this._modelLoaders;
     }
 
-    public addModelLoader(modelLoader: MmdModelLoader): void {
+    public addModelLoader(modelLoader: MmdModel): void {
         this._modelLoaders.push(modelLoader);
     }
     
-    public get cameraLoader(): MmdCameraLoader|null {
+    public get cameraLoader(): MmdCamera|null {
         return this._cameraLoader;
     }
 
-    public set cameraLoader(value: MmdCameraLoader|null) {
+    public set cameraLoader(value: MmdCamera|null) {
         this._cameraLoader = value;
     }
 

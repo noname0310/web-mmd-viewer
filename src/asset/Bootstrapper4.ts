@@ -21,9 +21,9 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "./script/GlobalAssetManager";
-import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
+import { MmdCamera } from "./script/mmd/MmdCamera";
 import { MmdMaterialUtils, MMDToonMaterial } from "./script/mmd/MmdMaterialUtils";
-import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
+import { MmdModel } from "./script/mmd/MmdModel";
 import { OrbitControls } from "./script/OrbitControls";
 import { PostProcessDisposer } from "./script/render/PostProcessDisposer";
 import { SSRPassOverride } from "./script/render/SSRPassOverride";
@@ -53,8 +53,8 @@ export class Bootstrapper4 extends BaseBootstrapper {
         const orbitCamera = new PrefabRef<Camera>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
 
-        const mmdModelLoader = new PrefabRef<MmdModelLoader>();
-        const mmdCameraLoader = new PrefabRef<MmdCameraLoader>();
+        const mmdModelLoader = new PrefabRef<MmdModel>();
+        const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
 
@@ -240,7 +240,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 new THREE.Vector3(0, 0, 0), 
                 new THREE.Quaternion()//.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2)
             )
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -257,7 +257,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         model.castShadow = false;
                     });
                 })
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -274,7 +274,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         model.castShadow = false;
                     });
                 })
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -294,7 +294,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-model")
-                .withComponent(MmdModelLoader, c => {
+                .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
                     loadingText.appendChild(modelLoadingText);
@@ -465,7 +465,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         }
                     }());
                 })
-                .getComponent(MmdModelLoader, mmdModelLoader))
+                .getComponent(MmdModel, mmdModelLoader))
         ;
     }
 }

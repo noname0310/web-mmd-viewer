@@ -5,9 +5,9 @@ import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/Animation
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { ClockCalibrator } from "../script/animation/ClockCalibrator";
-import { MmdCameraLoader } from "../script/mmd/MmdCameraLoader";
+import { MmdCamera } from "../script/mmd/MmdCamera";
 import { MmdController } from "../script/mmd/MmdController";
-import { MmdModelLoader } from "../script/mmd/MmdModelLoader";
+import { MmdModel } from "../script/mmd/MmdModel";
 import { MmdPlayer } from "../script/mmd/MmdPlayer";
 import { Ui } from "../script/Ui";
 import { UiController } from "../script/UiController";
@@ -16,8 +16,8 @@ export class GameManagerPrefab extends Prefab {
     private _orbitCamera = new PrefabRef<Camera>();
     private _camera = new PrefabRef<Camera>();
     private _audioPlayer = new PrefabRef<AudioPlayer>();
-    private readonly _modelLoaders: PrefabRef<MmdModelLoader>[] = [];
-    private _cameraLoader = new PrefabRef<MmdCameraLoader>();
+    private readonly _modelLoaders: PrefabRef<MmdModel>[] = [];
+    private _cameraLoader = new PrefabRef<MmdCamera>();
     private _modelAnimationName = new PrefabRef<string>();
     private _cameraAnimationName = new PrefabRef<string>();
     private _useIk = new PrefabRef<boolean>(true);
@@ -40,12 +40,12 @@ export class GameManagerPrefab extends Prefab {
         return this;
     }
 
-    public withModelLoader(modelLoader: PrefabRef<MmdModelLoader>): this {
+    public withModelLoader(modelLoader: PrefabRef<MmdModel>): this {
         this._modelLoaders.push(modelLoader);
         return this;
     }
 
-    public withCameraLoader(cameraLoader: PrefabRef<MmdCameraLoader>): this {
+    public withCameraLoader(cameraLoader: PrefabRef<MmdCamera>): this {
         this._cameraLoader = cameraLoader;
         return this;
     }

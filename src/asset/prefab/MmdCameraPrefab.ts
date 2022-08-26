@@ -1,15 +1,15 @@
 import { Camera, CameraType, GameObjectBuilder, Prefab, PrefabRef } from "the-world-engine";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { MmdCameraLoader } from "../script/mmd/MmdCameraLoader";
+import { MmdCamera } from "../script/mmd/MmdCamera";
 
 export class MmdCameraPrefab extends Prefab {
     private _cameraInitializer: ((c: Camera) => void)|null = null;
-    private _cameraLoaderInitializer: ((c: MmdCameraLoader) => void)|null = null;
+    private _cameraLoaderInitializer: ((c: MmdCamera) => void)|null = null;
     private _audioUrl = new PrefabRef<string>();
     private _cameraChildBuilder: GameObjectBuilder|null = null;
 
-    private _cameraLoader = new PrefabRef<MmdCameraLoader>();
+    private _cameraLoader = new PrefabRef<MmdCamera>();
     private _camera = new PrefabRef<Camera>();
     private _audioPlayer = new PrefabRef<AudioPlayer>();
 
@@ -19,7 +19,7 @@ export class MmdCameraPrefab extends Prefab {
         return this;
     }
 
-    public withCameraLoaderInitializer(initializer: (c: MmdCameraLoader) => void): this {
+    public withCameraLoaderInitializer(initializer: (c: MmdCamera) => void): this {
         if (this._cameraLoaderInitializer !== null) throw new Error("cameraLoaderInitializer is already set");
         this._cameraLoaderInitializer = initializer;
         return this;
@@ -36,7 +36,7 @@ export class MmdCameraPrefab extends Prefab {
         return this;
     }
 
-    public getCameraLoader(cameraLoader: PrefabRef<MmdCameraLoader>): this {
+    public getCameraLoader(cameraLoader: PrefabRef<MmdCamera>): this {
         this._cameraLoader = cameraLoader;
         return this;
     }
@@ -62,14 +62,14 @@ export class MmdCameraPrefab extends Prefab {
                 c.cameraType = CameraType.Perspective;
                 this._cameraInitializer?.(c);
             })
-            .withComponent(MmdCameraLoader, c => {
+            .withComponent(MmdCamera, c => {
                 this._cameraLoaderInitializer?.(c);
             })
             .withComponent(AudioPlayer, c => {
                 if (this._audioUrl.ref) c.asyncSetAudioFromUrl(this._audioUrl.ref);
             })
             .getComponent(Camera, this._camera)
-            .getComponent(MmdCameraLoader, this._cameraLoader)
+            .getComponent(MmdCamera, this._cameraLoader)
             .getComponent(AudioPlayer, this._audioPlayer);
         
         if (this._cameraChildBuilder !== null) {
