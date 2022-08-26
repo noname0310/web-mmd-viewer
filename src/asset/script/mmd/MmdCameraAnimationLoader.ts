@@ -95,14 +95,14 @@ export class MmdCameraAnimationLoader {
                     center,
                     interpolationKind,
                     [
-                        new THREE.Vector2(inInterpolation[2] / 127, inInterpolation[3] / 127),
-                        new THREE.Vector2(inInterpolation[6] / 127, inInterpolation[7] / 127),
-                        new THREE.Vector2(inInterpolation[10] / 127, inInterpolation[11] / 127)
+                        new THREE.Vector2(inInterpolation[1] / 127, inInterpolation[3] / 127),
+                        new THREE.Vector2(inInterpolation[5] / 127, inInterpolation[7] / 127),
+                        new THREE.Vector2(inInterpolation[9] / 127, inInterpolation[11] / 127)
                     ],
                     [
-                        new THREE.Vector2(outInterpolation[0] / 127, outInterpolation[1] / 127),
-                        new THREE.Vector2(outInterpolation[4] / 127, outInterpolation[5] / 127),
-                        new THREE.Vector2(outInterpolation[8] / 127, outInterpolation[9] / 127)
+                        new THREE.Vector2(outInterpolation[0] / 127, outInterpolation[2] / 127),
+                        new THREE.Vector2(outInterpolation[4] / 127, outInterpolation[6] / 127),
+                        new THREE.Vector2(outInterpolation[8] / 127, outInterpolation[10] / 127)
                     ]
                 ));
             }
@@ -115,8 +115,8 @@ export class MmdCameraAnimationLoader {
                     frameNumber,
                     quaternion,
                     interpolationKind,
-                    new THREE.Vector2(inInterpolation[14] / 127, inInterpolation[15] / 127),
-                    new THREE.Vector2(outInterpolation[12] / 127, outInterpolation[13] / 127)
+                    new THREE.Vector2(inInterpolation[13] / 127, inInterpolation[15] / 127),
+                    new THREE.Vector2(outInterpolation[12] / 127, outInterpolation[14] / 127)
                 ));
             }
 
@@ -125,8 +125,8 @@ export class MmdCameraAnimationLoader {
                     frameNumber,
                     frame.distance,
                     interpolationKind,
-                    new THREE.Vector2(inInterpolation[18] / 127, inInterpolation[19] / 127),
-                    new THREE.Vector2(outInterpolation[16] / 127, outInterpolation[17] / 127)
+                    new THREE.Vector2(inInterpolation[17] / 127, inInterpolation[19] / 127),
+                    new THREE.Vector2(outInterpolation[15] / 127, outInterpolation[17] / 127)
                 ));
             }
 
@@ -135,8 +135,8 @@ export class MmdCameraAnimationLoader {
                     frameNumber,
                     frame.fov,
                     interpolationKind,
-                    new THREE.Vector2(inInterpolation[22] / 127, inInterpolation[23] / 127),
-                    new THREE.Vector2(outInterpolation[20] / 127, outInterpolation[21] / 127)
+                    new THREE.Vector2(inInterpolation[21] / 127, inInterpolation[23] / 127),
+                    new THREE.Vector2(outInterpolation[19] / 127, outInterpolation[21] / 127)
                 ));
             }
         }
