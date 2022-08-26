@@ -262,6 +262,8 @@ class RigidBody {
         this.boneOffsetForm = boneOffsetForm;
         this.boneOffsetFormInverse = manager.inverseTransform(boneOffsetForm) as Ammo.btTransform;
 
+        this._disposeList.push(this.boneOffsetForm, this.boneOffsetFormInverse);
+
         manager.freeVector3(localInertia);
         manager.freeTransform(form);
         manager.freeTransform(boneForm);
@@ -390,11 +392,5 @@ class RigidBody {
             Ammo.destroy(disposeList[i]);
         }
         this._disposeList.length = 0;
-
-        const motionState = this.body.getMotionState();
-        Ammo.destroy(motionState);
-        Ammo.destroy(this.body);
-        Ammo.destroy(this.boneOffsetForm);
-        Ammo.destroy(this.boneOffsetFormInverse);
     }
 }
