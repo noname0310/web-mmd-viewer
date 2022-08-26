@@ -210,7 +210,7 @@ class AnimationBuilder {
 
             // euler.set(- rot[0], - rot[1], - rot[2]);
             // quaternion.setFromEuler(euler);
-            QuaternionUtils.rotationYawPitchRoll(2 * Math.PI - rot[1], 2 * Math.PI - rot[0], 2 * Math.PI - rot[2], quaternion);
+            QuaternionUtils.rotationYawPitchRoll(-rot[1], -rot[0], -rot[2], quaternion);
 
             position.applyQuaternion(quaternion);
             position.add(center);
