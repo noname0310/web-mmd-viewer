@@ -446,9 +446,8 @@ export class Bootstrapper3 extends BaseBootstrapper {
 
                     c.asyncLoadAnimation("animation1", [
                         // "mmd/flos/flos_model.vmd",
-                        // "mmd/flos/baked_motion.vmd",
                         // "mmd/flos/flos_physics.vmd"
-                        "mmd/flos/nonbake_combined.vmd"
+                        "mmd/flos/combined.vmd"
                     ], () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
