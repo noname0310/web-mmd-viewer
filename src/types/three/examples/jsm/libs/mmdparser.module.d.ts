@@ -9951,14 +9951,26 @@ export type Vmd = {
         position: [number, number, number];
         rotation: [number, number, number, number];
         interpolation: [
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number,
-            number, number, number, number, number, number, number, number
+            //[4][4][4]
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number,
+
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number,
+
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number,
+
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number,
+            number, number, number, number
         ];
     }[];
     morphs: {
