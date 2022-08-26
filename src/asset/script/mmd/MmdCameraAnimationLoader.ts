@@ -53,7 +53,8 @@ export class MmdCameraAnimationLoader {
         if (vmd.metadata.cameraCount === 0) {
             throw new Error("VMD does not contain camera animation.");
         }
-        const frames = vmd.cameras;
+        const frames = [...vmd.cameras];
+        frames.sort((a, b) => a.frameNum - b.frameNum);
 
         const center = new THREE.Vector3();
         const quaternion = new THREE.Quaternion();
@@ -94,14 +95,14 @@ export class MmdCameraAnimationLoader {
                     center,
                     interpolationKind,
                     [
-                        new THREE.Vector2(inInterpolation[2], inInterpolation[3]),
-                        new THREE.Vector2(inInterpolation[6], inInterpolation[7]),
-                        new THREE.Vector2(inInterpolation[10], inInterpolation[11])
+                        new THREE.Vector2(inInterpolation[2] / 127, inInterpolation[3] / 127),
+                        new THREE.Vector2(inInterpolation[6] / 127, inInterpolation[7] / 127),
+                        new THREE.Vector2(inInterpolation[10] / 127, inInterpolation[11] / 127)
                     ],
                     [
-                        new THREE.Vector2(outInterpolation[0], outInterpolation[1]),
-                        new THREE.Vector2(outInterpolation[4], outInterpolation[5]),
-                        new THREE.Vector2(outInterpolation[8], outInterpolation[9])
+                        new THREE.Vector2(outInterpolation[0] / 127, outInterpolation[1] / 127),
+                        new THREE.Vector2(outInterpolation[4] / 127, outInterpolation[5] / 127),
+                        new THREE.Vector2(outInterpolation[8] / 127, outInterpolation[9] / 127)
                     ]
                 ));
             }
@@ -114,8 +115,8 @@ export class MmdCameraAnimationLoader {
                     frameNumber,
                     quaternion,
                     interpolationKind,
-                    new THREE.Vector2(inInterpolation[14], inInterpolation[15]),
-                    new THREE.Vector2(outInterpolation[12], outInterpolation[13])
+                    new THREE.Vector2(inInterpolation[14] / 127, inInterpolation[15] / 127),
+                    new THREE.Vector2(outInterpolation[12] / 127, outInterpolation[13] / 127)
                 ));
             }
 
@@ -124,8 +125,8 @@ export class MmdCameraAnimationLoader {
                     frameNumber,
                     frame.distance,
                     interpolationKind,
-                    new THREE.Vector2(inInterpolation[18], inInterpolation[19]),
-                    new THREE.Vector2(outInterpolation[16], outInterpolation[17])
+                    new THREE.Vector2(inInterpolation[18] / 127, inInterpolation[19] / 127),
+                    new THREE.Vector2(outInterpolation[16] / 127, outInterpolation[17] / 127)
                 ));
             }
 
@@ -134,16 +135,11 @@ export class MmdCameraAnimationLoader {
                     frameNumber,
                     frame.fov,
                     interpolationKind,
-                    new THREE.Vector2(inInterpolation[22], inInterpolation[23]),
-                    new THREE.Vector2(outInterpolation[20], outInterpolation[21])
+                    new THREE.Vector2(inInterpolation[22] / 127, inInterpolation[23] / 127),
+                    new THREE.Vector2(outInterpolation[20] / 127, outInterpolation[21] / 127)
                 ));
             }
         }
-
-        centerKeyframes.sort((a, b) => a.frame - b.frame);
-        distanceKeyframes.sort((a, b) => a.frame - b.frame);
-        quaternionKeyframes.sort((a, b) => a.frame - b.frame);
-        fovKeyframes.sort((a, b) => a.frame - b.frame);
 
         return new AnimationClip([
             {
