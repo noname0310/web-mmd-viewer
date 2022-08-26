@@ -295,7 +295,9 @@ class RigidBody {
     private _getWorldTransformForBone(): Ammo.btTransform {
         const manager = this.manager;
         const tr = this.body.getCenterOfMassTransform();
-        return manager.multiplyTransforms(tr, this.boneOffsetFormInverse) as Ammo.btTransform;
+        const result = manager.multiplyTransforms(tr, this.boneOffsetFormInverse) as Ammo.btTransform;
+        Ammo.destroy(tr);
+        return result;
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -388,5 +390,11 @@ class RigidBody {
             Ammo.destroy(disposeList[i]);
         }
         this._disposeList.length = 0;
+
+        const motionState = this.body.getMotionState();
+        Ammo.destroy(motionState);
+        Ammo.destroy(this.body);
+        Ammo.destroy(this.boneOffsetForm);
+        Ammo.destroy(this.boneOffsetFormInverse);
     }
 }
