@@ -67,7 +67,7 @@ export const Vector3IndependentBezierInterpolator = new class implements IAnimat
         const z = scalarLerp(start.z, end.z, bezierGradientZ);
         return out.set(x, y, z);
     }
-}
+};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const QuaternionBezierInterpolator = new class implements IAnimationInterpolator<Quaternion, Vector2> {
