@@ -13,6 +13,7 @@ import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/an
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { VideoAnimationInstance } from "./script/animation/VideoAnimationInstance";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdModelLoader } from "./script/mmd/MmdModelLoader";
@@ -72,15 +73,9 @@ export class Bootstrapper2 extends BaseBootstrapper {
                 })
                 .getComponent(Camera, orbitCamera))
             
-            .withChild(instantiater.buildGameObject("camera")
-                .withComponent(Camera, c => {
-                    c.priority = -2;
-                    c.cameraType = CameraType.Perspective;
-                    c.fov = 60;
-                    c.near = 1;
-                    c.far = 1500;
-                })
-                .withComponent(MmdCameraLoader, c => {
+            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
+                .withAudioUrl(new PrefabRef("mmd/as_you_like_it/as_you_like_it.mp3"))
+                .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const cameraLoadingText = document.createElement("div");
                     loadingText.appendChild(cameraLoadingText);
@@ -96,58 +91,56 @@ export class Bootstrapper2 extends BaseBootstrapper {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
-                .withComponent(AudioPlayer, c => {
-                    c.asyncSetAudioFromUrl("mmd/as_you_like_it/as_you_like_it.mp3");
-                })
-                .getComponent(Camera, camera)
-                .getComponent(MmdCameraLoader, mmdCameraLoader)
-                .getComponent(AudioPlayer, audioPlayer)
-                
-                .withChild(instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -500))
-                    .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>>, c => {
-                        const video = new VideoAnimationInstance(document.createElement("video"));
-                        animationPlayer.ref!.onAnimationStart.addListener(() => {
-                            video.htmlVideo.play();
-                        });
-                        animationPlayer.ref!.onAnimationPaused.addListener(() => {
-                            video.htmlVideo.pause();
-                        });
-                        animationPlayer.ref!.onAnimationProcess.addListener(frame => {
-                            video.process(frame, audioPlayer.ref!.playbackRate);
-                        });
-                        
-                        const videoElement = video.htmlVideo;
-                        videoElement.autoplay = false;
-                        videoElement.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
-                        videoElement.muted = true;
-                        
-                        const texture = new THREE.VideoTexture(videoElement);
-                        const aspect = 1280 / 720;
-                        const plane = new THREE.Mesh(
-                            new THREE.PlaneBufferGeometry(aspect, 1),
-                            new THREE.MeshBasicMaterial({ map: texture })
-                        );
-                        plane.material.depthTest = true;
-                        plane.material.depthWrite = true;
+                .getCamera(camera)
+                .getCameraLoader(mmdCameraLoader)
+                .getAudioPlayer(audioPlayer)
+                .withCameraChild(
+                    instantiater.buildGameObject("background-video", new THREE.Vector3(0, 0, -500))
+                        .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>>, c => {
+                            const video = new VideoAnimationInstance(document.createElement("video"));
+                            animationPlayer.ref!.onAnimationStart.addListener(() => {
+                                video.htmlVideo.play();
+                            });
+                            animationPlayer.ref!.onAnimationPaused.addListener(() => {
+                                video.htmlVideo.pause();
+                            });
+                            animationPlayer.ref!.onAnimationProcess.addListener(frame => {
+                                video.process(frame, audioPlayer.ref!.playbackRate);
+                            });
+                            
+                            const videoElement = video.htmlVideo;
+                            videoElement.autoplay = false;
+                            videoElement.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
+                            videoElement.muted = true;
+                            
+                            const texture = new THREE.VideoTexture(videoElement);
+                            const aspect = 1280 / 720;
+                            const plane = new THREE.Mesh(
+                                new THREE.PlaneBufferGeometry(aspect, 1),
+                                new THREE.MeshBasicMaterial({ map: texture })
+                            );
+                            plane.material.depthTest = true;
+                            plane.material.depthWrite = true;
 
-                        c.setObject3D(plane, object3D => {
-                            object3D.geometry.dispose();
-                            object3D.material.dispose();
-                        });
+                            c.setObject3D(plane, object3D => {
+                                object3D.geometry.dispose();
+                                object3D.material.dispose();
+                            });
 
-                        c.startCoroutine(function*(): CoroutineIterator {
-                            const mmdCamera = camera.ref!;
-                            const scale = c.transform.localScale;
-                            let lastFov = 0;
-                            for (;;) {
-                                if (lastFov !== mmdCamera.fov || lastFov !== mmdCamera.fov) {
-                                    scale.setScalar(Math.tan(mmdCamera.fov / 2 * THREE.MathUtils.DEG2RAD) * 2 * 500);
-                                    lastFov = mmdCamera.fov;
+                            c.startCoroutine(function*(): CoroutineIterator {
+                                const mmdCamera = camera.ref!;
+                                const scale = c.transform.localScale;
+                                let lastFov = 0;
+                                for (;;) {
+                                    if (lastFov !== mmdCamera.fov || lastFov !== mmdCamera.fov) {
+                                        scale.setScalar(Math.tan(mmdCamera.fov / 2 * THREE.MathUtils.DEG2RAD) * 2 * 500);
+                                        lastFov = mmdCamera.fov;
+                                    }
+                                    yield null;
                                 }
-                                yield null;
-                            }
-                        }());
-                    })))
+                            }());
+                        }))
+                .make())
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {

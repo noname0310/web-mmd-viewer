@@ -29,6 +29,7 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
+import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "./script/GlobalAssetManager";
 import { MmdCameraLoader } from "./script/mmd/MmdCameraLoader";
 import { MmdMaterialUtils, MMDToonMaterial } from "./script/mmd/MmdMaterialUtils";
@@ -116,37 +117,31 @@ export class Bootstrapper3 extends BaseBootstrapper {
                 })
                 .getComponent(Camera, orbitCamera))
             
-            .withChild(instantiater.buildGameObject("mmd-camera-center")
-                .withChild(instantiater.buildGameObject("camera")
-                    .withComponent(Camera, c => {
-                        c.near = 1;
-                        c.far = 1000;
-                        c.priority = -2;
-                        c.cameraType = CameraType.Perspective;
-                        c.backgroundColor = Color.fromHex("#a9caeb");
-                    })
-                    .withComponent(MmdCameraLoader, c => {
-                        const loadingText = Ui.getOrCreateLoadingElement();
-                        const cameraLoadingText = document.createElement("div");
-                        loadingText.appendChild(cameraLoadingText);
+            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
+                .withAudioUrl(new PrefabRef("mmd/flos/flos_YuNi.mp3"))
+                .withCameraInitializer(c => {
+                    c.backgroundColor = Color.fromHex("#a9caeb");
+                })
+                .withCameraLoaderInitializer(c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const cameraLoadingText = document.createElement("div");
+                    loadingText.appendChild(cameraLoadingText);
 
-                        c.onProgress.addListener((e) => {
-                            if (e.lengthComputable) {
-                                const percentComplete = e.loaded / e.total * 100;
-                                cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
-                            }
-                        });
+                    c.onProgress.addListener((e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
 
-                        c.asyncLoadAnimation("animation1", "mmd/flos/flos_camera_mod2.vmd", () => {
-                            cameraLoadingText.innerText = "camera loaded";
-                        });
-                    })
-                    .withComponent(AudioPlayer, c => {
-                        c.asyncSetAudioFromUrl("mmd/flos/flos_YuNi.mp3");
-                    })
-                    .getComponent(Camera, camera)
-                    .getComponent(MmdCameraLoader, mmdCameraLoader)
-                    .getComponent(AudioPlayer, audioPlayer)))
+                    c.asyncLoadAnimation("animation1", "mmd/flos/flos_camera_mod2.vmd", () => {
+                        cameraLoadingText.innerText = "camera loaded";
+                    });
+                })
+                .getCamera(camera)
+                .getCameraLoader(mmdCameraLoader)
+                .getAudioPlayer(audioPlayer)
+                .make())
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
