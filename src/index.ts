@@ -2,16 +2,16 @@ import Ammo from "ammojs-typed";
 import { BootstrapperConstructor, Game } from "the-world-engine";
 import { Bootstrapper as BaseBootstrapper } from "the-world-engine";
 
+import { AsYouLikeItBootstrapper } from "./asset/AsYouLikeItBootstrapper";
 import TestAudio from "./asset/audio/audioTest.mp3";
-import { Bootstrapper } from "./asset/Bootstrapper";
-import { Bootstrapper2 } from "./asset/Bootstrapper2";
-import { Bootstrapper3 } from "./asset/Bootstrapper3";
-import { Bootstrapper4 } from "./asset/Bootstrapper4";
-import { Bootstrapper5 } from "./asset/Bootstrapper5";
-import { Bootstrapper6 } from "./asset/Bootstrapper6";
-import { Bootstrapper7 } from "./asset/Bootstrapper7";
+import { ConquerorBootstrapper } from "./asset/ConquerorBootstrapper";
+import { DaybreakFrontlineBootstrapper } from "./asset/DaybreakFrontlineBootstrapper";
+import { FlosBootstrapper } from "./asset/FlosBootstrapper";
 //import { InterpolationTestBootstrapper } from "./asset/InterpolationTestBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/MmdGenericBootstrapper";
+import { NotitleBootstrapper } from "./asset/NotitleBootstrapper";
+import { PizzicatoDropsBootstrapper } from "./asset/PizzicatoDropsBootstrapper";
+import { RuSeBootstrapper } from "./asset/RuSeBootstrapper";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
@@ -45,37 +45,37 @@ function startGame(): void {
         const button1 = document.createElement("button");
         button1.className = "select_bootstrapper_button";
         button1.innerText = "pizzicato drops";
-        button1.onclick = (): void => runGame(Bootstrapper);
+        button1.onclick = (): void => runGame(PizzicatoDropsBootstrapper);
 
         const button2 = document.createElement("button");
         button2.className = "select_bootstrapper_button";
         button2.innerText = "as you like it";
-        button2.onclick = (): void => runGame(Bootstrapper2);
+        button2.onclick = (): void => runGame(AsYouLikeItBootstrapper);
 
         const button3 = document.createElement("button");
         button3.className = "select_bootstrapper_button";
         button3.innerText = "flos";
-        button3.onclick = (): void => runGame(Bootstrapper3);
+        button3.onclick = (): void => runGame(FlosBootstrapper);
 
         const button4 = document.createElement("button");
         button4.className = "select_bootstrapper_button";
         button4.innerText = "ru se";
-        button4.onclick = (): void => runGame(Bootstrapper4);
+        button4.onclick = (): void => runGame(RuSeBootstrapper);
 
         const button5 = document.createElement("button");
         button5.className = "select_bootstrapper_button";
         button5.innerText = "daybreak frontline";
-        button5.onclick = (): void => runGame(Bootstrapper5);
+        button5.onclick = (): void => runGame(DaybreakFrontlineBootstrapper);
 
         const button6 = document.createElement("button");
         button6.className = "select_bootstrapper_button";
         button6.innerText = "notitle";
-        button6.onclick = (): void => runGame(Bootstrapper6);
+        button6.onclick = (): void => runGame(NotitleBootstrapper);
 
         const button7 = document.createElement("button");
         button7.className = "select_bootstrapper_button";
         button7.innerText = "conqueror";
-        button7.onclick = (): void => runGame(Bootstrapper7);
+        button7.onclick = (): void => runGame(ConquerorBootstrapper);
 
         const button8 = document.createElement("button");
         button8.className = "select_bootstrapper_button";

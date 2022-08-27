@@ -36,7 +36,7 @@ import { WebGLGlobalPostProcessVolume } from "./script/render/WebGLGlobalPostPro
 import { Ui } from "./script/Ui";
 import WaterNormal from "./texture/waternormals.jpg";
 
-export class Bootstrapper6 extends BaseBootstrapper {
+export class NotitleBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);

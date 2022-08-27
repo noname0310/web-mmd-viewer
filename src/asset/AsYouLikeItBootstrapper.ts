@@ -21,7 +21,7 @@ import { MmdModel } from "./script/mmd/MmdModel";
 import { OrbitControls } from "./script/OrbitControls";
 import { Ui } from "./script/Ui";
 
-export class Bootstrapper2 extends BaseBootstrapper {
+export class AsYouLikeItBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);

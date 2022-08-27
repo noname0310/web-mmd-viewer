@@ -41,7 +41,7 @@ import FabricNormal from "./texture/fabric02.png";
 import WaterHouseMatcap from "./texture/waterhouse_matcap.png";
 import WaterNormal from "./texture/waternormals.jpg";
 
-export class Bootstrapper3 extends BaseBootstrapper {
+export class FlosBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);

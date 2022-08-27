@@ -3,6 +3,7 @@ import {
     Camera,
     CameraType,
     Color,
+    Component,
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
@@ -17,8 +18,10 @@ import { SAOPass } from "three/examples/jsm/postprocessing/SAOPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import * as THREE from "three/src/Three";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
+import { ConquerorLightAnimation } from "./animation/ConquerorLightAnimation";
 import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "./script/GlobalAssetManager";
@@ -32,7 +35,7 @@ import { SSRPassOverride } from "./script/render/SSRPassOverride";
 import { Ui } from "./script/Ui";
 import EntranceHallHdr from "./texture/entrance_hall_1k.hdr";
 
-export class Bootstrapper4 extends BaseBootstrapper {
+export class ConquerorBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);
@@ -64,6 +67,11 @@ export class Bootstrapper4 extends BaseBootstrapper {
         const assetManager = new PrefabRef<GlobalAssetManager>();
 
         const ssrPassSelects: THREE.Mesh[] = [];
+
+        const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
+        const ambientLight = new PrefabRef<Object3DContainer<THREE.HemisphereLight>>();
+        const spotLight = new PrefabRef<Object3DContainer<THREE.SpotLight>>();
+        const stageLoader = new PrefabRef<MmdModel[]>();
         
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -74,8 +82,25 @@ export class Bootstrapper4 extends BaseBootstrapper {
                 .withAudioPlayer(audioPlayer)
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
+                .withUseIk(new PrefabRef(false))
+                .withUsePhysics(new PrefabRef(false))
+                .getAnimationPlayer(animationPlayer)
                 .make())
 
+            .withChild(instantiater.buildGameObject("custom-animation-override")
+                .withComponent(class extends Component {
+                    public start(): void {
+                        const stage = stageLoader.ref!.map(loader => loader.object3DContainer!);
+                        
+                        const lightAnimationInstance = ConquerorLightAnimation.sequence.createInstance(
+                            ConquerorLightAnimation.createBindInfo(ambientLight.ref!.object3D!, spotLight.ref!.object3D!, stage)
+                        );
+
+                        animationPlayer.ref!.onAnimationProcess.addListener((frameTime) => {
+                            lightAnimationInstance.process(frameTime);
+                        });
+                    }
+                }))
                 
             .withChild(instantiater.buildGameObject("asset-manager")
                 .withComponent(GlobalAssetManager, c => {
@@ -103,9 +128,9 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+                
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
-                .withAudioUrl(new PrefabRef("mmd/ruse/ruse.mp3"))
+                .withAudioUrl(new PrefabRef("mmd/conqueror/MMDConquerorIA.mp3"))
                 .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const cameraLoadingText = document.createElement("div");
@@ -118,7 +143,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         }
                     });
 
-                    c.asyncLoadAnimation("animation1", "mmd/ruse/camera.vmd", () => {
+                    c.asyncLoadAnimation("animation1", "mmd/conqueror/camera.vmd", () => {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
@@ -145,8 +170,9 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         // ssrPass.raymarchTargetScale = 1;
                         // ssrPass.renderTargetScale = 1;
                         // ssrPass.stride = 60;
+                        (globalThis as any).ssrPass = ssrPass;
 
-                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(true, 256);
+                        const adaptiveTonemappingPass = new AdaptiveToneMappingPass(false, 256);
                         adaptiveTonemappingPass.setMiddleGrey(8);
 
                         const smaaPass = new SMAAPass(screen.width, screen.height);
@@ -175,8 +201,9 @@ export class Bootstrapper4 extends BaseBootstrapper {
             
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
-                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5), object3D => object3D.dispose());
-                }))
+                    c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9), object3D => object3D.dispose());
+                })
+                .getComponent(Object3DContainer<THREE.HemisphereLight>, ambientLight))
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-5, 30, 100))
                 .withComponent(Object3DContainer<THREE.DirectionalLight>, c => {
@@ -204,6 +231,20 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     }());
                 })
                 .getComponent(Object3DContainer, directionalLight))
+
+            .withChild(instantiater.buildGameObject("spot-light", new THREE.Vector3(24, 22.600, -25.950))
+                .withComponent(Object3DContainer<THREE.SpotLight>, c => {
+                    const light = new THREE.SpotLight(0xffffff, 0.5);
+                    light.castShadow = true;
+                    light.shadow.mapSize.width = 1024 * 8;
+                    light.shadow.mapSize.height = 1024 * 8;
+                    light.shadow.camera.near = 0.1;
+                    light.shadow.camera.far = 400;
+                    light.power = 12;
+                    light.intensity = 7;
+                    c.setObject3D(light, object3D => object3D.dispose());
+                })
+                .getComponent(Object3DContainer, spotLight))
 
             .withChild(instantiater.buildGameObject("polar-grid-helper")
                 .active(false)
@@ -257,6 +298,18 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         modelLoadingText.innerText = "stage1 loaded";
                         model.receiveShadow = true;
                         model.castShadow = false;
+
+                        const materials = model!.material instanceof Array ? model!.material : [model!.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            material.emissive = new THREE.Color(0.1, 0.1, 0.1);
+                        }
+                    });
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
                     });
                 })
                 .withComponent(MmdModel, c => {
@@ -273,7 +326,18 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.asyncLoadModel("mmd/舞踏会風ステージVer2/タペストリー.pmx", model => {
                         modelLoadingText.innerText = "stage2 loaded";
                         model.receiveShadow = true;
-                        model.castShadow = false;
+
+                        model.castShadow = false; const materials = model!.material instanceof Array ? model!.material : [model!.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            material.emissive = new THREE.Color(0.1, 0.1, 0.1);
+                        }
+                    });
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
                     });
                 })
                 .withComponent(MmdModel, c => {
@@ -291,9 +355,21 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         modelLoadingText.innerText = "stage3 loaded";
                         model.receiveShadow = true;
                         model.castShadow = false;
+                        const materials = model!.material instanceof Array ? model!.material : [model!.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            const material = materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                            material.emissive = new THREE.Color(0.1, 0.1, 0.1);
+                        }
                         ssrPassSelects.push(model);
                     });
-                }))
+                    c.onDisposeObject3D.addListener(mesh => {
+                        const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
+                        for (let i = 0; i < materials.length; ++i) {
+                            MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
+                        }
+                    });
+                })
+                .getComponents(stageLoader, MmdModel))
 
             .withChild(instantiater.buildGameObject("mmd-model")
                 .withComponent(MmdModel, c => {
@@ -315,12 +391,16 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         model!.traverse(object => {
                             if ((object as THREE.Mesh).isMesh) {
                                 object.castShadow = true;
+                                object.receiveShadow = true;
                                 object.frustumCulled = false;
                             }
                         });
 
                         const materials = model!.material instanceof Array ? model!.material : [model!.material];
-                        
+                        for (let i = 0; i < materials.length; ++i) {
+                            materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
+                        }
+
                         for (let i = 0; i < materials.length; ++i) {
                             const material = materials[i];
                             const name = material.name;
@@ -331,7 +411,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             name !== "金　3" &&
                             name !== "ボタン") continue;
 
-                            const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                            const standardMaterial = materials[i] as THREE.MeshStandardMaterial;
                             standardMaterial.roughness = 0;
                             standardMaterial.metalness = 0.9;
                             standardMaterial.envMap?.dispose();
@@ -347,7 +427,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             name !== "銀の王冠" && 
                             name !== "銀1") continue;
 
-                            const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                            const standardMaterial = materials[i] as THREE.MeshStandardMaterial;
                             standardMaterial.roughness = 0;
                             standardMaterial.metalness = 0.4;
                             standardMaterial.envMap?.dispose();
@@ -356,21 +436,21 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             standardMaterial.lightMapIntensity = 0.5;
                         }
 
-                        for (let i = 0; i < materials.length; ++i) {
-                            const material = materials[i];
-                            const name = material.name;
-                            if (name !== "黒い" &&
-                            name !== "クローク" &&
-                            name !== "ショーツ" &&
-                            name !== "上着" &&
-                            name !== "上着の中") continue;
+                        // for (let i = 0; i < materials.length; ++i) {
+                        //     const material = materials[i];
+                        //     const name = material.name;
+                        //     if (name !== "黒い" &&
+                        //     name !== "クローク" &&
+                        //     name !== "ショーツ" &&
+                        //     name !== "上着" &&
+                        //     name !== "上着の中") continue;
 
-                            materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
-                        }
+                        //     materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
+                        // }
 
                         {
                             const eyeMatIndex = materials.findIndex(m => m.name === "eyes");
-                            const eyes = materials[eyeMatIndex] = MmdMaterialUtils.convert(materials[eyeMatIndex] as MMDToonMaterial);
+                            const eyes = materials[eyeMatIndex] as THREE.MeshStandardMaterial;
                             eyes.roughness = 0;
                             eyes.metalness = 0.3;
                             eyes.envMapIntensity = 0.5;
@@ -384,7 +464,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                             const hairs = ["髪　01", "髪　02", "髪　03"];
                             for (let i = 0; i < hairs.length; ++i) {
                                 const hairIndex = materials.findIndex(m => m.name === hairs[i]);
-                                const hair = MmdMaterialUtils.convert(materials[hairIndex] as MMDToonMaterial);
+                                const hair = materials[hairIndex] as THREE.MeshStandardMaterial;
                                 hair.roughness = 0.2;
                                 hair.metalness = 0.0;
                                 hair.envMapIntensity = 0.1;
@@ -396,7 +476,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                         }
 
                         const eyeball = materials.find(m => m.name === "白い目")! as THREE.MeshStandardMaterial;
-                        eyeball.emissive = new THREE.Color(0.4, 0.4, 0.4);
+                        eyeball.emissive = new THREE.Color(0.1, 0.1, 0.1);
                     });
                     c.onDisposeObject3D.addListener(mesh => {
                         const materials = mesh.material instanceof Array ? mesh.material : [mesh.material];
@@ -406,7 +486,8 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     });
                     c.asyncLoadAnimation("animation1", 
                         [
-                            "mmd/ruse/model.vmd"
+                            "mmd/conqueror/model.vmd",
+                            "mmd/conqueror/physics_reduce2.vmd"
                         ], () => {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
