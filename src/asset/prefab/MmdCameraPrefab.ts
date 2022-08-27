@@ -1,4 +1,4 @@
-import { Camera, CameraType, GameObjectBuilder, Prefab, PrefabRef } from "the-world-engine";
+import { Camera, CameraType, Color, GameObjectBuilder, Prefab, PrefabRef } from "the-world-engine";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCamera } from "../script/mmd/MmdCamera";
@@ -60,6 +60,7 @@ export class MmdCameraPrefab extends Prefab {
                 c.far = 1000;
                 c.priority = -2;
                 c.cameraType = CameraType.Perspective;
+                c.backgroundColor = new Color(1, 1, 1, 1);
                 this._cameraInitializer?.(c);
             })
             .withComponent(MmdCamera, c => {

@@ -2,6 +2,7 @@ import {
     Bootstrapper as BaseBootstrapper,
     Camera,
     CameraType,
+    Color,
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
@@ -92,6 +93,7 @@ export class Bootstrapper4 extends BaseBootstrapper {
                     c.near = 1;
                     c.far = 500;
                     c.priority = -1;
+                    c.backgroundColor = new Color(1, 1, 1, 1);
                 })
                 .withComponent(OrbitControls, c => {
                     c.enabled = true;
