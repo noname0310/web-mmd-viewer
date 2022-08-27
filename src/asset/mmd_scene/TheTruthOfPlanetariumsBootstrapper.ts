@@ -197,12 +197,12 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                 
                 .withChild(instantiater.buildGameObject("ambient-light")
                     .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
-                        c.setObject3D(new THREE.HemisphereLight(0xdfd7ff, 0xffffff, 0.320), object3D => object3D.dispose());
+                        c.setObject3D(new THREE.HemisphereLight(0xdfd7ff, 0xffffff, 0.220), object3D => object3D.dispose());
                     }))
 
                 .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 70))
                     .withComponent(Object3DContainer<THREE.DirectionalLight>, c => {
-                        const light = new THREE.DirectionalLight(0xffffff, 0.1);
+                        const light = new THREE.DirectionalLight(0xdfd7ff, 0.2);
                         light.castShadow = true;
                         light.shadow.mapSize.width = 1024 * 8;
                         light.shadow.mapSize.height = 1024 * 8;
@@ -254,7 +254,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                             const converted = materials as THREE.MeshStandardMaterial[];
                             {
                                 const glass = converted.find(m => m.name === "床")!;
-                                glass.emissive = new THREE.Color().setRGB(-0.2, -0.2, -0.2);
+                                glass.emissive = new THREE.Color().setRGB(-0.1, -0.1, -0.1);
                             }
                         });
 
