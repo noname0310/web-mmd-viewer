@@ -109,7 +109,6 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                 .getComponent(Camera, orbitCamera))
             
             .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2))
-                .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 
                 .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                     .withAudioUrl(new PrefabRef("mmd/the_truth_of_planetariums/the truth of planetariums.mp3"))
