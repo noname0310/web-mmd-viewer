@@ -12,6 +12,7 @@ import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/mmd_scene/MmdGene
 import { NotitleBootstrapper } from "./asset/mmd_scene/NotitleBootstrapper";
 import { PizzicatoDropsBootstrapper } from "./asset/mmd_scene/PizzicatoDropsBootstrapper";
 import { RuSeBootstrapper } from "./asset/mmd_scene/RuSeBootstrapper";
+import { TheTruthOfPlanetariumsBootstrapper } from "./asset/mmd_scene/TheTruthOfPlanetariumsBootStrapper";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
@@ -130,19 +131,7 @@ function startGame(): void {
         const button11 = document.createElement("button");
         button11.className = "select_bootstrapper_button";
         button11.innerText = "the truth of planetariums";
-        button11.onclick = (): void => runGame(MmdGenericBootstrapper, {
-            models: [
-                {
-                    modelUrl: "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx",
-                    modelMotionUrl: ["mmd/the_truth_of_planetariums/motion.vmd", "mmd/the_truth_of_planetariums/physics_reduce4.vmd"]
-                }
-            ],
-            cameraMotionUrl: "mmd/the_truth_of_planetariums/camera.vmd",
-            audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3",
-            settings: {
-                usePhysics: false
-            }
-        } as MmdLoadParams);
+        button11.onclick = (): void => runGame(TheTruthOfPlanetariumsBootstrapper);
 
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
@@ -158,19 +147,18 @@ function startGame(): void {
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        //button11.onclick(new MouseEvent("click"));
-        //runGame(InterpolationTestBootstrapper);
+        button11.onclick(new MouseEvent("click"));
 
-        runGame(MmdGenericBootstrapper, {
-            models: [
-                {
-                    modelUrl: "mmd/box_motion/Box10.pmx",
-                    modelMotionUrl: "mmd/box_motion/motion.vmd"
-                }
-            ],
-            cameraMotionUrl: "mmd/box_motion/empty_camera.vmd",
-            audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3"
-        });
+        // runGame(MmdGenericBootstrapper, {
+        //     models: [
+        //         {
+        //             modelUrl: "mmd/box_motion/Box10.pmx",
+        //             modelMotionUrl: "mmd/box_motion/motion.vmd"
+        //         }
+        //     ],
+        //     cameraMotionUrl: "mmd/box_motion/empty_camera.vmd",
+        //     audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3"
+        // });
     });
 }
 
