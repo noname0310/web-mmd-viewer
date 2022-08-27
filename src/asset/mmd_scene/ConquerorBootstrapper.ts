@@ -21,19 +21,19 @@ import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { ConquerorLightAnimation } from "./animation/ConquerorLightAnimation";
-import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
-import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
-import { GlobalAssetManager } from "./script/GlobalAssetManager";
-import { MmdCamera } from "./script/mmd/MmdCamera";
-import { MmdMaterialUtils, MMDToonMaterial } from "./script/mmd/MmdMaterialUtils";
-import { MmdModel } from "./script/mmd/MmdModel";
-import { OrbitControls } from "./script/OrbitControls";
-import { PostProcessDisposer } from "./script/render/PostProcessDisposer";
-import { SSRPassOverride } from "./script/render/SSRPassOverride";
-//import { SSRPass } from "./script/screenSpaceReflectionsPass/src/SSRPass";
-import { Ui } from "./script/Ui";
-import EntranceHallHdr from "./texture/entrance_hall_1k.hdr";
+import { ConquerorLightAnimation } from "../animation/ConquerorLightAnimation";
+import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
+import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
+import { GlobalAssetManager } from "../script/GlobalAssetManager";
+import { MmdCamera } from "../script/mmd/MmdCamera";
+import { MmdMaterialUtils, MMDToonMaterial } from "../script/mmd/MmdMaterialUtils";
+import { MmdModel } from "../script/mmd/MmdModel";
+import { OrbitControls } from "../script/OrbitControls";
+import { PostProcessDisposer } from "../script/render/PostProcessDisposer";
+import { SSRPassOverride } from "../script/render/SSRPassOverride";
+//import { SSRPass } from "../script/screenSpaceReflectionsPass/src/SSRPass";
+import { Ui } from "../script/Ui";
+import EntranceHallHdr from "../texture/entrance_hall_1k.hdr";
 
 export class ConquerorBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {

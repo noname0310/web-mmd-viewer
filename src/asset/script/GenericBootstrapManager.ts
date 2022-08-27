@@ -1,7 +1,7 @@
 import { Camera, Component, PrefabRef } from "the-world-engine";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { MmdSettings } from "../MmdGenericBootstrapper";
+import { MmdSettings } from "../mmd_scene/MmdGenericBootstrapper";
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCamera } from "./mmd/MmdCamera";
 import { MmdModel } from "./mmd/MmdModel";

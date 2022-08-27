@@ -27,14 +27,14 @@ import { Water } from "three/examples/jsm/objects/Water";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { GameManagerPrefab } from "./prefab/GameManagerPrefab";
-import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
-import { MmdCamera } from "./script/mmd/MmdCamera";
-import { MmdModel } from "./script/mmd/MmdModel";
-import { OrbitControls } from "./script/OrbitControls";
-import { WebGLGlobalPostProcessVolume } from "./script/render/WebGLGlobalPostProcessVolume";
-import { Ui } from "./script/Ui";
-import WaterNormal from "./texture/waternormals.jpg";
+import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
+import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
+import { MmdCamera } from "../script/mmd/MmdCamera";
+import { MmdModel } from "../script/mmd/MmdModel";
+import { OrbitControls } from "../script/OrbitControls";
+import { WebGLGlobalPostProcessVolume } from "../script/render/WebGLGlobalPostProcessVolume";
+import { Ui } from "../script/Ui";
+import WaterNormal from "../texture/waternormals.jpg";
 
 export class NotitleBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {

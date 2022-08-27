@@ -12,12 +12,12 @@ import {
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
-import { GenericBootstrapManager } from "./script/GenericBootstrapManager";
-import { MmdCamera } from "./script/mmd/MmdCamera";
-import { MmdModel } from "./script/mmd/MmdModel";
-import { OrbitControls } from "./script/OrbitControls";
-import { Ui } from "./script/Ui";
+import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
+import { GenericBootstrapManager } from "../script/GenericBootstrapManager";
+import { MmdCamera } from "../script/mmd/MmdCamera";
+import { MmdModel } from "../script/mmd/MmdModel";
+import { OrbitControls } from "../script/OrbitControls";
+import { Ui } from "../script/Ui";
 
 export interface MmdLoadParams {
     models: {

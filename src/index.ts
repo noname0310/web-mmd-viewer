@@ -2,16 +2,16 @@ import Ammo from "ammojs-typed";
 import { BootstrapperConstructor, Game } from "the-world-engine";
 import { Bootstrapper as BaseBootstrapper } from "the-world-engine";
 
-import { AsYouLikeItBootstrapper } from "./asset/AsYouLikeItBootstrapper";
 import TestAudio from "./asset/audio/audioTest.mp3";
-import { ConquerorBootstrapper } from "./asset/ConquerorBootstrapper";
-import { DaybreakFrontlineBootstrapper } from "./asset/DaybreakFrontlineBootstrapper";
-import { FlosBootstrapper } from "./asset/FlosBootstrapper";
+import { AsYouLikeItBootstrapper } from "./asset/mmd_scene/AsYouLikeItBootstrapper";
+import { ConquerorBootstrapper } from "./asset/mmd_scene/ConquerorBootstrapper";
+import { DaybreakFrontlineBootstrapper } from "./asset/mmd_scene/DaybreakFrontlineBootstrapper";
+import { FlosBootstrapper } from "./asset/mmd_scene/FlosBootstrapper";
 //import { InterpolationTestBootstrapper } from "./asset/InterpolationTestBootstrapper";
-import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/MmdGenericBootstrapper";
-import { NotitleBootstrapper } from "./asset/NotitleBootstrapper";
-import { PizzicatoDropsBootstrapper } from "./asset/PizzicatoDropsBootstrapper";
-import { RuSeBootstrapper } from "./asset/RuSeBootstrapper";
+import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/mmd_scene/MmdGenericBootstrapper";
+import { NotitleBootstrapper } from "./asset/mmd_scene/NotitleBootstrapper";
+import { PizzicatoDropsBootstrapper } from "./asset/mmd_scene/PizzicatoDropsBootstrapper";
+import { RuSeBootstrapper } from "./asset/mmd_scene/RuSeBootstrapper";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {
