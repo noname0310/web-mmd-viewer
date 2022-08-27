@@ -12,7 +12,7 @@ import { MmdGenericBootstrapper, MmdLoadParams } from "./asset/mmd_scene/MmdGene
 import { NotitleBootstrapper } from "./asset/mmd_scene/NotitleBootstrapper";
 import { PizzicatoDropsBootstrapper } from "./asset/mmd_scene/PizzicatoDropsBootstrapper";
 import { RuSeBootstrapper } from "./asset/mmd_scene/RuSeBootstrapper";
-import { TheTruthOfPlanetariumsBootstrapper } from "./asset/mmd_scene/TheTruthOfPlanetariumsBootStrapper";
+import { TheTruthOfPlanetariumsBootstrapper } from "./asset/mmd_scene/TheTruthOfPlanetariumsBootstrapper";
 
 function startGame(): void {
     Ammo(Ammo).then(() => {

@@ -16,15 +16,12 @@ import {
     Bootstrapper as BaseBootstrapper,
     Camera,
     CameraType,
-    Color,
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
     WebGLRendererLoader
 } from "the-world-engine";
-import { Sky } from "three/examples/jsm/objects/Sky";
-import { Water } from "three/examples/jsm/objects/Water";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
@@ -38,8 +35,6 @@ import { OrbitControls } from "../script/OrbitControls";
 import { WebGLGlobalPostProcessVolume } from "../script/render/WebGLGlobalPostProcessVolume";
 import { Ui } from "../script/Ui";
 import FabricNormal from "../texture/fabric02.png";
-import WaterHouseMatcap from "../texture/waterhouse_matcap.png";
-import WaterNormal from "../texture/waternormals.jpg";
 
 export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -67,8 +62,6 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
-
-        const water = new PrefabRef<Object3DContainer<Water>>();
         
         let depthOfFieldEffect: DepthOfFieldEffect|null = null;
 
@@ -88,10 +81,9 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("asset-manager")
                 .withComponent(GlobalAssetManager, c => {
-                    const waterHouseEnv = new THREE.TextureLoader().load(WaterHouseMatcap);
-                    waterHouseEnv.mapping = THREE.EquirectangularReflectionMapping;
-                    waterHouseEnv.encoding = THREE.sRGBEncoding;
-                    c.addAsset("waterHouseEnv", waterHouseEnv);
+                    const nightSkyDome = new THREE.TextureLoader().load("mmd/skydome/night.jpg");
+                    nightSkyDome.mapping = THREE.EquirectangularReflectionMapping;
+                    c.addAsset("nightSkyDome", nightSkyDome);
 
                     const fabricNormal = new THREE.TextureLoader().load(FabricNormal);
                     fabricNormal.wrapS = fabricNormal.wrapT = THREE.RepeatWrapping;
@@ -106,7 +98,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                     c.near = 1;
                     c.far = 1500;
                     c.priority = -1;
-                    c.backgroundColor = Color.fromHex("#a9caeb");
+                    c.backgroundColor = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                 })
                 .withComponent(OrbitControls, c => {
                     c.enabled = true;
@@ -120,7 +112,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/the_truth_of_planetariums/the truth of planetariums.mp3"))
                 .withCameraInitializer(c => {
-                    c.backgroundColor = Color.fromHex("#a9caeb");
+                    c.backgroundColor = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                 })
                 .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -242,82 +234,6 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                 })
                 .getComponent(Object3DContainer, directionalLight))
 
-            .withChild(instantiater.buildGameObject("water",
-                new THREE.Vector3(0, -20, 0),
-                new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
-            )
-                .withComponent(Object3DContainer<Water>, c => {
-                    const water = new Water(
-                        new THREE.PlaneGeometry( 10000, 10000 ),
-                        {
-                            textureWidth: 512,
-                            textureHeight: 512,
-                            waterNormals: new THREE.TextureLoader().load(WaterNormal, (texture) => {
-                                texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                            }),
-                            sunDirection: new THREE.Vector3(),
-                            sunColor: 0xffffff,
-                            waterColor: 0x001e0f,
-                            distortionScale: 3.7,
-                            fog: c.engine.scene.unsafeGetThreeScene().fog !== undefined
-                        }
-                    );
-                    water.geometry.name = "water-geometry";
-
-                    c.setObject3D(water, object3D => {
-                        object3D.material.dispose();
-                        object3D.geometry.dispose();
-                    });
-
-                    c.startCoroutine(function*(): CoroutineIterator {
-                        for (; ;) {
-                            water.material.uniforms["time"].value += 1.0 / 60.0;
-                            yield null;
-                        }
-                    }());
-                })
-                .getComponent(Object3DContainer, water))
-
-            .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(450000))
-                .active(true)
-                .withComponent(Object3DContainer<Sky>, c => {
-                    const sky = new Sky();
-                    sky.geometry.name = "sky-geometry";
-                    
-                    const skyUniforms = sky.material.uniforms;
-                    
-                    skyUniforms["turbidity"].value = 40;
-                    skyUniforms["rayleigh"].value = 1;
-                    skyUniforms["mieCoefficient"].value = 0.002;
-                    skyUniforms["mieDirectionalG"].value = 1;
-    
-                    const sun = new THREE.Vector3();
-                    const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
-                    let renderTarget: THREE.WebGLRenderTarget;
-    
-                    function updateSun(): void {
-                        sun.copy(directionalLight.ref!.transform.localPosition).normalize();
-    
-                        sky.material.uniforms["sunPosition"].value.copy(sun);
-                        water.ref!.object3D!.material.uniforms["sunDirection"].value.copy( sun ).normalize();
-    
-                        if ( renderTarget !== undefined ) renderTarget.dispose();
-    
-                        renderTarget = pmremGenerator.fromScene(sky as any);
-    
-                        c.engine.scene.unsafeGetThreeScene().environment = renderTarget.texture;
-                    }
-    
-                    updateSun();
-
-                    c.setObject3D(sky, object3D => {
-                        object3D.material.dispose();
-                        object3D.geometry.dispose();
-                        pmremGenerator.dispose();
-                        renderTarget.dispose();
-                    });
-                }))
-
             .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, 0))
                 .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -397,7 +313,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                             eyes.envMapIntensity = 0.5;
                             eyes.lightMapIntensity = 0.5;
                             eyes.envMap?.dispose();
-                            eyes.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
+                            eyes.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                             eyes.needsUpdate = true;
                         }
                         {
@@ -409,7 +325,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                                 hair.envMapIntensity = 0.1;
                                 hair.lightMapIntensity = 0.9;
                                 hair.envMap?.dispose();
-                                hair.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
+                                hair.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                                 hair.needsUpdate = true;
                             }
                         }
@@ -420,7 +336,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                             shoes.envMapIntensity = 0.8;
                             shoes.lightMapIntensity = 0.2;
                             shoes.envMap?.dispose();
-                            shoes.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
+                            shoes.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                             shoes.needsUpdate = true;
                         }
                         {
