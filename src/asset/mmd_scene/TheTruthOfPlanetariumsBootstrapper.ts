@@ -89,26 +89,27 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                     c.addAsset("fabricNormal", fabricNormal);
                 })
                 .getComponent(GlobalAssetManager, assetManager))
+
+            .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
+                .withComponent(Camera, c => {
+                    c.cameraType = CameraType.Perspective;
+                    c.fov = 60;
+                    c.near = 1;
+                    c.far = 1500;
+                    c.priority = -1;
+                    c.backgroundColor = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
+                })
+                .withComponent(OrbitControls, c => {
+                    c.enabled = true;
+                    c.target = new THREE.Vector3(0, 14, 0);
+                    c.minDistance = 3;
+                    c.maxDistance = 100;
+                    c.enableDamping = false;
+                })
+                .getComponent(Camera, orbitCamera))
             
             .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2))
-            
                 .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
-                    .withComponent(Camera, c => {
-                        c.cameraType = CameraType.Perspective;
-                        c.fov = 60;
-                        c.near = 1;
-                        c.far = 1500;
-                        c.priority = -1;
-                        c.backgroundColor = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
-                    })
-                    .withComponent(OrbitControls, c => {
-                        c.enabled = true;
-                        c.target = new THREE.Vector3(0, 14, 0);
-                        c.minDistance = 3;
-                        c.maxDistance = 100;
-                        c.enableDamping = false;
-                    })
-                    .getComponent(Camera, orbitCamera))
                 
                 .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                     .withAudioUrl(new PrefabRef("mmd/the_truth_of_planetariums/the truth of planetariums.mp3"))
