@@ -30,7 +30,7 @@
     "dependencies": {
         "ammojs-typed": "^1.0.6",
         "postprocessing": "^6.28.5",
-        "the-world-engine": "^0.4.35",
+        "the-world-engine": "^0.4.36",
         "tw-engine-498tokio": "^0.1.18"
     }
 }
