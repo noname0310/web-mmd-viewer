@@ -21,7 +21,6 @@ import {
     SceneBuilder,
     WebGLRendererLoader
 } from "the-world-engine";
-import { Reflector } from "three/examples/jsm/objects/Reflector";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
@@ -265,29 +264,6 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                                 MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
                             }
                         });
-                    }))
-
-                .withChild(instantiater.buildGameObject("mmd-stage-reflector",
-                    new THREE.Vector3(0, 0.01, 0),
-                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), - Math.PI / 2)
-                )
-                    .withComponent(Object3DContainer<THREE.Mesh>, c => {
-                        const reflector = new Reflector(new THREE.PlaneBufferGeometry(130, 130));
-                        c.setObject3D(reflector, object3D => {
-                            object3D.geometry.dispose();
-                            (object3D.material as THREE.Material).dispose();
-                        });
-                        // const gltfLoader = new GLTFLoader();
-                        // gltfLoader.load("mmd/a_spherical_structure_stage/plane.gltf", gltf => {
-                        //     const model = gltf.scene.children[0] as THREE.Mesh;
-                        //     (model.material as THREE.MeshStandardMaterial).dispose();
-
-                        //     const reflector = new Reflector(model.geometry);
-                        //     c.setObject3D(reflector, object3D => {
-                        //         object3D.geometry.dispose();
-                        //         (object3D.material as THREE.Material).dispose();
-                        //     });
-                        // });
                     }))
 
                 .withChild(instantiater.buildGameObject("mmd-model")
