@@ -133,6 +133,28 @@ function startGame(): void {
         button11.innerText = "the truth of planetariums";
         button11.onclick = (): void => runGame(TheTruthOfPlanetariumsBootstrapper);
 
+        const button12 = document.createElement("button");
+        button12.className = "select_bootstrapper_button";
+        button12.innerText = "demons";
+        button12.onclick = (): void => runGame(MmdGenericBootstrapper, {
+            models: [
+                {
+                    modelUrl: "mmd/YYB_black__white_dress_v1.31_edited/edit2.pmx",
+                    modelMotionUrl: ["mmd/demons/Rin PhysicsBake Full.vmd", "mmd/demons/Rin Facial.vmd"]
+                },
+                {
+                    modelUrl: "mmd/YYB School Miku/YYB School Miku.pmx",
+                    modelMotionUrl: ["mmd/demons/Len PhysicsBake Full2.vmd", "mmd/demons/Len Facial.vmd"]
+                }
+            ],
+            cameraMotionUrl: "mmd/demons/camera.vmd",
+            audioUrl: "mmd/demons/Nightcore -  Demons.mp3",
+            settings: {
+                usePhysics: false,
+                forceAllInterpolateToCubic: true
+            }
+        } as MmdLoadParams);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -144,10 +166,11 @@ function startGame(): void {
         bootstrapperSelectPanel.appendChild(button9);
         bootstrapperSelectPanel.appendChild(button10);
         bootstrapperSelectPanel.appendChild(button11);
+        bootstrapperSelectPanel.appendChild(button12);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button11.onclick(new MouseEvent("click"));
+        button12.onclick(new MouseEvent("click"));
 
         // runGame(MmdGenericBootstrapper, {
         //     models: [
