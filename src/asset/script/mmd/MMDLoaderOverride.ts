@@ -387,8 +387,14 @@ class GeometryBuilder {
             }
         }
 
+        const morphNameSet = new Set<string>();
+
         for (let i = 0; i < data.metadata.morphCount; i++) {
             const morph = data.morphs[i];
+            
+            if (morphNameSet.has(morph.name)) continue;
+            morphNameSet.add(morph.name);
+
             const params = { name: morph.name };
 
             const attribute = new THREE.Float32BufferAttribute(data.metadata.vertexCount * 3, 3);
