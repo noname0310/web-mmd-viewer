@@ -84,7 +84,7 @@ function startGame(): void {
         button8.onclick = (): void => runGame(MmdGenericBootstrapper, {
             models: [
                 {
-                    modelUrl: "mmd/YYB Hatsune Miku Default fanmade by HB-Squiddy - phys edit/Miku phys edit for skirt - faceforward.pmx",
+                    modelUrl: "mmd/YYB Hatsune Miku_default/YYB Hatsune Miku_default_1.0ver.pmx",
                     modelMotionUrl: ["mmd/never_ender/motion.vmd", "mmd/never_ender/facial.vmd"]
                 }
             ],
@@ -170,7 +170,7 @@ function startGame(): void {
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button12.onclick(new MouseEvent("click"));
+        button8.onclick(new MouseEvent("click"));
 
         // runGame(MmdGenericBootstrapper, {
         //     models: [
