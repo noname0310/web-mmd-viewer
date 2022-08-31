@@ -170,17 +170,21 @@ function startGame(): void {
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button8.onclick(new MouseEvent("click"));
+        button3.onclick(new MouseEvent("click"));
 
         // runGame(MmdGenericBootstrapper, {
         //     models: [
         //         {
-        //             modelUrl: "mmd/box_motion/Box10.pmx",
-        //             modelMotionUrl: "mmd/box_motion/motion.vmd"
+        //             modelUrl: "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx",
+        //             modelMotionUrl: "mmd/rotation test/rotation test.vmd"
         //         }
         //     ],
-        //     cameraMotionUrl: "mmd/box_motion/empty_camera.vmd",
-        //     audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3"
+        //     cameraMotionUrl: "mmd/rotation test/camera.vmd",
+        //     audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3",
+        //     settings: {
+        //         usePhysics: false,
+        //         forceAllInterpolateToCubic: true
+        //     }
         // });
     });
 }
