@@ -445,9 +445,9 @@ export class FlosBootstrapper extends BaseBootstrapper {
                     });
 
                     c.asyncLoadAnimation("animation1", [
-                        // "mmd/flos/flos_model.vmd",
-                        // "mmd/flos/flos_physics.vmd"
-                        "mmd/flos/combined.vmd"
+                        "mmd/flos/flos_model.vmd",
+                        "mmd/flos/flos_physics reduce 4.vmd"
+                        // "mmd/flos/combined.vmd"
                     ], () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
