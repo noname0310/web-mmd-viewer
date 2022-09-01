@@ -9951,6 +9951,10 @@ export type Vmd = {
         position: [number, number, number];
         rotation: [number, number, number, number];
         interpolation: [
+            //x_ax, y_ax, phys1, phys2,
+            //x_ay, y_ay, z_ay, r_ay,
+            //x_bx, y_bx, z_bx, r_bx,
+            //x_by, y_by, z_by, r_by, z_ax, r_ax
             //[4][4][4]
             number, number, number, number,
             number, number, number, number,
