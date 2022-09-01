@@ -565,6 +565,7 @@ class AnimationBuilder {
             rigidBodyNameSet.add(rigidBodies[i].name);
         }
 
+        //interpolation import references: https://github.com/AiMiDi/C4D_MMD_Tool/blob/main/source/Utility.h 302-318
         function pushInterpolation(array: number[], interpolation: number[], index: number): void {
             array.push(interpolation[index + 0] / 127); // x1
             array.push(interpolation[index + 8] / 127); // x2
