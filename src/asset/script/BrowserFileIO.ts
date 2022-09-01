@@ -1,0 +1,34 @@
+export class BrowserFileIO {
+    private readonly _objectUrlMap: Map<string, string> = new Map<string, string>();
+    private readonly _filesMap: Map<string, string[]> = new Map<string, string[]>();
+
+    public addFiles(id: string, ...files: File[]): void {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fileFullPath = (file as any).webkitRelativePath;
+            const fileURL = URL.createObjectURL(file);
+            this._objectUrlMap.set(fileFullPath, fileURL);
+            const fileList = this._filesMap.get(id);
+            if (fileList) fileList.push(fileURL);
+            else this._filesMap.set(id, [fileURL]);
+        }
+    }
+
+    public removeFiles(id: string): void {
+        const fileList = this._filesMap.get(id);
+        if (!fileList) return;
+        for (let i = 0; i < fileList.length; i++) {
+            const fileURL = fileList[i];
+            URL.revokeObjectURL(fileURL);
+        }
+        this._filesMap.delete(id);
+    }
+    
+    public getURLModifier(): (url: string) => string {
+        return (url: string) => {
+            console.log(url, this._objectUrlMap.get(url));
+            return url;
+            //return this._objectUrlMap.get(url) ?? url;
+        };
+    }
+}
