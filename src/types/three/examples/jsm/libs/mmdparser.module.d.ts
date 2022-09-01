@@ -9951,6 +9951,34 @@ export type Vmd = {
         position: [number, number, number];
         rotation: [number, number, number, number];
         interpolation: [
+            //https://hariganep.seesaa.net/article/201103article_1.html
+            /*
+            The interpolation parameters are four Bezier curves (0,0), (x1,y1), (x2,y2), and (127,127).
+            It represents the parameters of each axis.
+            X-axis interpolation parameters (X_x1, X_y1), (X_x2, X_y2)
+            Y-axis interpolation parameters (Y_x1, Y_y1), (Y_x2, Y_y2)
+            Z-axis interpolation parameters (Z_x1, Z_y1), (Z_x2, Z_y2)
+            Rotation interpolation parameters (R_x1, R_y1), (R_x2, R_y2)
+            Then, the interpolation parameters are as follows.
+            X_x1,Y_x1,Z_x1,R_x1,
+            X_y1,Y_y1,Z_y1,R_y1,
+            X_x2,Y_x2,Z_x2,R_x2,
+            X_y2,Y_y2,Z_y2,R_y2,
+
+            Y_x1,Z_x1,R_x1,X_y1,
+            Y_y1,Z_y1,R_y1,X_x2,
+            Y_x2,Z_x2,R_x2,X_y2,
+            Y_y2,Z_y2,R_y2, 01,
+            
+            Z_x1,R_x1,X_y1,Y_y1,
+            Z_y1,R_y1,X_x2,Y_x2,
+            Z_x2,R_x2,X_y2,Y_y2,
+            Z_y2,R_y2, 01, 00,
+            R_x1,X_y1,Y_y1,Z_y1,
+            R_y1,X_x2,Y_x2,Z_x2,
+            R_x2,X_y2,Y_y2,Z_y2,
+            R_y2, 01, 00, 00
+            */
             //[4][4][4]
             number, number, number, number,
             number, number, number, number,
