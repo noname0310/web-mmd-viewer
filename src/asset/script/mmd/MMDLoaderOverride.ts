@@ -565,6 +565,13 @@ class AnimationBuilder {
             rigidBodyNameSet.add(rigidBodies[i].name);
         }
 
+        function pushInterpolation(array: number[], interpolation: number[], index: number): void {
+            array.push(interpolation[index + 0] / 127); // x1
+            array.push(interpolation[index + 8] / 127); // x2
+            array.push(interpolation[index + 4] / 127); // y1
+            array.push(interpolation[index + 12] / 127); // y2
+        }
+
         const tracks = [];
 
         const motions: { [key: string]: Vmd["motions"] } = {};
@@ -607,34 +614,15 @@ class AnimationBuilder {
                 const time = array[i].frameNum / 30;
                 const position = array[i].position;
                 const rotation = array[i].rotation;
+                const interpolation = array[i].interpolation;
 
                 times.push(time);
 
                 for (let j = 0; j < 3; j++) positions.push(basePosition[j] + position[j]);
                 for (let j = 0; j < 4; j++) rotations.push(rotation[j]);
+                for (let j = 0; j < 3; j++) pushInterpolation(pInterpolations, interpolation, j * 16);
 
-                {
-                    //push order: x1, x2, y1, y2
-
-                    //https://github.com/Nuthouse01/PMX-VMD-Scripting-Tools/blob/0d9334bd5735accdd8bb6e1b69889fbe054a7481/mmd_scripting/core/nuthouse01_vmd_parser.py#L90
-                    const [
-                        xX1, yX1, phys1, phys2,
-                        xY1, yY1, zY1, rY1,
-                        xX2, yX2, zX2, rX2,
-                        xY2, yY2, zY2, rY2,
-                        padd, padd2, zX1, rX1
-                    ] = array[i].interpolation;
-                    phys1;
-                    phys2;
-                    padd;
-                    padd2;
-
-                    pInterpolations.push(xX1 / 127, xX2 / 127, xY1 / 127, xY2 / 127);
-                    pInterpolations.push(yX1 / 127, yX2 / 127, yY1 / 127, yY2 / 127);
-                    pInterpolations.push(zX1 / 127, zX2 / 127, zY1 / 127, zY2 / 127);
-
-                    rInterpolations.push(rX1 / 127, rX2 / 127, rY1 / 127, rY2 / 127);
-                }
+                pushInterpolation(rInterpolations, interpolation, 3 * 16);
             }
 
             const targetName = ".bones[" + key + "]";
