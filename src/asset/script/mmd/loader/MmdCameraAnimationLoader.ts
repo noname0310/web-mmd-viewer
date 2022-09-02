@@ -3,8 +3,8 @@ import { MMDParser } from "three/examples/jsm/libs/mmdparser.module";
 import * as THREE from "three/src/Three";
 import { AnimationClip, AnimationClipBindInfo, AnimationClipInstance, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
 
-import { EulerBezierInterpolator, ScalarBezierInterpolator, Vector3IndependentBezierInterpolator } from "./interpolation/BezierInterpolator";
-import { QuaternionUtils } from "./QuaternionUtils";
+import { EulerBezierInterpolator, ScalarBezierInterpolator, Vector3IndependentBezierInterpolator } from "../interpolation/BezierInterpolator";
+import { QuaternionUtils } from "../QuaternionUtils";
 
 type CameraTrackData = [
     {

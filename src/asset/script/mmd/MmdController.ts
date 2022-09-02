@@ -4,7 +4,7 @@ import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, Ran
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
 import { MmdCamera } from "./MmdCamera";
-import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./MmdCameraAnimationLoader";
+import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./loader/MmdCameraAnimationLoader";
 import { MmdModel } from "./MmdModel";
 import { MmdPlayer } from "./MmdPlayer";
 

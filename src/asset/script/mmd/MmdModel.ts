@@ -1,7 +1,7 @@
 import { Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, Object3DContainer, WaitUntil } from "the-world-engine";
 import * as THREE from "three/src/Three";
 
-import { MMDLoaderOverride } from "./MMDLoaderOverride";
+import { MMDLoaderOverride } from "./loader/MMDLoaderOverride";
 import { MmdMaterialUtils, MMDToonMaterial } from "./MmdMaterialUtils";
 
 export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>;

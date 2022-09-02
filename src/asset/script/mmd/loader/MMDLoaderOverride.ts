@@ -2,7 +2,7 @@ import { Pmd, Pmx, Vmd } from "three/examples/jsm/libs/mmdparser.module";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
-import { QuaternionUtils } from "./QuaternionUtils";
+import { QuaternionUtils } from "../QuaternionUtils";
 
 export class MMDLoaderOverride extends MMDLoader {
     public forceAllInterpolateToCubic = false;

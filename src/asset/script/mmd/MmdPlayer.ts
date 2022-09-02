@@ -1,9 +1,9 @@
 import { Component } from "the-world-engine";
 import { MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 
-import { MMDAnimationHelperOverride } from "./MMDAnimationHelperOverride";
+import { MMDAnimationHelperOverride } from "./loader/MMDAnimationHelperOverride";
 import { SkinnedMeshContainer } from "./MmdModel";
-import { MMdPhysicsOverride } from "./MMDPhysicsOverride";
+import { MMdPhysicsOverride } from "./loader/MMDPhysicsOverride";
 
 export interface MMDAnimationModelParameter extends Omit<MMDAnimationHelperAddParameter, "gravity"> {
     animation: THREE.AnimationClip | THREE.AnimationClip[];

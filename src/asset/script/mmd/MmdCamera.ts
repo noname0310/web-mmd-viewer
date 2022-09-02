@@ -1,6 +1,6 @@
 import { Camera, Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, WaitUntil } from "the-world-engine";
 
-import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./MmdCameraAnimationLoader";
+import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./loader/MmdCameraAnimationLoader";
 
 
 export class MmdCamera extends Component {
