@@ -9,7 +9,7 @@ module.exports = {
     output: {
         path: path.join(__dirname, "/dist"),
         filename: "bundle.js",
-        assetModuleFilename: "assets/[name][ext]"
+        assetModuleFilename: "static/[name][ext]"
     },
     optimization: {
         minimize: true
