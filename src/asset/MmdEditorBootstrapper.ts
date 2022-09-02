@@ -63,18 +63,18 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                 .getComponent(Camera, orbitCamera))
             
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
-                .withCameraLoaderInitializer(c => {
-                    const loadingText = Ui.getOrCreateLoadingElement();
-                    const cameraLoadingText = document.createElement("div");
-                    loadingText.appendChild(cameraLoadingText);
-
-                    c.onProgress.addListener((e) => {
-                        if (e.lengthComputable) {
-                            const percentComplete = e.loaded / e.total * 100;
-                            cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
-                        }
-                    });
-                })
+                // .withCameraLoaderInitializer(c => {
+                //     const loadingText = Ui.getOrCreateLoadingElement();
+                //     const cameraLoadingText = document.createElement("div");
+                //     loadingText.appendChild(cameraLoadingText);
+                //
+                //     c.onProgress.addListener((e) => {
+                //         if (e.lengthComputable) {
+                //             const percentComplete = e.loaded / e.total * 100;
+                //             cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
+                //         }
+                //     });
+                // })
                 .getCamera(camera)
                 .getCameraLoader(mmdCameraLoader)
                 .getAudioPlayer(audioPlayer)
@@ -113,7 +113,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                 .getComponent(Object3DContainer, directionalLight))
 
             .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, -30))
-                .active(true)
+                .active(false)
                 .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
@@ -131,6 +131,8 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "stage loaded";
                         loadingText.remove();
                     });
+
+                    loadingText.remove();
                 }))
         ;
     }
