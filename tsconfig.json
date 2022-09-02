@@ -25,7 +25,8 @@
             "*": [
                 "src/types/*"
             ]
-        }
+        },
+        "jsx": "react-jsx"
     },
     "include": [
       "src"

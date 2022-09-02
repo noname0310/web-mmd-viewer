@@ -42,7 +42,7 @@ module.exports = {
     },
     resolve: {
         modules: [path.join(__dirname, "src"), "node_modules"],
-        extensions: [".ts", ".js"],
+        extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
         fallback: {
             fs: false,
             'path': false

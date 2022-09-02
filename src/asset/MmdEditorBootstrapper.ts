@@ -13,6 +13,7 @@ import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
+import { EditorUi } from "./script/mmd/editor/EditorUi";
 import { MmdCamera } from "./script/mmd/MmdCamera";
 import { MmdModel } from "./script/mmd/MmdModel";
 import { OrbitControls } from "./script/OrbitControls";
@@ -20,6 +21,7 @@ import { Ui } from "./script/Ui";
 
 export class MmdEditorBootstrapper extends Bootstrapper {
     public run(): SceneBuilder {
+        this.setting.render.useCss3DRenderer(false);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         this.setting.render.webGLRenderer(() => {
@@ -39,6 +41,9 @@ export class MmdEditorBootstrapper extends Bootstrapper {
         const audioPlayer = new PrefabRef<AudioPlayer>();
 
         return this.sceneBuilder
+            .withChild(instantiater.buildGameObject("editor-ui")
+                .withComponent(EditorUi))
+
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
