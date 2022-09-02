@@ -8,12 +8,14 @@ export class EditorUi extends Component {
 
     public awake(): void {
         const reactRoot = this._reactRootDiv = document.createElement("div");
+        reactRoot.style.position = "absolute";
         reactRoot.style.width = "100%";
-        reactRoot.style.height = "100%";
+        reactRoot.style.height = "calc(100% - 30px)";
         reactRoot.style.visibility = "hidden";
 
         this.engine.domElement.appendChild(reactRoot);
         const reactDom = this._reactDomRoot = ReactDOM.createRoot(reactRoot);
+
         reactDom.render(
             <React.StrictMode>
                 <div>hello world</div>

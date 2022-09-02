@@ -129,6 +129,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                         model.castShadow = true;
                         model.receiveShadow = true;
                         modelLoadingText.innerText = "stage loaded";
+                        loadingText.remove();
                     });
                 }))
         ;
