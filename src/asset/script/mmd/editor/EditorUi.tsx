@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Component } from "the-world-engine";
-import { EditorFileDrop } from "./EditorFileDrop";
 
 export class EditorUi extends Component {
     private _reactDomRoot: ReactDOM.Root|null = null;
@@ -19,7 +18,6 @@ export class EditorUi extends Component {
 
         reactDom.render(
             <React.StrictMode>
-                <EditorFileDrop/>
             </React.StrictMode>
         )
     }

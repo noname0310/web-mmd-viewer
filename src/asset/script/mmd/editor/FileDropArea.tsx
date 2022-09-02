@@ -1,14 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 
-const FileDropAreaLabel = styled.label`
-    width: 100%;
-    height: 100%;
+const FileDropAreaLabel = styled.label<FileDropAreaSizeProps>`
+    width: ${props => props.width};
+    height: ${props => props.height};
 `;
 
-const FileDropInput = styled.input`
-    width: 100%;
-    height: 100%;
+const FileDropInput = styled.input<FileDropAreaSizeProps>`
+    width: ${props => props.width};
+    height: ${props => props.height};
 `;
 
 async function readDirectories(entries: FileSystemEntry[], path: string = ""): Promise<FileSystemFileEntry[]> {
@@ -30,7 +30,29 @@ async function readDirectories(entries: FileSystemEntry[], path: string = ""): P
     return result;
 }
 
-export function EditorFileDrop(): JSX.Element {
+async function entriesToFiles(entries: FileSystemEntry[]): Promise<File[]> {
+    const files: File[] = [];
+    const directories = await readDirectories(entries);
+    for (let i = 0; i < directories.length; i++) {
+        const entry = directories[i];
+        const file = await new Promise<File>((resolve, reject) => {
+            entry.file(resolve, reject);
+        });
+        files.push(file);
+    }
+    return files;
+}
+
+interface FileDropAreaSizeProps {
+    width?: string;
+    height?: string;
+}
+
+export interface FileDropAreaProps extends FileDropAreaSizeProps {
+    onFiles: (files: File[]) => void;
+}
+
+export function FileDropArea(props: FileDropAreaProps): JSX.Element {
     const fileDropInput = React.useRef<HTMLInputElement>(null);
     
     React.useEffect(() => {
@@ -57,8 +79,11 @@ export function EditorFileDrop(): JSX.Element {
             const entry = item.webkitGetAsEntry();
             if (entry) entries.push(entry);
         }
-        readDirectories(entries).then(fileEntries => {
-            console.log(fileEntries);
+
+        readDirectories(entries).then(result => {
+            entriesToFiles(result).then(files => {
+                props.onFiles(files);
+            });
         });
     } , []);
 
@@ -67,12 +92,14 @@ export function EditorFileDrop(): JSX.Element {
         e.stopPropagation();
         const files = e.target.files as File[]|null;
         if (!files) return;
-        console.log(files);
+        props.onFiles(files);
     }, []);
 
     return (
-        <FileDropAreaLabel>
+        <FileDropAreaLabel width={props.width} height={props.height}>
             <FileDropInput
+                width={props.width}
+                height={props.height}
                 type="file"
                 name="editor-file-drop"
                 ref={fileDropInput}
