@@ -50,10 +50,10 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: "./src/index.html",
+            template: "./src/index.html"
         }),
         new ESLintPlugin({
-            extensions: "ts",
+            extensions: ["ts", "tsx"]
         }),
         new CopyWebpackPlugin({
             patterns: [{ from: "mmd", to: "mmd" }]

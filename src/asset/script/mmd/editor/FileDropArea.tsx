@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
 import styled from "styled-components";
 
@@ -11,7 +12,7 @@ const FileDropInput = styled.input<FileDropAreaSizeProps>`
     height: ${props => props.height};
 `;
 
-async function readDirectories(entries: FileSystemEntry[], path: string = ""): Promise<FileSystemFileEntry[]> {
+async function readDirectories(entries: FileSystemEntry[], path = ""): Promise<FileSystemFileEntry[]> {
     const result: FileSystemFileEntry[] = [];
 
     for (let i = 0; i < entries.length; i++) {
@@ -85,7 +86,7 @@ export function FileDropArea(props: FileDropAreaProps): JSX.Element {
                 props.onFiles(files);
             });
         });
-    } , []);
+    }, []);
 
     const changeCallback = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
