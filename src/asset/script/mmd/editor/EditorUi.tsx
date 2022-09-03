@@ -3,6 +3,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { Component } from "the-world-engine";
 
+import { EditorController } from "./EditorController";
+import { EditorControllerProvider } from "./EditorControllerContext";
 import { EditorRightPanel } from "./EditorRightPanel";
 
 function EditorMain(): JSX.Element {
@@ -12,10 +14,14 @@ function EditorMain(): JSX.Element {
 }
 
 export class EditorUi extends Component {
+    public override readonly requiredComponents = [EditorController];
+
     private _reactDomRoot: ReactDOM.Root|null = null;
     private _reactRootDiv: HTMLDivElement|null = null;
 
     public awake(): void {
+        const editorController = this.gameObject.getComponent(EditorController)!;
+
         const reactRoot = this._reactRootDiv = document.createElement("div");
         reactRoot.style.position = "absolute";
         reactRoot.style.width = "100%";
@@ -29,7 +35,9 @@ export class EditorUi extends Component {
 
         reactDom.render(
             <React.StrictMode>
-                <EditorMain />
+                <EditorControllerProvider controller={editorController}>
+                    <EditorMain />
+                </EditorControllerProvider>
             </React.StrictMode>
         );
     }

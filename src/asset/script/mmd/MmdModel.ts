@@ -7,7 +7,8 @@ import { MmdMaterialUtils, MMDToonMaterial } from "./MmdMaterialUtils";
 export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>>;
 
 export class MmdModel extends Component {
-    private readonly _loader = new MMDLoaderOverride();
+    private readonly _loadingManager = new THREE.LoadingManager();
+    private readonly _loader = new MMDLoaderOverride(this._loadingManager);
     private _object3DContainer: SkinnedMeshContainer|null = null;
     private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
     private readonly _loadingAnimations = new Set<string>();
@@ -150,6 +151,10 @@ export class MmdModel extends Component {
 
     public isAnimationLoading(animationName: string): boolean {
         return this._loadingAnimations.has(animationName);
+    }
+
+    public setUrlModifier(urlModifier: (url: string) => string): void {
+        this._loadingManager.setURLModifier(urlModifier);
     }
 
     public get skinnedMesh(): THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material|THREE.Material[]>|null {

@@ -23,6 +23,12 @@ export class BrowserFileIO {
         }
         this._filesMap.delete(id);
     }
+
+    public removeAllFiles(): void {
+        for (const [id] of this._filesMap) {
+            this.removeFiles(id);
+        }
+    }
     
     public getURLModifier(): (url: string) => string {
         return (url: string) => {
