@@ -23,6 +23,7 @@ export class EditorUi extends Component {
         const editorController = this.gameObject.getComponent(EditorController)!;
 
         const reactRoot = this._reactRootDiv = document.createElement("div");
+        reactRoot.id = "react-root";
         reactRoot.style.position = "absolute";
         reactRoot.style.width = "100%";
         reactRoot.style.height = "calc(100% - 30px)";

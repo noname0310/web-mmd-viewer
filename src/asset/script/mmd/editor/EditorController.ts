@@ -27,7 +27,7 @@ export class EditorController extends Component {
         this._camera = camera;
     }
 
-    public spawnModel(pmxUrl: string, files: File[]): void {
+    public spawnModel(pmx: File, files: readonly File[]): void {
         if (files.length === 0) throw new Error("No files are specified.");
 
         const fileIO = new BrowserFileIO();
@@ -36,10 +36,10 @@ export class EditorController extends Component {
         const mmdModelRef = new PrefabRef<MmdModel>();
 
         this.engine.scene.addChildFromBuilder(
-            this.engine.instantiater.buildGameObject(files[0].name)
+            this.engine.instantiater.buildGameObject(pmx.name)
                 .withComponent(MmdModel, c => {
                     c.setUrlModifier(fileIO.getURLModifier());
-                    c.asyncLoadModel(pmxUrl, () => fileIO.removeAllFiles());
+                    c.asyncLoadModel(pmx.webkitRelativePath, () => fileIO.removeAllFiles());
                 })
                 .getComponent(MmdModel, mmdModelRef)
         );

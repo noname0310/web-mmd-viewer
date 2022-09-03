@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import React from "react";
 import styled from "styled-components";
 
+import { MmdModel } from "../MmdModel";
+import { useEditorController } from "./EditorControllerContext";
 import { FileDropArea, FileDropAreaProps } from "./FileDropArea";
+import { ImportModelDialog } from "./ImportModelDialog";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
 const ListItemDiv = styled.div`
@@ -22,6 +26,7 @@ const ListItemDiv = styled.div`
 
 interface ObjectListItemProps {
     name: string;
+    model: MmdModel;
 }
 
 function ObjectListItem(props: ObjectListItemProps): JSX.Element {
@@ -77,14 +82,61 @@ export interface ObjectListViewProps extends PanelWidthHeightProps {
 }
 
 export function ObjectListView(props: ObjectListViewProps): JSX.Element {
+    const [models, setModels] = React.useState<readonly MmdModel[]>([]);
+    const [showImportModelDialog, setShowImportModelDialog] = React.useState(false);
+    const [files, setFiles] = React.useState<readonly File[]>([]);
+    const [pmxFiles, setPmxFiles] = React.useState<readonly File[]>([]);
+
+    const controller = useEditorController();
+
+    const onModelsUpdatedCallback = React.useCallback((models: readonly MmdModel[]) => {
+        setModels(models);
+    }, []);
+
+    React.useEffect(() => {
+        controller.onModelsUpdated.addListener(onModelsUpdatedCallback);
+        return () => {
+            controller.onModelsUpdated.removeListener(onModelsUpdatedCallback);
+        };
+    }, [controller, onModelsUpdatedCallback]);
+
+    const onImportCanceledCallback = React.useCallback(() => {
+        setShowImportModelDialog(false);
+    }, []);
+
+    const onImportSelectedCallback = React.useCallback((file: File) => {
+        controller.spawnModel(file, files);
+        setShowImportModelDialog(false);
+    }, [controller, files]);
+
+    const onFilesCallback = React.useCallback((files: readonly File[]) => {
+        const pmxFiles = files.filter((file) => {
+            return file.name.endsWith(".pmx");
+        });
+
+        if (pmxFiles.length === 0) alert("No pmx files found.");
+
+        if (pmxFiles.length === 1) {
+            controller.spawnModel(pmxFiles[0], files);
+        } else {
+            setFiles(files);
+            setPmxFiles(pmxFiles);
+
+            setShowImportModelDialog(true);
+        }
+    }, [controller]);
+
     return (
         <PanelItem title="Objects" width={props.width} height={props.height}>
             <ListContainerDiv>
-                <ObjectListItem name="test" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
-                <ObjectListAddItem onFiles={console.log} />
+                {models.map((model) => (
+                    <ObjectListItem key={model.instanceId} name={model.gameObject.name} model={model} />
+                ))}
+                <ObjectListAddItem onFiles={onFilesCallback} />
+
+                {showImportModelDialog && (
+                    <ImportModelDialog files={pmxFiles} onCanceled={onImportCanceledCallback} onSelected={onImportSelectedCallback} />
+                )}
             </ListContainerDiv>
         </PanelItem>
     );

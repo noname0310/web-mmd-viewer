@@ -5,9 +5,9 @@ export class BrowserFileIO {
     public addFiles(id: string, ...files: File[]): void {
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            const fileFullPath = (file as any).webkitRelativePath;
+            const fileFullPath = (file as any).webkitRelativePath as string;
             const fileURL = URL.createObjectURL(file);
-            this._objectUrlMap.set(fileFullPath, fileURL);
+            this._objectUrlMap.set(fileFullPath.toLowerCase(), fileURL);
             const fileList = this._filesMap.get(id);
             if (fileList) fileList.push(fileURL);
             else this._filesMap.set(id, [fileURL]);
@@ -32,9 +32,7 @@ export class BrowserFileIO {
     
     public getURLModifier(): (url: string) => string {
         return (url: string) => {
-            console.log(url, this._objectUrlMap.get(url));
-            return url;
-            //return this._objectUrlMap.get(url) ?? url;
+            return this._objectUrlMap.get(url.toLowerCase()) ?? url;
         };
     }
 }
