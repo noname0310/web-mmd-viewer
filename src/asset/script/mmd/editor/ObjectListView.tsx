@@ -88,7 +88,7 @@ export interface ObjectListViewProps extends PanelWidthHeightProps {
 }
 
 export function ObjectListView(props: ObjectListViewProps): JSX.Element {
-    const [models, setModels] = React.useState<readonly MmdModel[]>([]);
+    const [models, setModels] = React.useState<{ ref: readonly MmdModel[] }>({ ref: [] });
     const [showImportModelDialog, setShowImportModelDialog] = React.useState(false);
     const [files, setFiles] = React.useState<readonly File[]>([]);
     const [pmxFiles, setPmxFiles] = React.useState<readonly File[]>([]);
@@ -96,8 +96,8 @@ export function ObjectListView(props: ObjectListViewProps): JSX.Element {
     const controller = useEditorController();
 
     const onModelsUpdatedCallback = React.useCallback((models: readonly MmdModel[]) => {
-        setModels(models);
-    }, [models]);
+        setModels({ ref: models });
+    }, []);
 
     React.useEffect(() => {
         controller.onModelsUpdated.addListener(onModelsUpdatedCallback);
@@ -138,7 +138,7 @@ export function ObjectListView(props: ObjectListViewProps): JSX.Element {
     return (
         <PanelItem title="Objects" width={props.width} height={props.height}>
             <ListContainerDiv>
-                {models.map((model) => (
+                {models.ref.map((model) => (
                     <ObjectListItem key={model.instanceId} name={model.gameObject.name} model={model} />
                 ))}
                 <ObjectListAddItem onFiles={onFilesCallback} />
