@@ -2,9 +2,12 @@
 import React from "react";
 import styled from "styled-components";
 import { MathUtils } from "three/src/Three";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
+import { ClockCalibrator } from "../../animation/ClockCalibrator";
 import { MmdCamera } from "../MmdCamera";
 import { MmdModel } from "../MmdModel";
+import { MmdPlayer } from "../MmdPlayer";
 import { useEditorController } from "./EditorControllerContext";
 import { FileDropArea } from "./FileDropArea";
 import { ImportDialog } from "./ImportDialog";
@@ -212,11 +215,13 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     const onRemoveModelCallback = React.useCallback((): void => {
         controller.removeModel(target.ref as MmdModel);
+
+        updateAnimation();
     }, [target, controller]);
 
     const [showImportSoundFileDialog, setShowImportSoundFileDialog] = React.useState(false);
     const [soundFiles, setSoundFiles] = React.useState<File[]>([]);
-    const [soundFileName, setSoundFileName] = React.useState("none");
+    const [soundFileName, setSoundFileName] = React.useState<string|null>(null);
     
     const onSoundFilesCallback = React.useCallback((files: File[]): void => {
         files = files.filter(file => file.name.endsWith(".mp3"));
@@ -227,6 +232,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
             const objectUrl = URL.createObjectURL(files[0]);
             controller.audioPlayer.asyncSetAudioFromUrl(objectUrl, () => {
                 URL.revokeObjectURL(objectUrl);
+
+                updateAnimation();
             });
         } else {
             setSoundFiles(files);
@@ -243,6 +250,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         const objectUrl = URL.createObjectURL(file);
         controller.audioPlayer.asyncSetAudioFromUrl(objectUrl, () => {
             URL.revokeObjectURL(objectUrl);
+
+            updateAnimation();
         });
         setShowImportSoundFileDialog(false);
     }, [controller]);
@@ -275,6 +284,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
     const onRemoveMotionCallback = React.useCallback(() => {
         target.ref!.removeAnimation(vmdFileName);
         setTarget({ref: target.ref});
+
+        updateAnimation();
     }, [target, vmdFileName]);
 
     const onImportCanceledCallback = React.useCallback((): void => {
@@ -288,6 +299,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         target.ref!.asyncLoadAnimation(file.name, objectUrl, () => {
             URL.revokeObjectURL(objectUrl);
             setTarget({ref: target.ref});
+            
+            updateAnimation();
         });
         setShowImportMotionDialog(false);
         setTarget({ref: target.ref});
@@ -300,6 +313,56 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
             EulerTuple[2] * MathUtils.RAD2DEG
         ];
     }, []);
+
+    const updateAnimation = React.useCallback(() => {
+        const models = controller.models;
+        const camera = controller.camera;
+        const audioPlayer = controller.audioPlayer;
+        const mmdController = controller.mmdController;
+        const animationPlayer = mmdController.gameObject.getComponent(AnimationSequencePlayer)!;
+
+        animationPlayer.stop();
+        mmdController.removeAllMmdPlayers();
+        mmdController.removeAllModelLoaders();
+
+        if (soundFileName !== null && animationPlayer.animationClock === null) {
+            animationPlayer.animationClock = new ClockCalibrator(audioPlayer);
+        }
+
+        mmdController.cameraLoader = camera;
+
+        for (let i = 0; i < models.length; ++i) {
+            const model = models[i];
+            if (model.animations.size === 0) continue;
+
+            let modelPlayer = model.gameObject.getComponent(MmdPlayer);
+            const usePhysics = modelPlayer?.usePhysics ?? true;
+            const useIk = modelPlayer?.useIk ?? true;
+            if (modelPlayer) modelPlayer.destroy();
+
+            modelPlayer = model.gameObject.addComponent(MmdPlayer)!;
+            modelPlayer.usePhysics = usePhysics;
+            modelPlayer.useIk = useIk;
+
+            mmdController.addMmdPlayer(modelPlayer);
+            mmdController.addModelLoader(model);
+        }
+
+        const animationNames: string[] = [];
+        for (let i = 0; i < models.length; ++i) {
+            const model = models[i];
+            if (model.animations.size === 0) continue;
+
+            animationNames.push(model.animations.keys().next().value);
+        }
+
+        if (animationNames.length === 0) return;
+
+        mmdController.asyncPlay(
+            animationNames,
+            camera.animations.keys().next().value
+        );
+    }, [controller, soundFileName]);
 
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
@@ -342,7 +405,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
                 )}
                 {target.ref instanceof MmdCamera && (
                     <>
-                        <TextInfo title="mp3 file" content={soundFileName} />
+                        <TextInfo title="mp3 file" content={soundFileName ?? "none"} />
                         <FileDropArea onFiles={onSoundFilesCallback} />
                         <PaddingDiv />
                         {showImportSoundFileDialog && (

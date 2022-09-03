@@ -2,6 +2,7 @@ import { Component, EventContainer, IEventContainer, PrefabRef } from "the-world
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCamera } from "../MmdCamera";
+import { MmdController } from "../MmdController";
 import { MmdModel } from "../MmdModel";
 import { BrowserFileIO } from "./BrowserFileIO";
 
@@ -9,6 +10,7 @@ export class EditorController extends Component {
     private readonly _modelList: MmdModel[] = [];
     private _camera: MmdCamera|null = null;
     private _audioPlayer: AudioPlayer|null = null;
+    private _mmdController: MmdController|null = null;
 
     private readonly _onModelsUpdatedEvent = new EventContainer<(models: readonly MmdModel[]) => void>();
 
@@ -26,9 +28,10 @@ export class EditorController extends Component {
         this._camera = null;
     }
 
-    public initialize(camera: MmdCamera, audioPlayer: AudioPlayer): void {
+    public initialize(camera: MmdCamera, audioPlayer: AudioPlayer, mmdController: MmdController): void {
         this._camera = camera;
         this._audioPlayer = audioPlayer;
+        this._mmdController = mmdController;
     }
 
     public spawnModel(pmx: File, files: readonly File[]): void {
@@ -78,6 +81,11 @@ export class EditorController extends Component {
     public get audioPlayer(): AudioPlayer {
         if (!this._audioPlayer) throw new Error("AudioPlayer is not set.");
         return this._audioPlayer;
+    }
+
+    public get mmdController(): MmdController {
+        if (!this._mmdController) throw new Error("MmdController is not set.");
+        return this._mmdController;
     }
 
     public get onModelsUpdated(): IEventContainer<(models: readonly MmdModel[]) => void> {

@@ -56,5 +56,9 @@ export class EditorUi extends Component {
             this._reactDomRoot.unmount();
             this._reactDomRoot = null;
         }
+        if (this._reactRootDiv) {
+            this._reactRootDiv.remove();
+            this._reactRootDiv = null;
+        }
     }
 }

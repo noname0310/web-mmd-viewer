@@ -16,7 +16,6 @@ import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/Animation
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
-import { ClockCalibrator } from "./script/animation/ClockCalibrator";
 import { EditorController } from "./script/mmd/editor/EditorController";
 import { EditorUi } from "./script/mmd/editor/EditorUi";
 import { MmdCamera } from "./script/mmd/MmdCamera";
@@ -45,11 +44,12 @@ export class MmdEditorBootstrapper extends Bootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
         const audioPlayer = new PrefabRef<AudioPlayer>();
         const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
+        const mmdController = new PrefabRef<MmdController>();
 
         return this.sceneBuilder
             .withChild(instantiater.buildGameObject("editor-object")
                 .withComponent(EditorController, c => {
-                    c.initialize(mmdCameraLoader.ref!, audioPlayer.ref!);
+                    c.initialize(mmdCameraLoader.ref!, audioPlayer.ref!, mmdController.ref!);
                 })
                 .withComponent(EditorUi))
 
@@ -71,34 +71,13 @@ export class MmdEditorBootstrapper extends Bootstrapper {
             
             .withChild(instantiater.buildGameObject("mmd-player")
                 .withComponent(AnimationSequencePlayer, c => {
-                    c.animationClock = new ClockCalibrator(audioPlayer.ref!);
                     c.loopMode = AnimationLoopMode.None;
                 })
                 .withComponent(MmdController, c => {
-                    c;
-                    // const modelLoaders = this._modelLoaders;
-                    // for (let i = 0; i < modelLoaders.length; ++i) {
-                    //     if(modelLoaders[i].ref) {
-                    //         c.addModelLoader(modelLoaders[i].ref!);
-                
-                    //         const mmdPlayer = c.gameObject.addComponent(MmdPlayer)!;
-                    //         c.addMmdPlayer(mmdPlayer);
-                    //         mmdPlayer.usePhysics = this._usePhysics.ref!;
-                    //         mmdPlayer.useIk = this._useIk.ref!;
-                    //     }
-                    // }
-                
-                    // c.cameraLoader = this._cameraLoader.ref;
-                    // c.physicsMaximumStepCount = 1;
-                
-                    // if (this._modelAnimationName.ref) {
-                    //     c.asyncPlay(
-                    //         this._modelAnimationName.ref,
-                    //         this._cameraAnimationName.ref ?? undefined
-                    //     );
-                    // }
+                    c.physicsMaximumStepCount = 1;
                 })
-                .getComponent(AnimationSequencePlayer, animationPlayer))
+                .getComponent(AnimationSequencePlayer, animationPlayer)
+                .getComponent(MmdController, mmdController))
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {

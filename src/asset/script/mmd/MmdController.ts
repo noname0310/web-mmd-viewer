@@ -38,7 +38,7 @@ export class MmdController extends Component {
         }
     }
 
-    public asyncPlay(modelAnimationName: string, cameraAnimationName?: string): void {
+    public asyncPlay(modelAnimationName: string|string[], cameraAnimationName?: string): void {
         if (!this._readyToPlay) {
             this._initializeFunction = (): void => {
                 this.asyncPlay(modelAnimationName, cameraAnimationName);
@@ -54,7 +54,7 @@ export class MmdController extends Component {
         this.startCoroutine(this.playInternal(modelAnimationName, cameraAnimationName));
     }
 
-    private *playInternal(modelAnimationName: string, cameraAnimationName?: string): CoroutineIterator {
+    private *playInternal(modelAnimationName: string|string[], cameraAnimationName?: string): CoroutineIterator {
         let camera: Camera|null = null;
         let cameraAnimation: MmdCameraAnimationClip|null = null;
 
@@ -73,7 +73,8 @@ export class MmdController extends Component {
         const modelLoaders = this._modelLoaders!;
         for (let i = 0; i < modelLoaders.length; ++i) {
             const modelLoader = modelLoaders[i];
-            while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(modelAnimationName)) yield null;
+            const animationName = modelAnimationName instanceof Array ? modelAnimationName[i] : modelAnimationName;
+            while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(animationName)) yield null;
         }
 
         const mmdPlayers = this._mmdPlayers;
@@ -87,7 +88,8 @@ export class MmdController extends Component {
             const mmdPlayer = mmdPlayers[i];
             const modelLoader = modelLoaders[i];
             const model = modelLoader.object3DContainer!;
-            const modelAnimation = modelLoader.animations.get(modelAnimationName)!;
+            const animationName = modelAnimationName instanceof Array ? modelAnimationName[i] : modelAnimationName;
+            const modelAnimation = modelLoader.animations.get(animationName)!;
 
             mmdPlayer.manualUpdate = true;
             mmdPlayer.play(
@@ -146,6 +148,17 @@ export class MmdController extends Component {
 
     public addModelLoader(modelLoader: MmdModel): void {
         this._modelLoaders.push(modelLoader);
+    }
+
+    public removeModelLoader(modelLoader: MmdModel): void {
+        const index = this._modelLoaders.indexOf(modelLoader);
+        if (index >= 0) {
+            this._modelLoaders.splice(index, 1);
+        }
+    }
+
+    public removeAllModelLoaders(): void {
+        this._modelLoaders.length = 0;
     }
     
     public get cameraLoader(): MmdCamera|null {
