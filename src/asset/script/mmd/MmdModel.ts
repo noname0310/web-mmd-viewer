@@ -92,6 +92,10 @@ export class MmdModel extends Component {
         this._animationLoadingCoroutines.push(coroutine);
     }
 
+    public removeAnimation(animationName: string): void {
+        this._animations.delete(animationName);
+    }
+
     private *loadModelInternal(
         url: string,
         onProgress?: (event: ProgressEvent<EventTarget>) => void,

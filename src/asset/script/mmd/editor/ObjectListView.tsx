@@ -2,18 +2,23 @@
 import React from "react";
 import styled from "styled-components";
 
+import { MmdCamera } from "../MmdCamera";
 import { MmdModel } from "../MmdModel";
 import { useEditorController } from "./EditorControllerContext";
 import { FileDropArea, FileDropAreaProps } from "./FileDropArea";
 import { ImportModelDialog } from "./ImportModelDialog";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
-const ListItemDiv = styled.div`
+interface ListItemSelectedProps {
+    selected?: boolean;
+}
+
+const ListItemDiv = styled.div<ListItemSelectedProps>`
     width: auto;
     padding: 5px 10px;
     box-sizing: border-box;
     margin-bottom: 3px;
-    background-color: #555;
+    background-color: ${(props): string => props.selected ? "#585" : "#555" };
     overflow-x: auto;
     white-space: nowrap;
     
@@ -22,22 +27,27 @@ const ListItemDiv = styled.div`
     }
 
     &:hover {
-        background-color: #666;
+        background-color: ${(props): string => props.selected ? "#585" : "#666" };
     }
 
     &:active {
-        background-color: #777;
+        background-color: ${(props): string => props.selected ? "#585" : "#777" };
     }
 `;
 
-interface ObjectListItemProps {
+interface ObjectListItemProps extends ListItemSelectedProps {
     name: string;
-    model: MmdModel;
+    model: MmdModel|MmdCamera;
+    onClick: (model: MmdModel|MmdCamera) => void;
 }
 
 function ObjectListItem(props: ObjectListItemProps): JSX.Element {
+    const onClickCallback = React.useCallback((): void => {
+        props.onClick(props.model);
+    }, [props.model, props.onClick]);
+
     return (
-        <ListItemDiv>
+        <ListItemDiv onClick={onClickCallback} selected={props.selected}>
             {props.name}
         </ListItemDiv>
     );
@@ -84,14 +94,15 @@ const ListContainerDiv = styled.div`
 `;
 
 export interface ObjectListViewProps extends PanelWidthHeightProps {
-    empty?: never;
+    onTargetSelected: (model: MmdModel|MmdCamera) => void;
 }
 
-export function ObjectListView(props: ObjectListViewProps): JSX.Element {
+function ObjectListViewInternal(props: ObjectListViewProps): JSX.Element {
     const [models, setModels] = React.useState<{ ref: readonly MmdModel[] }>({ ref: [] });
     const [showImportModelDialog, setShowImportModelDialog] = React.useState(false);
     const [files, setFiles] = React.useState<readonly File[]>([]);
     const [pmxFiles, setPmxFiles] = React.useState<readonly File[]>([]);
+    const [selectedTarget, setSelectedTarget] = React.useState<MmdModel|MmdCamera|null>(null);
 
     const controller = useEditorController();
 
@@ -135,18 +146,46 @@ export function ObjectListView(props: ObjectListViewProps): JSX.Element {
         }
     }, [controller]);
 
+    const onModelSelectedCallback = React.useCallback((model: MmdModel|MmdCamera) => {
+        if (selectedTarget === model) return;
+        setSelectedTarget(model);
+        props.onTargetSelected(model);
+    }, [props.onTargetSelected, selectedTarget]);
+
+    const modelsJsx = React.useMemo(() => {
+        return models.ref.map(model => (
+            <ObjectListItem
+                key={model.instanceId}
+                name={model.gameObject.name}
+                model={model}
+                selected={model === selectedTarget}
+                onClick={onModelSelectedCallback}
+            />
+        ));
+    }, [models, onModelSelectedCallback, selectedTarget]);
+
     return (
         <PanelItem title="Objects" width={props.width} height={props.height}>
             <ListContainerDiv>
-                {models.ref.map((model) => (
-                    <ObjectListItem key={model.instanceId} name={model.gameObject.name} model={model} />
-                ))}
+                <ObjectListItem
+                    name="Camera"
+                    model={controller.camera}
+                    selected={controller.camera === selectedTarget}
+                    onClick={onModelSelectedCallback}
+                />
+                {modelsJsx}
                 <ObjectListAddItem onFiles={onFilesCallback} />
 
                 {showImportModelDialog && (
-                    <ImportModelDialog files={pmxFiles} onCanceled={onImportCanceledCallback} onSelected={onImportSelectedCallback} />
+                    <ImportModelDialog
+                        files={pmxFiles}
+                        onCanceled={onImportCanceledCallback}
+                        onSelected={onImportSelectedCallback}
+                    />
                 )}
             </ListContainerDiv>
         </PanelItem>
     );
 }
+
+export const ObjectListView = React.memo(ObjectListViewInternal);

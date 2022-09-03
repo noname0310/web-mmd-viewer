@@ -66,6 +66,11 @@ export class EditorController extends Component {
         return this._modelList;
     }
 
+    public get camera(): MmdCamera {
+        if (!this._camera) throw new Error("MmdCamera is not set.");
+        return this._camera;
+    }
+
     public get onModelsUpdated(): IEventContainer<(models: readonly MmdModel[]) => void> {
         return this._onModelsUpdatedEvent;
     }

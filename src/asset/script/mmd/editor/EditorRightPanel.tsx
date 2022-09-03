@@ -2,6 +2,8 @@
 import React from "react";
 import styled from "styled-components";
 
+import { MmdCamera } from "../MmdCamera";
+import { MmdModel } from "../MmdModel";
 import { Inspector } from "./Inspector";
 import { ObjectListView } from "./ObjectListView";
 
@@ -41,18 +43,23 @@ const ToggleButtonDiv = styled.div`
 
 export function EditorRightPanel(): JSX.Element {
     const [isHidden, setIsHidden] = React.useState(false);
+    const [selectedModel, setSelectedModel] = React.useState<MmdModel|MmdCamera|null>(null);
     
     const toggleButtonOnClickCallback = React.useCallback((): void => {
         setIsHidden(!isHidden);
     }, [isHidden]);
+
+    const onModelSelectedCallback = React.useCallback((target: MmdModel|MmdCamera): void => {
+        setSelectedModel(target);
+    }, []);
 
     return (
         <EditorRightPanelDiv hidden={isHidden}>
             <ToggleButtonDiv onClick={toggleButtonOnClickCallback}>
                 {isHidden ? "<" : ">"}
             </ToggleButtonDiv>
-            <ObjectListView height="calc(100% - 150px)" />
-            <Inspector height="150px" />
+            <ObjectListView height="calc(100% - 300px)" onTargetSelected={onModelSelectedCallback} />
+            <Inspector height="300px" target={selectedModel} />
         </EditorRightPanelDiv>
     );
 }

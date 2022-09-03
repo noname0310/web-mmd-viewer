@@ -61,6 +61,10 @@ export class MmdCamera extends Component {
         this._animationLoadingCoroutines.push(coroutine);
     }
 
+    public removeAnimation(animationName: string): void {
+        this._animations.delete(animationName);
+    }
+
     private *loadAnimationInternal(
         animationName: string,
         url: string,

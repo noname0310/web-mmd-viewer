@@ -2,18 +2,37 @@
 import React from "react";
 import styled from "styled-components";
 
+import { MmdCamera } from "../MmdCamera";
+import { MmdModel } from "../MmdModel";
 import { FileDropArea } from "./FileDropArea";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
 const TextDiv = styled.div`
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
     margin-bottom: 5px;
 `;
 
 const LabelDiv = styled.div`
     width: auto;
 `;
+
+interface LabelProps {
+    title: string;
+    children: React.ReactNode;
+}
+
+function Label(props: LabelProps): JSX.Element {
+    return (
+        <TextDiv>
+            <LabelDiv>
+                {props.title}:&nbsp;
+            </LabelDiv>
+            {props.children}
+        </TextDiv>
+    );
+}
 
 const OverflowTextDiv = styled.span`
     overflow-x: auto;
@@ -24,21 +43,91 @@ const OverflowTextDiv = styled.span`
     }
 `;
 
-interface TextInfoProps {
-    title: string;
+interface TextInfoProps extends Omit<LabelProps, "children"> {
     content: string;
 }
 
 function TextInfo(props: TextInfoProps): JSX.Element {
     return (
-        <TextDiv>
-            <LabelDiv>
-                {props.title}:&nbsp;
-            </LabelDiv>
+        <Label title={props.title}>
             <OverflowTextDiv>
                 {props.content}
             </OverflowTextDiv>
-        </TextDiv>
+        </Label>
+    );
+}
+
+const NumberInputWrapper = styled.div`
+    width: 180px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+`;
+
+const NumberInput = styled.input`
+    width: 60px;
+    outline: none;
+    overflow: hidden;
+`;
+
+interface Vector3InputProps {
+    value: [number, number, number];
+    onChange: (value: [number, number, number]) => void;
+}
+
+function Vector3Input(props: Vector3InputProps): JSX.Element {
+    const [x, y, z] = props.value;
+
+    const onChangeCallback = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseFloat(e.target.value);
+        const index = parseInt(e.target.name, 10);
+        const newValue = [...props.value];
+        newValue[index] = value;
+        props.onChange(newValue as [number, number, number]);
+    }, [props.value, props.onChange]);
+
+    return (
+        <NumberInputWrapper>
+            <NumberInput 
+                type="number"
+                value={x}
+                name="0"
+                onChange={onChangeCallback}
+            />
+            <NumberInput
+                type="number"
+                value={y}
+                name="1"
+                onChange={onChangeCallback}
+            />
+            <NumberInput
+                type="number"
+                value={z}
+                name="2"
+                onChange={onChangeCallback}
+            />
+        </NumberInputWrapper>
+    );
+}
+
+interface CheckBoxInputProps {
+    value: boolean;
+    enabled: boolean;
+    onChange: (value: boolean) => void;
+}
+
+function CheckBoxInput(props: CheckBoxInputProps): JSX.Element {
+    const onChangeCallback = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        props.onChange(e.target.checked);
+    }, [props.onChange]);
+
+    return (
+        <input
+            type="checkbox"
+            checked={props.value}
+            onChange={onChangeCallback}
+            disabled={!props.enabled}
+        />
     );
 }
 
@@ -60,22 +149,85 @@ const ContainerDiv = styled.div`
     }
 `;
 
+const PaddingDiv = styled.div`
+    height: 10px;
+`;
+
 export interface InspectorProps extends PanelWidthHeightProps {
-    empty?: never;
+    target: MmdModel|MmdCamera|null;
 }
 
-export function Inspector(props: InspectorProps): JSX.Element {    
+const animationName = "animation1";
+
+function InspectorInternal(props: InspectorProps): JSX.Element {
+    const onPositionChangeCallback = React.useCallback((value: [number, number, number]): void => {
+        props.target!.transform.position.set(value[0], value[1], value[2]);
+    }, []);
+
+    const onRotationChangeCallback = React.useCallback((value: [number, number, number]): void => {
+        props.target!.transform.eulerAngles.set(value[0], value[1], value[2]);
+    }, []);
+
+    const onCastShadowChangeCallback = React.useCallback((value: boolean): void => {
+        const skinnedMesh = (props.target as MmdModel).skinnedMesh;
+        if (skinnedMesh) skinnedMesh.castShadow = value;
+    }, []);
+
+    const onReceiveShadowChangeCallback = React.useCallback((value: boolean): void => {
+        const skinnedMesh = (props.target as MmdModel).skinnedMesh;
+        if (skinnedMesh) skinnedMesh.receiveShadow = value;
+    }, []);
+
     const onFilesCallback = React.useCallback((files: File[]): void => {
+        if (props.target!.isAnimationLoading(animationName)) return;
         console.log(files);
     }, []);
     
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
             <ContainerDiv>
-                <TextInfo title="model" content="asdf" />
-                <TextInfo title="motion" content="lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua" />
-                <FileDropArea onFiles={onFilesCallback} />
+                {props.target instanceof MmdModel && (
+                    <>
+                        <Label title="position">
+                            <Vector3Input
+                                value={props.target.transform.position.toArray()}
+                                onChange={onPositionChangeCallback}
+                            />
+                        </Label>
+                        <Label title="rotation">
+                            <Vector3Input
+                                value={props.target.transform.eulerAngles.toArray() as [number, number, number]}
+                                onChange={onRotationChangeCallback}
+                            />
+                        </Label>
+                        <PaddingDiv />
+                        <Label title="cast shadow">
+                            <CheckBoxInput
+                                value={false}
+                                onChange={onCastShadowChangeCallback}
+                                enabled={props.target.skinnedMesh !== null}
+                            />
+                        </Label>
+                        <Label title="receive shadow">
+                            <CheckBoxInput
+                                value={false}
+                                onChange={onReceiveShadowChangeCallback}
+                                enabled={props.target.skinnedMesh !== null}
+                            />
+                        </Label>
+                        <PaddingDiv />
+                        <TextInfo title="model" content="asdf" />
+                    </>
+                )}
+                {(props.target instanceof MmdCamera || props.target instanceof MmdModel) && (
+                    <>
+                        <TextInfo title="motion" content="lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua" />
+                        <FileDropArea onFiles={onFilesCallback} />
+                    </>
+                )}
             </ContainerDiv>
         </PanelItem>
     );
 }
+
+export const Inspector = React.memo(InspectorInternal);
