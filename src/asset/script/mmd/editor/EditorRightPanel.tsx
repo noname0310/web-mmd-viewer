@@ -16,7 +16,7 @@ const EditorRightPanelDiv = styled.div<PanelHiddenProps>`
     top: 0;
     right: ${(props): string => props.hidden ? "-300px" : "0"};
     width: 300px;
-    height: 60%;
+    height: 80%;
     background-color: #222;
     color: #fff;
 
@@ -49,7 +49,7 @@ export function EditorRightPanel(): JSX.Element {
         setIsHidden(!isHidden);
     }, [isHidden]);
 
-    const onModelSelectedCallback = React.useCallback((target: MmdModel|MmdCamera): void => {
+    const onModelSelectedCallback = React.useCallback((target: MmdModel|MmdCamera|null): void => {
         setSelectedModel(target);
     }, []);
 
@@ -58,8 +58,8 @@ export function EditorRightPanel(): JSX.Element {
             <ToggleButtonDiv onClick={toggleButtonOnClickCallback}>
                 {isHidden ? "<" : ">"}
             </ToggleButtonDiv>
-            <ObjectListView height="calc(100% - 300px)" onTargetSelected={onModelSelectedCallback} />
-            <Inspector height="300px" target={selectedModel} />
+            <ObjectListView height="calc(100% - 350px)" onTargetSelected={onModelSelectedCallback} />
+            <Inspector height="350px" target={selectedModel} />
         </EditorRightPanelDiv>
     );
 }

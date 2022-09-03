@@ -108,12 +108,13 @@ const ListContainerDiv = styled.div`
 `;
 
 export interface ImportModelDialogProps {
+    title: string;
     files: readonly File[];
     onCanceled: () => void;
     onSelected: (file: File) => void;
 }
 
-export function ImportModelDialog(props: ImportModelDialogProps): JSX.Element {
+export function ImportDialog(props: ImportModelDialogProps): JSX.Element {
     const onBackgroundClickCallback = React.useCallback(() => {
         props.onCanceled();
     }, [props.onCanceled]);
@@ -130,7 +131,7 @@ export function ImportModelDialog(props: ImportModelDialogProps): JSX.Element {
         <Portal elementId="react-root">
             <WrapperDiv onClick={onBackgroundClickCallback}>
                 <DialogDiv onClick={onDialogClickCallback}>
-                    <TitleDiv>Multiple Models Founded</TitleDiv>
+                    <TitleDiv>{props.title}</TitleDiv>
                     <ListContainerWrapperDiv>
                         <ListContainerDiv>
                             {props.files.map((file) => (

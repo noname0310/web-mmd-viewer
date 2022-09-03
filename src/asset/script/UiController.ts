@@ -13,6 +13,10 @@ export class UiController extends Component {
         this._switchCameraButton?.addEventListener("click", this.onSwitchCameraButtonClick);
         this._fullscreenButton?.addEventListener("click", this.onFullscreenButtonClick);
         document.addEventListener("fullscreenchange", this.onFullscreenChange);
+
+        if(this.orbitCamera) {
+            this.orbitCamera.gameObject.activeSelf = this.orbitCamera.priority !== -1;
+        }
     }
 
     public onDisable(): void {

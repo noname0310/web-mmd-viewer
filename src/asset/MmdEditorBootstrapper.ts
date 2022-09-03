@@ -10,15 +10,19 @@ import {
     WebGLRendererLoader
 } from "the-world-engine";
 import * as THREE from "three/src/Three";
+import { AnimationLoopMode } from "tw-engine-498tokio";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
+import { AnimationControl } from "tw-engine-498tokio/dist/asset/script/AnimationControl";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCameraPrefab } from "./prefab/MmdCameraPrefab";
+import { ClockCalibrator } from "./script/animation/ClockCalibrator";
 import { EditorController } from "./script/mmd/editor/EditorController";
 import { EditorUi } from "./script/mmd/editor/EditorUi";
 import { MmdCamera } from "./script/mmd/MmdCamera";
-import { MmdModel } from "./script/mmd/MmdModel";
+import { MmdController } from "./script/mmd/MmdController";
 import { OrbitControls } from "./script/OrbitControls";
-import { Ui } from "./script/Ui";
+import { UiController } from "./script/UiController";
 
 export class MmdEditorBootstrapper extends Bootstrapper {
     public run(): SceneBuilder {
@@ -40,13 +44,61 @@ export class MmdEditorBootstrapper extends Bootstrapper {
 
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
         const audioPlayer = new PrefabRef<AudioPlayer>();
+        const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
 
         return this.sceneBuilder
             .withChild(instantiater.buildGameObject("editor-object")
                 .withComponent(EditorController, c => {
-                    c.initialize(mmdCameraLoader.ref!);
+                    c.initialize(mmdCameraLoader.ref!, audioPlayer.ref!);
                 })
                 .withComponent(EditorUi))
+
+            .withChild(instantiater.buildGameObject("game-manager")
+                .withComponent(UiController, c => {
+                    c.orbitCamera = orbitCamera.ref;
+                    c.switchCameraButton = document.getElementById("switch-camera-button") as HTMLButtonElement;
+                    c.fullscreenButton = document.getElementById("fullscreen_button") as HTMLButtonElement;
+                })
+                .withComponent(AnimationControl, c => {
+                    c.playButton = document.getElementById("play_button")! as HTMLButtonElement;
+                    c.frameDisplayText = document.getElementById("frame_display")! as HTMLInputElement;
+                    c.player = animationPlayer.ref;
+                    c.slider = document.getElementById("animation_slider")! as HTMLInputElement;
+                    c.slider.value = "0";
+                    c.playbackRateSlider = document.getElementById("playback_rate_slider")! as HTMLInputElement;
+                    c.playbackRateSlider.value = "1";
+                }))
+            
+            .withChild(instantiater.buildGameObject("mmd-player")
+                .withComponent(AnimationSequencePlayer, c => {
+                    c.animationClock = new ClockCalibrator(audioPlayer.ref!);
+                    c.loopMode = AnimationLoopMode.None;
+                })
+                .withComponent(MmdController, c => {
+                    c;
+                    // const modelLoaders = this._modelLoaders;
+                    // for (let i = 0; i < modelLoaders.length; ++i) {
+                    //     if(modelLoaders[i].ref) {
+                    //         c.addModelLoader(modelLoaders[i].ref!);
+                
+                    //         const mmdPlayer = c.gameObject.addComponent(MmdPlayer)!;
+                    //         c.addMmdPlayer(mmdPlayer);
+                    //         mmdPlayer.usePhysics = this._usePhysics.ref!;
+                    //         mmdPlayer.useIk = this._useIk.ref!;
+                    //     }
+                    // }
+                
+                    // c.cameraLoader = this._cameraLoader.ref;
+                    // c.physicsMaximumStepCount = 1;
+                
+                    // if (this._modelAnimationName.ref) {
+                    //     c.asyncPlay(
+                    //         this._modelAnimationName.ref,
+                    //         this._cameraAnimationName.ref ?? undefined
+                    //     );
+                    // }
+                })
+                .getComponent(AnimationSequencePlayer, animationPlayer))
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
@@ -66,19 +118,10 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                 })
                 .getComponent(Camera, orbitCamera))
             
-            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
-                // .withCameraLoaderInitializer(c => {
-                //     const loadingText = Ui.getOrCreateLoadingElement();
-                //     const cameraLoadingText = document.createElement("div");
-                //     loadingText.appendChild(cameraLoadingText);
-                //
-                //     c.onProgress.addListener((e) => {
-                //         if (e.lengthComputable) {
-                //             const percentComplete = e.loaded / e.total * 100;
-                //             cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
-                //         }
-                //     });
-                // })
+            .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab, new THREE.Vector3(0, 15, 20))
+                .withCameraInitializer(c => {
+                    c.priority = 0;
+                })
                 .getCamera(camera)
                 .getCameraLoader(mmdCameraLoader)
                 .getAudioPlayer(audioPlayer)
@@ -115,29 +158,6 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                     }());
                 })
                 .getComponent(Object3DContainer, directionalLight))
-
-            .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, -30))
-                .active(false)
-                .withComponent(MmdModel, c => {
-                    const loadingText = Ui.getOrCreateLoadingElement();
-                    const modelLoadingText = document.createElement("div");
-                    loadingText.appendChild(modelLoadingText);
-                    c.onProgress.addListener((_type, e) => {
-                        if (e.lengthComputable) {
-                            const percentComplete = e.loaded / e.total * 100;
-                            modelLoadingText.innerText = "stage: " + Math.round(percentComplete) + "% loading";
-                        }
-                    });
-
-                    c.asyncLoadModel("mmd/Stage36/Stage36.pmx", model => {
-                        model.castShadow = true;
-                        model.receiveShadow = true;
-                        modelLoadingText.innerText = "stage loaded";
-                        loadingText.remove();
-                    });
-
-                    loadingText.remove();
-                }))
         ;
     }
 }

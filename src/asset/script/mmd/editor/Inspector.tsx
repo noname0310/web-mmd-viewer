@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
 import styled from "styled-components";
+import { MathUtils } from "three/src/Three";
 
 import { MmdCamera } from "../MmdCamera";
 import { MmdModel } from "../MmdModel";
 import { useEditorController } from "./EditorControllerContext";
 import { FileDropArea } from "./FileDropArea";
+import { ImportDialog } from "./ImportDialog";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
 const TextDiv = styled.div`
@@ -154,7 +156,7 @@ const PaddingDiv = styled.div`
     height: 10px;
 `;
 
-const RemoveModelButton = styled.button`
+const RemoveButton = styled.button`
     width: 100%;
     height: 30px;
     margin: 10px 0;
@@ -176,87 +178,206 @@ export interface InspectorProps extends PanelWidthHeightProps {
     target: MmdModel|MmdCamera|null;
 }
 
-const animationName = "animation1";
-
 function InspectorInternal(props: InspectorProps): JSX.Element {
     const [forceUpdate, setForceUpdate] = React.useState(0);
+    const [target, setTarget] = React.useState({ref: props.target});
+
     const controller = useEditorController();
 
+    React.useEffect(() => {
+        setTarget({ref: props.target});
+    }, [props.target]);
+
     const onPositionChangeCallback = React.useCallback((value: [number, number, number]): void => {
-        props.target!.transform.position.set(value[0], value[1], value[2]);
+        target.ref!.transform.position.set(value[0], value[1], value[2]);
         setForceUpdate(forceUpdate + 1);
-    }, [props.target, forceUpdate]);
+    }, [target, forceUpdate]);
 
     const onRotationChangeCallback = React.useCallback((value: [number, number, number]): void => {
-        props.target!.transform.eulerAngles.set(value[0], value[1], value[2]);
+        target.ref!.transform.eulerAngles.set(value[0] * MathUtils.DEG2RAD, value[1] * MathUtils.DEG2RAD, value[2] * MathUtils.DEG2RAD);
         setForceUpdate(forceUpdate + 1);
-    }, [props.target, forceUpdate]);
+    }, [target, forceUpdate]);
 
     const onCastShadowChangeCallback = React.useCallback((value: boolean): void => {
-        const skinnedMesh = (props.target as MmdModel).skinnedMesh;
+        const skinnedMesh = (target.ref as MmdModel).skinnedMesh;
         if (skinnedMesh) skinnedMesh.castShadow = value;
         setForceUpdate(forceUpdate + 1);
-    }, [props.target, forceUpdate]);
+    }, [target, forceUpdate]);
 
     const onReceiveShadowChangeCallback = React.useCallback((value: boolean): void => {
-        const skinnedMesh = (props.target as MmdModel).skinnedMesh;
+        const skinnedMesh = (target.ref as MmdModel).skinnedMesh;
         if (skinnedMesh) skinnedMesh.receiveShadow = value;
         setForceUpdate(forceUpdate + 1);
-    }, [props.target, forceUpdate]);
+    }, [target, forceUpdate]);
 
     const onRemoveModelCallback = React.useCallback((): void => {
-        controller.removeModel(props.target as MmdModel);
-    }, [props.target, controller]);
+        controller.removeModel(target.ref as MmdModel);
+    }, [target, controller]);
+
+    const [showImportSoundFileDialog, setShowImportSoundFileDialog] = React.useState(false);
+    const [soundFiles, setSoundFiles] = React.useState<File[]>([]);
+    const [soundFileName, setSoundFileName] = React.useState("none");
+    
+    const onSoundFilesCallback = React.useCallback((files: File[]): void => {
+        files = files.filter(file => file.name.endsWith(".mp3"));
+        if (files.length === 0) return;
+
+        if (files.length === 1) {
+            setSoundFileName(files[0].name);
+            const objectUrl = URL.createObjectURL(files[0]);
+            controller.audioPlayer.asyncSetAudioFromUrl(objectUrl, () => {
+                URL.revokeObjectURL(objectUrl);
+            });
+        } else {
+            setSoundFiles(files);
+            setShowImportSoundFileDialog(true);
+        }
+    }, [controller]);
+
+    const onSoundFileImportCanceledCallback = React.useCallback((): void => {
+        setShowImportSoundFileDialog(false);
+    }, []);
+
+    const onSoundFileImportSelectedCallback = React.useCallback((file: File): void => {
+        setSoundFileName(file.name);
+        const objectUrl = URL.createObjectURL(file);
+        controller.audioPlayer.asyncSetAudioFromUrl(objectUrl, () => {
+            URL.revokeObjectURL(objectUrl);
+        });
+        setShowImportSoundFileDialog(false);
+    }, [controller]);
+    
+    const [showImportMotionDialog, setShowImportMotionDialog] = React.useState(false);
+    const [motionFiles, setMotionFiles] = React.useState<File[]>([]);
+    const [vmdFileName, setVmdFileName] = React.useState("");
 
     const onFilesCallback = React.useCallback((files: File[]): void => {
-        if (props.target!.isAnimationLoading(animationName)) return;
-        console.log(files);
-        setForceUpdate(forceUpdate + 1);
-    }, [props.target, forceUpdate]);
-    
+        if (target.ref!.isAnimationLoading(vmdFileName)) return;
+        files = files.filter(file => file.name.endsWith(".vmd"));
+        if (files.length === 0) return;
+
+        if (files.length === 1) {
+            target.ref!.removeAnimation(target.ref!.animations.keys().next().value);
+            const vmdFile = files[0];
+            setVmdFileName(vmdFile.name);
+            const objectUrl = URL.createObjectURL(vmdFile);
+            target.ref!.asyncLoadAnimation(vmdFile.name, objectUrl, () => {
+                URL.revokeObjectURL(objectUrl);
+                setTarget({ref: target.ref});
+            });
+            setTarget({ref: target.ref});
+        } else {
+            setMotionFiles(files);
+            setShowImportMotionDialog(true);
+        }
+    }, [target, vmdFileName]);
+
+    const onRemoveMotionCallback = React.useCallback(() => {
+        target.ref!.removeAnimation(vmdFileName);
+        setTarget({ref: target.ref});
+    }, [target, vmdFileName]);
+
+    const onImportCanceledCallback = React.useCallback((): void => {
+        setShowImportMotionDialog(false);
+    }, []);
+
+    const onImportSelectedCallback = React.useCallback((file: File): void => {
+        target.ref!.removeAnimation(target.ref!.animations.keys().next().value);
+        setVmdFileName(file.name);
+        const objectUrl = URL.createObjectURL(file);
+        target.ref!.asyncLoadAnimation(file.name, objectUrl, () => {
+            URL.revokeObjectURL(objectUrl);
+            setTarget({ref: target.ref});
+        });
+        setShowImportMotionDialog(false);
+        setTarget({ref: target.ref});
+    }, [target, vmdFileName]);
+
+    const applyRad2Deg = React.useCallback((EulerTuple: [number, number, number]): [number, number, number] => {
+        return [
+            EulerTuple[0] * MathUtils.RAD2DEG,
+            EulerTuple[1] * MathUtils.RAD2DEG,
+            EulerTuple[2] * MathUtils.RAD2DEG
+        ];
+    }, []);
+
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
             <ContainerDiv>
-                {props.target instanceof MmdModel && (
+                {target.ref instanceof MmdModel && (
                     <>
                         <Label title="position">
                             <Vector3Input
-                                value={props.target.transform.position.toArray()}
+                                value={target.ref.transform.position.toArray()}
                                 onChange={onPositionChangeCallback}
                             />
                         </Label>
                         <Label title="rotation">
                             <Vector3Input
-                                value={props.target.transform.eulerAngles.toArray() as [number, number, number]}
+                                value={applyRad2Deg(target.ref.transform.eulerAngles.toArray() as [number, number, number])}
                                 onChange={onRotationChangeCallback}
                             />
                         </Label>
                         <PaddingDiv />
                         <Label title="cast shadow">
                             <CheckBoxInput
-                                value={props.target.skinnedMesh?.castShadow ?? true}
+                                value={target.ref.skinnedMesh?.castShadow ?? true}
                                 onChange={onCastShadowChangeCallback}
-                                enabled={props.target.skinnedMesh !== null}
+                                enabled={target.ref.skinnedMesh !== null}
                             />
                         </Label>
                         <Label title="receive shadow">
                             <CheckBoxInput
-                                value={props.target.skinnedMesh?.receiveShadow ?? true}
+                                value={target.ref.skinnedMesh?.receiveShadow ?? true}
                                 onChange={onReceiveShadowChangeCallback}
-                                enabled={props.target.skinnedMesh !== null}
+                                enabled={target.ref.skinnedMesh !== null}
                             />
                         </Label>
                         <PaddingDiv />
-                        <TextInfo title="model" content={props.target.gameObject.name} />
-                        <RemoveModelButton onClick={onRemoveModelCallback}>
+                        <TextInfo title="model" content={target.ref.gameObject.name} />
+                        <RemoveButton onClick={onRemoveModelCallback}>
                             remove model
-                        </RemoveModelButton>
+                        </RemoveButton>
                     </>
                 )}
-                {(props.target instanceof MmdCamera || props.target instanceof MmdModel) && (
+                {target.ref instanceof MmdCamera && (
                     <>
-                        <TextInfo title="motion" content={props.target.animations.size > 0 ? props.target.animations.keys().next().value : "none"} />
+                        <TextInfo title="mp3 file" content={soundFileName} />
+                        <FileDropArea onFiles={onSoundFilesCallback} />
+                        <PaddingDiv />
+                        {showImportSoundFileDialog && (
+                            <ImportDialog
+                                title={"Multiple Sound Files Have Been Found"}
+                                files={soundFiles}
+                                onCanceled={onSoundFileImportCanceledCallback}
+                                onSelected={onSoundFileImportSelectedCallback}
+                            />
+                        )}
+                    </>
+                )}
+                {(target.ref instanceof MmdCamera || target.ref instanceof MmdModel) && (
+                    <>
+                        <TextInfo
+                            title="motion"
+                            content={
+                                target.ref.isAnimationLoading(vmdFileName)
+                                    ? "loading..."
+                                    : target.ref.animations.size > 0
+                                        ? target.ref.animations.keys().next().value
+                                        : "none"
+                            }/>
                         <FileDropArea onFiles={onFilesCallback} />
+                        <RemoveButton onClick={onRemoveMotionCallback}>
+                            remove motion
+                        </RemoveButton>
+                        {showImportMotionDialog && (
+                            <ImportDialog
+                                title={"Multiple Motions Have Been Found"}
+                                files={motionFiles}
+                                onCanceled={onImportCanceledCallback}
+                                onSelected={onImportSelectedCallback}
+                            />
+                        )}
                     </>
                 )}
             </ContainerDiv>

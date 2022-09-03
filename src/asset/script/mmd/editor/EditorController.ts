@@ -1,4 +1,5 @@
 import { Component, EventContainer, IEventContainer, PrefabRef } from "the-world-engine";
+import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCamera } from "../MmdCamera";
 import { MmdModel } from "../MmdModel";
@@ -7,11 +8,13 @@ import { BrowserFileIO } from "./BrowserFileIO";
 export class EditorController extends Component {
     private readonly _modelList: MmdModel[] = [];
     private _camera: MmdCamera|null = null;
+    private _audioPlayer: AudioPlayer|null = null;
 
     private readonly _onModelsUpdatedEvent = new EventContainer<(models: readonly MmdModel[]) => void>();
 
     public awake(): void {
         if (!this._camera) throw new Error("MmdCamera is not set.");
+        if (!this._audioPlayer) throw new Error("AudioPlayer is not set.");
     }
 
     public onDestroy(): void {
@@ -23,8 +26,9 @@ export class EditorController extends Component {
         this._camera = null;
     }
 
-    public initialize(camera: MmdCamera): void {
+    public initialize(camera: MmdCamera, audioPlayer: AudioPlayer): void {
         this._camera = camera;
+        this._audioPlayer = audioPlayer;
     }
 
     public spawnModel(pmx: File, files: readonly File[]): void {
@@ -69,6 +73,11 @@ export class EditorController extends Component {
     public get camera(): MmdCamera {
         if (!this._camera) throw new Error("MmdCamera is not set.");
         return this._camera;
+    }
+
+    public get audioPlayer(): AudioPlayer {
+        if (!this._audioPlayer) throw new Error("AudioPlayer is not set.");
+        return this._audioPlayer;
     }
 
     public get onModelsUpdated(): IEventContainer<(models: readonly MmdModel[]) => void> {

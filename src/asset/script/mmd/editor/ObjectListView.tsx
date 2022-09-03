@@ -6,7 +6,7 @@ import { MmdCamera } from "../MmdCamera";
 import { MmdModel } from "../MmdModel";
 import { useEditorController } from "./EditorControllerContext";
 import { FileDropArea, FileDropAreaProps } from "./FileDropArea";
-import { ImportModelDialog } from "./ImportModelDialog";
+import { ImportDialog } from "./ImportDialog";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
 interface ListItemSelectedProps {
@@ -94,7 +94,7 @@ const ListContainerDiv = styled.div`
 `;
 
 export interface ObjectListViewProps extends PanelWidthHeightProps {
-    onTargetSelected: (model: MmdModel|MmdCamera) => void;
+    onTargetSelected: (model: MmdModel|MmdCamera|null) => void;
 }
 
 function ObjectListViewInternal(props: ObjectListViewProps): JSX.Element {
@@ -109,9 +109,10 @@ function ObjectListViewInternal(props: ObjectListViewProps): JSX.Element {
     const onModelsUpdatedCallback = React.useCallback((models: readonly MmdModel[]) => {
         if (!models.includes(selectedTarget as MmdModel)) {
             setSelectedTarget(null);
+            props.onTargetSelected(null);
         }
         setModels({ ref: models });
-    }, []);
+    }, [selectedTarget, props.onTargetSelected]);
 
     React.useEffect(() => {
         controller.onModelsUpdated.addListener(onModelsUpdatedCallback);
@@ -180,7 +181,8 @@ function ObjectListViewInternal(props: ObjectListViewProps): JSX.Element {
                 <ObjectListAddItem onFiles={onFilesCallback} />
 
                 {showImportModelDialog && (
-                    <ImportModelDialog
+                    <ImportDialog
+                        title={"Multiple Models Have Been Found"}
                         files={pmxFiles}
                         onCanceled={onImportCanceledCallback}
                         onSelected={onImportSelectedCallback}
