@@ -91,8 +91,9 @@ export function FileDropArea(props: FileDropAreaProps): JSX.Element {
     const changeCallback = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         e.stopPropagation();
-        const files = e.target.files as File[]|null;
-        if (!files) return;
+        const fileList = e.target.files;
+        if (!fileList) return;
+        const files = Array.from(fileList);
         props.onFiles(files);
     }, []);
 

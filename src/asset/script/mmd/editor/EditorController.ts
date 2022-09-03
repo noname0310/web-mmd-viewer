@@ -1,8 +1,8 @@
 import { Component, EventContainer, IEventContainer, PrefabRef } from "the-world-engine";
 
-import { BrowserFileIO } from "../../BrowserFileIO";
 import { MmdCamera } from "../MmdCamera";
 import { MmdModel } from "../MmdModel";
+import { BrowserFileIO } from "./BrowserFileIO";
 
 export class EditorController extends Component {
     private readonly _modelList: MmdModel[] = [];
@@ -39,7 +39,12 @@ export class EditorController extends Component {
             this.engine.instantiater.buildGameObject(pmx.name)
                 .withComponent(MmdModel, c => {
                     c.setUrlModifier(fileIO.getURLModifier());
-                    c.asyncLoadModel(pmx.webkitRelativePath, () => fileIO.removeAllFiles());
+                    c.asyncLoadModel(pmx.webkitRelativePath, model => {
+                        fileIO.removeAllFiles();
+                        if (!c.exists) return;
+                        model.castShadow = true;
+                        model.receiveShadow = true;
+                    });
                 })
                 .getComponent(MmdModel, mmdModelRef)
         );

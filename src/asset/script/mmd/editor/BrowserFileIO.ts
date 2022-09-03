@@ -7,7 +7,7 @@ export class BrowserFileIO {
             const file = files[i];
             const fileFullPath = (file as any).webkitRelativePath as string;
             const fileURL = URL.createObjectURL(file);
-            this._objectUrlMap.set(fileFullPath.toLowerCase(), fileURL);
+            this._objectUrlMap.set(this.normalizePath(fileFullPath), fileURL);
             const fileList = this._filesMap.get(id);
             if (fileList) fileList.push(fileURL);
             else this._filesMap.set(id, [fileURL]);
@@ -32,7 +32,14 @@ export class BrowserFileIO {
     
     public getURLModifier(): (url: string) => string {
         return (url: string) => {
-            return this._objectUrlMap.get(url.toLowerCase()) ?? url;
+            return this._objectUrlMap.get(this.normalizePath(url)) ?? url;
         };
+    }
+
+    private normalizePath(path: string): string {
+        if (path.startsWith("data:") || path.startsWith("blob:")) {
+            return path;
+        }
+        return path.replace(/\\/g, "/").toLowerCase();
     }
 }

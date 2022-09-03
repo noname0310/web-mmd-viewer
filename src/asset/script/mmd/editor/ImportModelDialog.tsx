@@ -10,6 +10,12 @@ const ListItemDiv = styled.div`
     box-sizing: border-box;
     margin-bottom: 3px;
     background-color: #555;
+    overflow-x: auto;
+    white-space: nowrap;
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
 
     &:hover {
         background-color: #666;

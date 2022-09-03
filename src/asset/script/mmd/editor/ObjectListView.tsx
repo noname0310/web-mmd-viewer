@@ -14,6 +14,12 @@ const ListItemDiv = styled.div`
     box-sizing: border-box;
     margin-bottom: 3px;
     background-color: #555;
+    overflow-x: auto;
+    white-space: nowrap;
+    
+    ::-webkit-scrollbar {
+        display: none;
+    }
 
     &:hover {
         background-color: #666;
@@ -91,7 +97,7 @@ export function ObjectListView(props: ObjectListViewProps): JSX.Element {
 
     const onModelsUpdatedCallback = React.useCallback((models: readonly MmdModel[]) => {
         setModels(models);
-    }, []);
+    }, [models]);
 
     React.useEffect(() => {
         controller.onModelsUpdated.addListener(onModelsUpdatedCallback);
@@ -114,7 +120,10 @@ export function ObjectListView(props: ObjectListViewProps): JSX.Element {
             return file.name.endsWith(".pmx");
         });
 
-        if (pmxFiles.length === 0) alert("No pmx files found.");
+        if (pmxFiles.length === 0) {
+            alert("No pmx files found.");
+            return;
+        }
 
         if (pmxFiles.length === 1) {
             controller.spawnModel(pmxFiles[0], files);
