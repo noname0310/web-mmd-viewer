@@ -3,8 +3,8 @@ import { Vector3 } from "three/src/Three";
 import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
-import { MmdCamera } from "./MmdCamera";
 import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./loader/MmdCameraAnimationLoader";
+import { MmdCamera } from "./MmdCamera";
 import { MmdModel } from "./MmdModel";
 import { MmdPlayer } from "./MmdPlayer";
 
