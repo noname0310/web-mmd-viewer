@@ -1,34 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
 import ReactDOM from "react-dom/client";
-import styled from "styled-components";
 import { Component } from "the-world-engine";
 
-import { Inspector } from "./Inspector";
-import { ObjectListView } from "./ObjectListView";
-
-const EditorRightPanelDiv = styled.div`
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 300px;
-    height: 100%;
-    background-color: #222;
-    color: #fff;
-
-    display: flex;
-    flex-direction: column;
-
-    padding-top: 10px;
-    box-sizing: border-box;
-`;
+import { EditorRightPanel } from "./EditorRightPanel";
 
 function EditorMain(): JSX.Element {
     return (
-        <EditorRightPanelDiv>
-            <ObjectListView height="calc(100% - 300px)" />
-            <Inspector height="300px" />
-        </EditorRightPanelDiv>
+        <EditorRightPanel/>
     );
 }
 
@@ -41,6 +20,7 @@ export class EditorUi extends Component {
         reactRoot.style.position = "absolute";
         reactRoot.style.width = "100%";
         reactRoot.style.height = "calc(100% - 30px)";
+        reactRoot.style.overflow = "hidden";
         reactRoot.style.visibility = "hidden";
         reactRoot.style.fontFamily = "sans-serif";
 

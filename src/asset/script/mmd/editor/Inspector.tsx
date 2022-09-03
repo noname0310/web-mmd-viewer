@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import React from "react";
 import styled from "styled-components";
 
+import { FileDropArea } from "./FileDropArea";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
 const TextDiv = styled.div`
     display: flex;
     flex-direction: row;
+    margin-bottom: 5px;
 `;
 
 const LabelDiv = styled.div`
@@ -62,10 +65,16 @@ export interface InspectorProps extends PanelWidthHeightProps {
 }
 
 export function Inspector(props: InspectorProps): JSX.Element {    
+    const onFilesCallback = React.useCallback((files: File[]): void => {
+        console.log(files);
+    }, []);
+    
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
             <ContainerDiv>
+                <TextInfo title="model" content="asdf" />
                 <TextInfo title="motion" content="lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua" />
+                <FileDropArea onFiles={onFilesCallback} />
             </ContainerDiv>
         </PanelItem>
     );

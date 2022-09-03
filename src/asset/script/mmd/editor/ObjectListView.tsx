@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import styled from "styled-components";
 
+import { FileDropArea, FileDropAreaProps } from "./FileDropArea";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
 const ListItemDiv = styled.div`
@@ -28,6 +29,26 @@ function ObjectListItem(props: ObjectListItemProps): JSX.Element {
         <ListItemDiv>
             {props.name}
         </ListItemDiv>
+    );
+}
+
+const ListAddItemDiv = styled(ListItemDiv)`
+    background-color: #68689e;
+
+    &:hover {
+        background-color: #8484ad;
+    }
+
+    &:active {
+        background-color: #83839c;
+    }
+`;
+
+function ObjectListAddItem(props: Omit<FileDropAreaProps, "width"|"height">): JSX.Element {
+    return (
+        <ListAddItemDiv>
+            <FileDropArea {...props} width="100%" height="100%" />
+        </ListAddItemDiv>
     );
 }
 
@@ -63,27 +84,7 @@ export function ObjectListView(props: ObjectListViewProps): JSX.Element {
                 <ObjectListItem name="test2" />
                 <ObjectListItem name="test3" />
                 <ObjectListItem name="test4" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
-                <ObjectListItem name="test2" />
-                <ObjectListItem name="test3" />
-                <ObjectListItem name="test4" />
+                <ObjectListAddItem onFiles={console.log} />
             </ListContainerDiv>
         </PanelItem>
     );

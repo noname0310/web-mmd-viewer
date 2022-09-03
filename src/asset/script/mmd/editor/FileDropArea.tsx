@@ -2,14 +2,14 @@
 import React from "react";
 import styled from "styled-components";
 
-const FileDropAreaLabel = styled.label<FileDropAreaSizeProps>`
-    width: ${props => props.width};
-    height: ${props => props.height};
+const FileDropAreaLabel = styled.label<FileDropAreaWidthHeightProps>`
+    width: ${(props): string|undefined => props.width};
+    height: ${(props): string|undefined => props.height};
 `;
 
-const FileDropInput = styled.input<FileDropAreaSizeProps>`
-    width: ${props => props.width};
-    height: ${props => props.height};
+const FileDropInput = styled.input<FileDropAreaWidthHeightProps>`
+    width: ${(props): string|undefined => props.width};
+    height: ${(props): string|undefined => props.height};
 `;
 
 async function readDirectories(entries: FileSystemEntry[], path = ""): Promise<FileSystemFileEntry[]> {
@@ -44,12 +44,12 @@ async function entriesToFiles(entries: FileSystemEntry[]): Promise<File[]> {
     return files;
 }
 
-interface FileDropAreaSizeProps {
+interface FileDropAreaWidthHeightProps {
     width?: string;
     height?: string;
 }
 
-export interface FileDropAreaProps extends FileDropAreaSizeProps {
+export interface FileDropAreaProps extends FileDropAreaWidthHeightProps {
     onFiles: (files: File[]) => void;
 }
 
