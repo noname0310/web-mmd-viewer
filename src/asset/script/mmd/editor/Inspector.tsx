@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 import { MmdCamera } from "../MmdCamera";
 import { MmdModel } from "../MmdModel";
+import { useEditorController } from "./EditorControllerContext";
 import { FileDropArea } from "./FileDropArea";
 import { PanelItem, PanelWidthHeightProps } from "./PanelItem";
 
@@ -79,7 +80,7 @@ function Vector3Input(props: Vector3InputProps): JSX.Element {
     const [x, y, z] = props.value;
 
     const onChangeCallback = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.target.value);
+        const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
         const index = parseInt(e.target.name, 10);
         const newValue = [...props.value];
         newValue[index] = value;
@@ -153,6 +154,24 @@ const PaddingDiv = styled.div`
     height: 10px;
 `;
 
+const RemoveModelButton = styled.button`
+    width: 100%;
+    height: 30px;
+    margin: 10px 0;
+    color: #fff;
+    border: none;
+
+    background-color: #f00;
+
+    :hover {
+        background-color: #f44;
+    }
+
+    :active {
+        background-color: #f88;
+    }
+`;
+
 export interface InspectorProps extends PanelWidthHeightProps {
     target: MmdModel|MmdCamera|null;
 }
@@ -160,28 +179,40 @@ export interface InspectorProps extends PanelWidthHeightProps {
 const animationName = "animation1";
 
 function InspectorInternal(props: InspectorProps): JSX.Element {
+    const [forceUpdate, setForceUpdate] = React.useState(0);
+    const controller = useEditorController();
+
     const onPositionChangeCallback = React.useCallback((value: [number, number, number]): void => {
         props.target!.transform.position.set(value[0], value[1], value[2]);
-    }, []);
+        setForceUpdate(forceUpdate + 1);
+    }, [props.target, forceUpdate]);
 
     const onRotationChangeCallback = React.useCallback((value: [number, number, number]): void => {
         props.target!.transform.eulerAngles.set(value[0], value[1], value[2]);
-    }, []);
+        setForceUpdate(forceUpdate + 1);
+    }, [props.target, forceUpdate]);
 
     const onCastShadowChangeCallback = React.useCallback((value: boolean): void => {
         const skinnedMesh = (props.target as MmdModel).skinnedMesh;
         if (skinnedMesh) skinnedMesh.castShadow = value;
-    }, []);
+        setForceUpdate(forceUpdate + 1);
+    }, [props.target, forceUpdate]);
 
     const onReceiveShadowChangeCallback = React.useCallback((value: boolean): void => {
         const skinnedMesh = (props.target as MmdModel).skinnedMesh;
         if (skinnedMesh) skinnedMesh.receiveShadow = value;
-    }, []);
+        setForceUpdate(forceUpdate + 1);
+    }, [props.target, forceUpdate]);
+
+    const onRemoveModelCallback = React.useCallback((): void => {
+        controller.removeModel(props.target as MmdModel);
+    }, [props.target, controller]);
 
     const onFilesCallback = React.useCallback((files: File[]): void => {
         if (props.target!.isAnimationLoading(animationName)) return;
         console.log(files);
-    }, []);
+        setForceUpdate(forceUpdate + 1);
+    }, [props.target, forceUpdate]);
     
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
@@ -203,25 +234,28 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
                         <PaddingDiv />
                         <Label title="cast shadow">
                             <CheckBoxInput
-                                value={false}
+                                value={props.target.skinnedMesh?.castShadow ?? true}
                                 onChange={onCastShadowChangeCallback}
                                 enabled={props.target.skinnedMesh !== null}
                             />
                         </Label>
                         <Label title="receive shadow">
                             <CheckBoxInput
-                                value={false}
+                                value={props.target.skinnedMesh?.receiveShadow ?? true}
                                 onChange={onReceiveShadowChangeCallback}
                                 enabled={props.target.skinnedMesh !== null}
                             />
                         </Label>
                         <PaddingDiv />
-                        <TextInfo title="model" content="asdf" />
+                        <TextInfo title="model" content={props.target.gameObject.name} />
+                        <RemoveModelButton onClick={onRemoveModelCallback}>
+                            remove model
+                        </RemoveModelButton>
                     </>
                 )}
                 {(props.target instanceof MmdCamera || props.target instanceof MmdModel) && (
                     <>
-                        <TextInfo title="motion" content="lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua" />
+                        <TextInfo title="motion" content={props.target.animations.size > 0 ? props.target.animations.keys().next().value : "none"} />
                         <FileDropArea onFiles={onFilesCallback} />
                     </>
                 )}

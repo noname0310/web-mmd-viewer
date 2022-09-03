@@ -107,6 +107,9 @@ function ObjectListViewInternal(props: ObjectListViewProps): JSX.Element {
     const controller = useEditorController();
 
     const onModelsUpdatedCallback = React.useCallback((models: readonly MmdModel[]) => {
+        if (!models.includes(selectedTarget as MmdModel)) {
+            setSelectedTarget(null);
+        }
         setModels({ ref: models });
     }, []);
 

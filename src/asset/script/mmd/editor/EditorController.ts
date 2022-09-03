@@ -57,7 +57,7 @@ export class EditorController extends Component {
         const modelList = this._modelList;
         const index = modelList.indexOf(model);
         if (index < 0) return;
-        model.destroy();
+        model.gameObject.destroy();
         modelList.splice(index, 1);
         this._onModelsUpdatedEvent.invoke(this._modelList);
     }
