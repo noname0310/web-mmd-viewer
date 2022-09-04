@@ -48,6 +48,7 @@ export class EditorController extends Component {
         this.engine.scene.addChildFromBuilder(
             this.engine.instantiater.buildGameObject(pmx.name)
                 .withComponent(MmdModel, c => {
+                    c.forceAllInterpolateToCubic = true;
                     c.setUrlModifier(fileIO.getURLModifier());
                     c.asyncLoadModel(pmx.webkitRelativePath, model => {
                         fileIO.removeAllFiles();
