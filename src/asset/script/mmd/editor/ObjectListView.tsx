@@ -15,6 +15,7 @@ interface ListItemSelectedProps {
 
 const ListItemDiv = styled.div<ListItemSelectedProps>`
     width: auto;
+    min-height: 32px;
     padding: 5px 10px;
     box-sizing: border-box;
     margin-bottom: 3px;

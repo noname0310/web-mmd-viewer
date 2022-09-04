@@ -6,11 +6,13 @@ import { Portal } from "./Portal";
 
 const ListItemDiv = styled.div`
     width: auto;
+    min-height: 32px;
     padding: 5px 10px;
     box-sizing: border-box;
     margin-bottom: 3px;
     background-color: #555;
     overflow-x: auto;
+    overflow-y: hidden;
     white-space: nowrap;
 
     ::-webkit-scrollbar {
