@@ -100,8 +100,22 @@ export class Bootstrapper extends BaseBootstrapper {
 }
 ```
 ## Preview
+![ingame2](ingame2.png)
+
+credit:
+
+- model: YYB/HB-Squiddy/FreezyChan-3Dreams
+  https://www.deviantart.com/hb-squiddy/art/MMD-YYB-Miku-Default-edit-v1-4-4-DL-844198863
+- motion: imarine-project
+  https://imarine-project.jp/#op1
+- camera: nyanposu
+  https://bowlroll.net/file/265140
+- stage: つくあん
+  https://bowlroll.net/file/230141
+
 ![ingame](ingame.png)
 credit:
+
 - model: YYB / とぁさん (The download seems to have disappeared)
 - motion: 卜逻desu
 - background: 卜逻desu
