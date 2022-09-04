@@ -1,4 +1,5 @@
 import { Component, EventContainer, IEventContainer, PrefabRef } from "the-world-engine";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCamera } from "../MmdCamera";
@@ -11,6 +12,7 @@ export class EditorController extends Component {
     private _camera: MmdCamera|null = null;
     private _audioPlayer: AudioPlayer|null = null;
     private _mmdController: MmdController|null = null;
+    private _animationPlayer: AnimationSequencePlayer|null = null;
 
     private readonly _onModelsUpdatedEvent = new EventContainer<(models: readonly MmdModel[]) => void>();
 
@@ -32,6 +34,7 @@ export class EditorController extends Component {
         this._camera = camera;
         this._audioPlayer = audioPlayer;
         this._mmdController = mmdController;
+        this._animationPlayer = mmdController.gameObject.getComponent(AnimationSequencePlayer)!;
     }
 
     public spawnModel(pmx: File, files: readonly File[]): void {
@@ -86,6 +89,11 @@ export class EditorController extends Component {
     public get mmdController(): MmdController {
         if (!this._mmdController) throw new Error("MmdController is not set.");
         return this._mmdController;
+    }
+
+    public get animationPlayer(): AnimationSequencePlayer {
+        if (!this._animationPlayer) throw new Error("AnimationSequencePlayer is not set.");
+        return this._animationPlayer;
     }
 
     public get onModelsUpdated(): IEventContainer<(models: readonly MmdModel[]) => void> {

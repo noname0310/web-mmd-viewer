@@ -2,7 +2,6 @@
 import React from "react";
 import styled from "styled-components";
 import { MathUtils } from "three/src/Three";
-import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
 import { ClockCalibrator } from "../../animation/ClockCalibrator";
 import { MmdCamera } from "../MmdCamera";
@@ -267,7 +266,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
         if (files.length === 1) {
             target.ref!.removeAnimation(vmdFileName);
-            controller.mmdController.gameObject.getComponent(AnimationSequencePlayer)!.stop();
+            controller.audioPlayer.enabled = false;
+            controller.animationPlayer.enabled = false;
             if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
             const vmdFile = files[0];
             setVmdFileName(vmdFile.name);
@@ -287,7 +287,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     const onRemoveMotionCallback = React.useCallback(() => {
         target.ref!.removeAnimation(vmdFileName);
-        controller.mmdController.gameObject.getComponent(AnimationSequencePlayer)!.stop();
+        controller.audioPlayer.enabled = false;
+        controller.animationPlayer.enabled = false;
         if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
         setVmdFileName("");
         setTarget({ref: target.ref});
@@ -301,7 +302,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     const onImportSelectedCallback = React.useCallback((file: File): void => {
         target.ref!.removeAnimation(vmdFileName);
-        controller.mmdController.gameObject.getComponent(AnimationSequencePlayer)!.stop();
+        controller.audioPlayer.enabled = false;
+        controller.animationPlayer.enabled = false;
         if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
         setVmdFileName(file.name);
         const objectUrl = URL.createObjectURL(file);
@@ -342,7 +344,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         const camera = controller.camera;
         const audioPlayer = controller.audioPlayer;
         const mmdController = controller.mmdController;
-        const animationPlayer = mmdController.gameObject.getComponent(AnimationSequencePlayer)!;
+        const animationPlayer = controller.animationPlayer;
 
         animationPlayer.stop();
         mmdController.removeAllMmdPlayers();
@@ -357,6 +359,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         for (let i = 0; i < models.length; ++i) {
             const model = models[i];
             if (model.animations.size === 0) continue;
+
+            model.poseToDefault();
 
             let modelPlayer = model.gameObject.getComponent(MmdPlayer);
             const usePhysics = modelPlayer?.usePhysics ?? true;
@@ -382,6 +386,9 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         }
 
         if (animationNames.length === 0) return;
+
+        audioPlayer.enabled = true;
+        animationPlayer.enabled = true;
 
         mmdController.asyncPlay(
             animationNames,
