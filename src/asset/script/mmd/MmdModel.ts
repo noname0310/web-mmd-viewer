@@ -14,6 +14,7 @@ export class MmdModel extends Component {
     private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(objectType: "model"|"animation", event: ProgressEvent<EventTarget>) => void>();
     private readonly _onDisposeObject3DEvent = new EventContainer<(object3D: THREE.SkinnedMesh) => void>();
+    private readonly _defaultPoseMap = new Map<THREE.Object3D, {position: THREE.Vector3, quaternion: THREE.Quaternion, scale: THREE.Vector3}>();
 
     private _animationLoadingCoroutines: Coroutine[] = [];
 
@@ -130,6 +131,19 @@ export class MmdModel extends Component {
             }
             this._onDisposeObject3DEvent.invoke(object3D);
         });
+
+        this._defaultPoseMap.clear();
+        model!.traverse(object => {
+            if ((object as THREE.Bone).isBone) {
+                const bone = object as THREE.Bone;
+                this._defaultPoseMap.set(bone, {
+                    position: bone.position.clone(),
+                    quaternion: bone.quaternion.clone(),
+                    scale: bone.scale.clone()
+                });
+            }
+        });
+
         onComplete?.(model!);
     }
 
@@ -155,6 +169,24 @@ export class MmdModel extends Component {
 
     public isAnimationLoading(animationName: string): boolean {
         return this._loadingAnimations.has(animationName);
+    }
+
+    public poseToDefault(): void {
+        if (this._object3DContainer!.object3D === null) return;
+
+        this._object3DContainer!.object3D.traverse(object => {
+            if ((object as THREE.Bone).isBone) {
+                const bone = object as THREE.Bone;
+                const defaultPose = this._defaultPoseMap.get(bone);
+                if (defaultPose === undefined) return;
+                
+                bone.position.copy(defaultPose.position);
+                bone.quaternion.copy(defaultPose.quaternion);
+                bone.scale.copy(defaultPose.scale);
+            }
+        });
+
+        this._object3DContainer!.object3D.updateMatrixWorld(true);
     }
 
     public setUrlModifier(urlModifier: (url: string) => string): void {
