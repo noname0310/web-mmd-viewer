@@ -1,12 +1,12 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const LinearDepthDisplayShader = {
+    uniforms: {
 
-	uniforms: {
+        texture: { value: null }
 
-		texture: { value: null },
+    },
 
-	},
-
-	vertexShader: /* glsl */`
+    vertexShader: /* glsl */`
 		varying vec3 vViewPosition;
 		varying vec2 vUv;
 		void main() {
@@ -19,7 +19,7 @@ export const LinearDepthDisplayShader = {
 		}
 	`,
 
-	fragmentShader: /* glsl */`
+    fragmentShader: /* glsl */`
 		varying vec2 vUv;
 		uniform sampler2D texture;
 		void main() {
@@ -31,5 +31,4 @@ export const LinearDepthDisplayShader = {
 
 		}
 	`
-
 };

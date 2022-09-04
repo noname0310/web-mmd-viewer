@@ -1,34 +1,34 @@
-import { Vector2, Color } from "three/src/Three";
+import { Color, Vector2 } from "three/src/Three";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const CompositeShader = {
+    defines: {
+        /* eslint-disable @typescript-eslint/naming-convention */
+        BLUR_ITERATIONS: 5,
+        BLUR_MODE: 0,
+        AO_ONLY: 0,
+        COLOR_ONLY: 0,
+        DEPTH_THRESHOLD: "5e-1"
+        /* eslint-enable @typescript-eslint/naming-convention */
+    },
 
-	defines: {
+    uniforms: {
 
-		BLUR_ITERATIONS: 5,
-		BLUR_MODE: 0,
-		AO_ONLY: 0,
-		COLOR_ONLY: 0,
-		DEPTH_THRESHOLD: '5e-1',
+        fullSize: { value: new Vector2() },
+        aoSize: { value: new Vector2() },
+        normalBuffer: { value: null },
+        depthBuffer: { value: null },
+        colorBuffer: { value: null },
+        gtaoBuffer: { value: null },
+        intensity: { value: 1.0 },
+        blurStride: { value: 1.0 },
 
-	},
+        ambientColor: { value: new Color() },
+        ambientIntensity: { value: 0 }
 
-	uniforms: {
+    },
 
-		fullSize: { value: new Vector2() },
-		aoSize: { value: new Vector2() },
-		normalBuffer: { value: null },
-		depthBuffer: { value: null },
-		colorBuffer: { value: null },
-		gtaoBuffer: { value: null },
-		intensity: { value: 1.0 },
-		blurStride: { value: 1.0 },
-
-		ambientColor: { value: new Color() },
-		ambientIntensity: { value: 0 },
-
-	},
-
-	vertexShader:
-	/* glsl */`
+    vertexShader:
+    /* glsl */`
 		varying vec2 vUv;
 		void main() {
 
@@ -38,8 +38,8 @@ export const CompositeShader = {
 		}
 	`,
 
-	fragmentShader:
-	/* glsl */`
+    fragmentShader:
+    /* glsl */`
 		varying vec2 vUv;
 
 		uniform vec3 ambientColor;
@@ -286,5 +286,4 @@ export const CompositeShader = {
 
 		}
 		`
-
 };

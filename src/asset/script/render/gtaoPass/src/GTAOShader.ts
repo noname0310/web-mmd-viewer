@@ -1,46 +1,47 @@
 import { Vector2, Vector4 } from "three/src/Three";
 
 // https://github.com/asylum2010/Asylum_Tutorials/blob/master/ShaderTutors/54_GTAO/
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const GTAOShader = {
 
-	defines: {
+    defines: {
+        /* eslint-disable @typescript-eslint/naming-convention */
+        NUM_DIRECTIONS: 32,
+        NUM_STEPS: 16,
+        RADIUS: "2.0", // in world space
 
-		NUM_DIRECTIONS: 32,
-		NUM_STEPS: 16,
-		RADIUS: '2.0', // in world space
+        ENABLE_FALLOFF: 1,
+        FALLOFF_START2: "0.16",
+        FALLOFF_END2: "4.0",
 
-		ENABLE_FALLOFF: 1,
-		FALLOFF_START2: '0.16',
-		FALLOFF_END2: '4.0',
+        ENABLE_ROTATION_JITTER: 1,
+        ENABLE_RADIUS_JITTER: 1,
+        ENABLE_COLOR_BOUNCE: 1,
 
-		ENABLE_ROTATION_JITTER: 1,
-		ENABLE_RADIUS_JITTER: 1,
-		ENABLE_COLOR_BOUNCE: 1,
+        JITTER_TYPE: 0
+        /* eslint-enable @typescript-eslint/naming-convention */
+    },
 
-		JITTER_TYPE: 0,
+    uniforms: {
 
-	},
+        colorBuffer: { value: null },
+        normalBuffer: { value: null },
+        depthBuffer: { value: null },
+        renderSize: { value: new Vector2() },
 
-	uniforms: {
+        blueNoiseTex: { value: null },
+        blueNoiseSize: { value: 1 },
 
-		colorBuffer: { value: null },
-		normalBuffer: { value: null },
-		depthBuffer: { value: null },
-		renderSize: { value: new Vector2() },
+        clipInfo: { value: new Vector4() },
+        projInfo: { value: new Vector4() },
+        params: { value: new Vector2() },
 
-		blueNoiseTex: { value: null },
-		blueNoiseSize: { value: 1 },
+        lightBounceIntensity: { value: 1.0 }
 
-		clipInfo: { value: new Vector4() },
-		projInfo: { value: new Vector4() },
-		params: { value: new Vector2() },
+    },
 
-		lightBounceIntensity: { value: 1.0 },
-
-	},
-
-	vertexShader:
-	/* glsl */`
+    vertexShader:
+    /* glsl */`
 		varying vec2 vUv;
 		void main() {
 
@@ -50,8 +51,8 @@ export const GTAOShader = {
 		}
 	`,
 
-	fragmentShader:
-	/* glsl */`
+    fragmentShader:
+    /* glsl */`
 		#define TWO_PI			6.2831853071795864
 		#define HALF_PI			1.5707963267948966
 		#define ONE_OVER_PI		0.3183098861837906
@@ -318,5 +319,4 @@ export const GTAOShader = {
 		}
 
 	`
-
 };
