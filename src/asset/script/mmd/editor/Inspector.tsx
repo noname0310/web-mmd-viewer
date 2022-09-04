@@ -267,6 +267,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
         if (files.length === 1) {
             target.ref!.removeAnimation(vmdFileName);
+            controller.mmdController.gameObject.getComponent(AnimationSequencePlayer)!.stop();
+            if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
             const vmdFile = files[0];
             setVmdFileName(vmdFile.name);
             const objectUrl = URL.createObjectURL(vmdFile);
@@ -285,7 +287,9 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     const onRemoveMotionCallback = React.useCallback(() => {
         target.ref!.removeAnimation(vmdFileName);
+        controller.mmdController.gameObject.getComponent(AnimationSequencePlayer)!.stop();
         if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
+        setVmdFileName("");
         setTarget({ref: target.ref});
 
         updateAnimation();
@@ -297,6 +301,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     const onImportSelectedCallback = React.useCallback((file: File): void => {
         target.ref!.removeAnimation(vmdFileName);
+        controller.mmdController.gameObject.getComponent(AnimationSequencePlayer)!.stop();
         if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
         setVmdFileName(file.name);
         const objectUrl = URL.createObjectURL(file);
@@ -359,6 +364,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
             if (modelPlayer) modelPlayer.destroy();
 
             modelPlayer = model.gameObject.addComponent(MmdPlayer)!;
+
             modelPlayer.usePhysics = usePhysics;
             modelPlayer.useIk = useIk;
 
@@ -369,6 +375,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         const animationNames: string[] = [];
         for (let i = 0; i < models.length; ++i) {
             const model = models[i];
+            (globalThis as any).model = model;
             if (model.animations.size === 0) continue;
 
             animationNames.push(model.animations.keys().next().value);
