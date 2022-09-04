@@ -30,6 +30,7 @@ export class EditorUi extends Component {
         reactRoot.style.overflow = "hidden";
         reactRoot.style.visibility = "hidden";
         reactRoot.style.fontFamily = "sans-serif";
+        reactRoot.style.pointerEvents = "none";
 
         this.engine.domElement.appendChild(reactRoot);
         const reactDom = this._reactDomRoot = ReactDOM.createRoot(reactRoot);

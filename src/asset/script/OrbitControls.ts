@@ -20,7 +20,7 @@ export class OrbitControls extends Component {
     public start(): void {
         const controls = this._orbitControls = new ThreeOrbitControls(
             DuckThreeCamera.createInterface(this._camera!),
-            this.engine.domElement
+            this.engine.webGL!.webglRenderer!.domElement
         );
         controls.listenToKeyEvents(window);
 

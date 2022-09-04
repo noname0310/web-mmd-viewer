@@ -27,6 +27,8 @@ const EditorRightPanelDiv = styled.div<PanelHiddenProps>`
     box-sizing: border-box;
 
     transition: right 0.5s;
+
+    pointer-events: auto;
 `;
 
 const ToggleButtonDiv = styled.div`

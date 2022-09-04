@@ -54,6 +54,7 @@ const WrapperDiv = styled.div`
     justify-content: center;
     align-items: center;
     z-index: 100;
+    pointer-events: auto;
 `;
 
 const DialogDiv = styled.div`
