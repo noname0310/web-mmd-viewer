@@ -215,7 +215,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     const onRemoveModelCallback = React.useCallback((): void => {
         controller.removeModel(target.ref as MmdModel);
-
+        target.ref!.removeAnimation(target.ref!.animations.keys().next().value);
         updateAnimation();
     }, [target, controller]);
 
@@ -233,7 +233,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
             controller.audioPlayer.asyncSetAudioFromUrl(objectUrl, () => {
                 URL.revokeObjectURL(objectUrl);
 
-                updateAnimation();
+                updateAnimation(true);
             });
         } else {
             setSoundFiles(files);
@@ -251,7 +251,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         controller.audioPlayer.asyncSetAudioFromUrl(objectUrl, () => {
             URL.revokeObjectURL(objectUrl);
 
-            updateAnimation();
+            updateAnimation(true);
         });
         setShowImportSoundFileDialog(false);
     }, [controller]);
@@ -266,13 +266,15 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         if (files.length === 0) return;
 
         if (files.length === 1) {
-            target.ref!.removeAnimation(target.ref!.animations.keys().next().value);
+            target.ref!.removeAnimation(vmdFileName);
             const vmdFile = files[0];
             setVmdFileName(vmdFile.name);
             const objectUrl = URL.createObjectURL(vmdFile);
             target.ref!.asyncLoadAnimation(vmdFile.name, objectUrl, () => {
                 URL.revokeObjectURL(objectUrl);
                 setTarget({ref: target.ref});
+
+                updateAnimation();
             });
             setTarget({ref: target.ref});
         } else {
@@ -283,6 +285,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     const onRemoveMotionCallback = React.useCallback(() => {
         target.ref!.removeAnimation(vmdFileName);
+        if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
         setTarget({ref: target.ref});
 
         updateAnimation();
@@ -293,7 +296,8 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
     }, []);
 
     const onImportSelectedCallback = React.useCallback((file: File): void => {
-        target.ref!.removeAnimation(target.ref!.animations.keys().next().value);
+        target.ref!.removeAnimation(vmdFileName);
+        if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
         setVmdFileName(file.name);
         const objectUrl = URL.createObjectURL(file);
         target.ref!.asyncLoadAnimation(file.name, objectUrl, () => {
@@ -306,6 +310,20 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         setTarget({ref: target.ref});
     }, [target, vmdFileName]);
 
+    const onUsePhysicsChangeCallback = React.useCallback((value: boolean): void => {
+        const mmdModel = target.ref as MmdModel;
+        const mmdPlayer = mmdModel.gameObject.getComponent(MmdPlayer)!;
+        mmdPlayer.usePhysics = value;
+        setTarget({ref: target.ref});
+    }, [target]);
+
+    const onUseIkChangeCallback = React.useCallback((value: boolean): void => {
+        const mmdModel = target.ref as MmdModel;
+        const mmdPlayer = mmdModel.gameObject.getComponent(MmdPlayer)!;
+        mmdPlayer.useIk = value;
+        setTarget({ref: target.ref});
+    }, [target]);
+
     const applyRad2Deg = React.useCallback((EulerTuple: [number, number, number]): [number, number, number] => {
         return [
             EulerTuple[0] * MathUtils.RAD2DEG,
@@ -314,7 +332,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         ];
     }, []);
 
-    const updateAnimation = React.useCallback(() => {
+    const updateAnimation = React.useCallback((audioPlayerisReady?: boolean) => {
         const models = controller.models;
         const camera = controller.camera;
         const audioPlayer = controller.audioPlayer;
@@ -325,7 +343,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         mmdController.removeAllMmdPlayers();
         mmdController.removeAllModelLoaders();
 
-        if (soundFileName !== null && animationPlayer.animationClock === null) {
+        if ((soundFileName !== null || audioPlayerisReady) && animationPlayer.animationClock === null) {
             animationPlayer.animationClock = new ClockCalibrator(audioPlayer);
         }
 
@@ -366,84 +384,108 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
-            <ContainerDiv>
-                {target.ref instanceof MmdModel && (
-                    <>
-                        <Label title="position">
-                            <Vector3Input
-                                value={target.ref.transform.position.toArray()}
-                                onChange={onPositionChangeCallback}
-                            />
-                        </Label>
-                        <Label title="rotation">
-                            <Vector3Input
-                                value={applyRad2Deg(target.ref.transform.eulerAngles.toArray() as [number, number, number])}
-                                onChange={onRotationChangeCallback}
-                            />
-                        </Label>
-                        <PaddingDiv />
-                        <Label title="cast shadow">
-                            <CheckBoxInput
-                                value={target.ref.skinnedMesh?.castShadow ?? true}
-                                onChange={onCastShadowChangeCallback}
-                                enabled={target.ref.skinnedMesh !== null}
-                            />
-                        </Label>
-                        <Label title="receive shadow">
-                            <CheckBoxInput
-                                value={target.ref.skinnedMesh?.receiveShadow ?? true}
-                                onChange={onReceiveShadowChangeCallback}
-                                enabled={target.ref.skinnedMesh !== null}
-                            />
-                        </Label>
-                        <PaddingDiv />
-                        <TextInfo title="model" content={target.ref.gameObject.name} />
-                        <RemoveButton onClick={onRemoveModelCallback}>
-                            remove model
-                        </RemoveButton>
-                    </>
-                )}
-                {target.ref instanceof MmdCamera && (
-                    <>
-                        <TextInfo title="mp3 file" content={soundFileName ?? "none"} />
-                        <FileDropArea onFiles={onSoundFilesCallback} />
-                        <PaddingDiv />
-                        {showImportSoundFileDialog && (
-                            <ImportDialog
-                                title={"Multiple Sound Files Have Been Found"}
-                                files={soundFiles}
-                                onCanceled={onSoundFileImportCanceledCallback}
-                                onSelected={onSoundFileImportSelectedCallback}
-                            />
+            {target.ref?.exists 
+                ? (
+                    <ContainerDiv>
+                        {target.ref instanceof MmdModel && (
+                            <>
+                                <Label title="position">
+                                    <Vector3Input
+                                        value={target.ref.transform.position.toArray()}
+                                        onChange={onPositionChangeCallback}
+                                    />
+                                </Label>
+                                <Label title="rotation">
+                                    <Vector3Input
+                                        value={applyRad2Deg(target.ref.transform.eulerAngles.toArray() as [number, number, number])}
+                                        onChange={onRotationChangeCallback}
+                                    />
+                                </Label>
+                                <PaddingDiv />
+                                <Label title="cast shadow">
+                                    <CheckBoxInput
+                                        value={target.ref.skinnedMesh?.castShadow ?? true}
+                                        onChange={onCastShadowChangeCallback}
+                                        enabled={target.ref.skinnedMesh !== null}
+                                    />
+                                </Label>
+                                <Label title="receive shadow">
+                                    <CheckBoxInput
+                                        value={target.ref.skinnedMesh?.receiveShadow ?? true}
+                                        onChange={onReceiveShadowChangeCallback}
+                                        enabled={target.ref.skinnedMesh !== null}
+                                    />
+                                </Label>
+                                <PaddingDiv />
+                                <TextInfo title="model" content={target.ref.gameObject.name} />
+                                <RemoveButton onClick={onRemoveModelCallback}>
+                                    remove model
+                                </RemoveButton>
+                            </>
                         )}
-                    </>
-                )}
-                {(target.ref instanceof MmdCamera || target.ref instanceof MmdModel) && (
-                    <>
-                        <TextInfo
-                            title="motion"
-                            content={
-                                target.ref.isAnimationLoading(vmdFileName)
-                                    ? "loading..."
-                                    : target.ref.animations.size > 0
-                                        ? target.ref.animations.keys().next().value
-                                        : "none"
-                            }/>
-                        <FileDropArea onFiles={onFilesCallback} />
-                        <RemoveButton onClick={onRemoveMotionCallback}>
-                            remove motion
-                        </RemoveButton>
-                        {showImportMotionDialog && (
-                            <ImportDialog
-                                title={"Multiple Motions Have Been Found"}
-                                files={motionFiles}
-                                onCanceled={onImportCanceledCallback}
-                                onSelected={onImportSelectedCallback}
-                            />
+                        {target.ref instanceof MmdCamera && (
+                            <>
+                                <TextInfo title="mp3 file" content={soundFileName ?? "none"} />
+                                <FileDropArea onFiles={onSoundFilesCallback} />
+                                <PaddingDiv />
+                                {showImportSoundFileDialog && (
+                                    <ImportDialog
+                                        title={"Multiple Sound Files Have Been Found"}
+                                        files={soundFiles}
+                                        onCanceled={onSoundFileImportCanceledCallback}
+                                        onSelected={onSoundFileImportSelectedCallback}
+                                    />
+                                )}
+                            </>
                         )}
-                    </>
-                )}
-            </ContainerDiv>
+                        {(target.ref instanceof MmdCamera || target.ref instanceof MmdModel) && (
+                            <>
+                                <TextInfo
+                                    title="motion"
+                                    content={
+                                        target.ref.isAnimationLoading(vmdFileName)
+                                            ? "loading..."
+                                            : target.ref.animations.size > 0
+                                                ? target.ref.animations.keys().next().value
+                                                : "none"
+                                    }/>
+                                <FileDropArea onFiles={onFilesCallback} />
+                                <RemoveButton onClick={onRemoveMotionCallback}>
+                                    remove motion
+                                </RemoveButton>
+                                {showImportMotionDialog && (
+                                    <ImportDialog
+                                        title={"Multiple Motions Have Been Found"}
+                                        files={motionFiles}
+                                        onCanceled={onImportCanceledCallback}
+                                        onSelected={onImportSelectedCallback}
+                                    />
+                                )}
+                            </>
+                        )}
+                        {target.ref instanceof MmdModel && (
+                            <>
+                                <Label title="use physics">
+                                    <CheckBoxInput
+                                        value={(target.ref.gameObject.getComponent(MmdPlayer)?.usePhysics) ?? true}
+                                        onChange={onUsePhysicsChangeCallback}
+                                        enabled={target.ref.gameObject.getComponent(MmdPlayer) !== null}
+                                    />
+                                </Label>
+                                <Label title="use ik">
+                                    <CheckBoxInput
+                                        value={(target.ref.gameObject.getComponent(MmdPlayer)?.useIk) ?? true}
+                                        onChange={onUseIkChangeCallback}
+                                        enabled={target.ref.gameObject.getComponent(MmdPlayer) !== null}
+                                    />
+                                </Label>
+                            </>
+                        )}
+                    </ContainerDiv>
+                ) : (
+                    <>  </>
+                )
+            }
         </PanelItem>
     );
 }
