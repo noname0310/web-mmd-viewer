@@ -182,41 +182,36 @@ export interface InspectorProps extends PanelWidthHeightProps {
 
 function InspectorInternal(props: InspectorProps): JSX.Element {
     const [forceUpdate, setForceUpdate] = React.useState(0);
-    const [target, setTarget] = React.useState({ref: props.target});
 
     const controller = useEditorController();
 
-    React.useEffect(() => {
-        setTarget({ref: props.target});
-    }, [props.target]);
-
     const onPositionChangeCallback = React.useCallback((value: [number, number, number]): void => {
-        target.ref!.transform.position.set(value[0], value[1], value[2]);
+        props.target!.transform.position.set(value[0], value[1], value[2]);
         setForceUpdate(forceUpdate + 1);
-    }, [target, forceUpdate]);
+    }, [props.target, forceUpdate]);
 
     const onRotationChangeCallback = React.useCallback((value: [number, number, number]): void => {
-        target.ref!.transform.eulerAngles.set(value[0] * MathUtils.DEG2RAD, value[1] * MathUtils.DEG2RAD, value[2] * MathUtils.DEG2RAD);
+        props.target!.transform.eulerAngles.set(value[0] * MathUtils.DEG2RAD, value[1] * MathUtils.DEG2RAD, value[2] * MathUtils.DEG2RAD);
         setForceUpdate(forceUpdate + 1);
-    }, [target, forceUpdate]);
+    }, [props.target, forceUpdate]);
 
     const onCastShadowChangeCallback = React.useCallback((value: boolean): void => {
-        const skinnedMesh = (target.ref as MmdModel).skinnedMesh;
+        const skinnedMesh = (props.target as MmdModel).skinnedMesh;
         if (skinnedMesh) skinnedMesh.castShadow = value;
         setForceUpdate(forceUpdate + 1);
-    }, [target, forceUpdate]);
+    }, [props.target, forceUpdate]);
 
     const onReceiveShadowChangeCallback = React.useCallback((value: boolean): void => {
-        const skinnedMesh = (target.ref as MmdModel).skinnedMesh;
+        const skinnedMesh = (props.target as MmdModel).skinnedMesh;
         if (skinnedMesh) skinnedMesh.receiveShadow = value;
         setForceUpdate(forceUpdate + 1);
-    }, [target, forceUpdate]);
+    }, [props.target, forceUpdate]);
 
     const onRemoveModelCallback = React.useCallback((): void => {
-        controller.removeModel(target.ref as MmdModel);
-        target.ref!.removeAnimation(target.ref!.animations.keys().next().value);
+        controller.removeModel(props.target as MmdModel);
+        props.target!.removeAnimation(props.target!.animations.keys().next().value);
         updateAnimation();
-    }, [target, controller]);
+    }, [props.target, controller]);
 
     const [showImportSoundFileDialog, setShowImportSoundFileDialog] = React.useState(false);
     const [soundFiles, setSoundFiles] = React.useState<File[]>([]);
@@ -260,76 +255,71 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
     const [vmdFileName, setVmdFileName] = React.useState("");
 
     const onFilesCallback = React.useCallback((files: File[]): void => {
-        if (target.ref!.isAnimationLoading(vmdFileName)) return;
+        if (props.target!.isAnimationLoading(vmdFileName)) return;
         files = files.filter(file => file.name.endsWith(".vmd"));
         if (files.length === 0) return;
 
         if (files.length === 1) {
-            target.ref!.removeAnimation(vmdFileName);
+            props.target!.removeAnimation(vmdFileName);
             controller.audioPlayer.enabled = false;
             controller.animationPlayer.enabled = false;
-            if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
+            if (props.target instanceof MmdModel) props.target.poseToDefault();
             const vmdFile = files[0];
             setVmdFileName(vmdFile.name);
             const objectUrl = URL.createObjectURL(vmdFile);
-            target.ref!.asyncLoadAnimation(vmdFile.name, objectUrl, () => {
+            props.target!.asyncLoadAnimation(vmdFile.name, objectUrl, () => {
                 URL.revokeObjectURL(objectUrl);
-                setTarget({ref: target.ref});
-
+                setForceUpdate(forceUpdate + 1);
                 updateAnimation();
             });
-            setTarget({ref: target.ref});
         } else {
             setMotionFiles(files);
             setShowImportMotionDialog(true);
         }
-    }, [target, vmdFileName]);
+    }, [props.target, vmdFileName, controller, forceUpdate]);
 
     const onRemoveMotionCallback = React.useCallback(() => {
-        target.ref!.removeAnimation(vmdFileName);
+        props.target!.removeAnimation(vmdFileName);
         controller.audioPlayer.enabled = false;
         controller.animationPlayer.enabled = false;
-        if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
+        if (props.target instanceof MmdModel) props.target!.poseToDefault();
         setVmdFileName("");
-        setTarget({ref: target.ref});
 
         updateAnimation();
-    }, [target, vmdFileName]);
+    }, [props.target, vmdFileName, controller]);
 
     const onImportCanceledCallback = React.useCallback((): void => {
         setShowImportMotionDialog(false);
     }, []);
 
     const onImportSelectedCallback = React.useCallback((file: File): void => {
-        target.ref!.removeAnimation(vmdFileName);
+        props.target!.removeAnimation(vmdFileName);
         controller.audioPlayer.enabled = false;
         controller.animationPlayer.enabled = false;
-        if (target.ref instanceof MmdModel) target.ref!.poseToDefault();
+        if (props.target instanceof MmdModel) props.target!.poseToDefault();
         setVmdFileName(file.name);
         const objectUrl = URL.createObjectURL(file);
-        target.ref!.asyncLoadAnimation(file.name, objectUrl, () => {
+        props.target!.asyncLoadAnimation(file.name, objectUrl, () => {
             URL.revokeObjectURL(objectUrl);
-            setTarget({ref: target.ref});
-            
+            setForceUpdate(forceUpdate + 1);
             updateAnimation();
         });
         setShowImportMotionDialog(false);
-        setTarget({ref: target.ref});
-    }, [target, vmdFileName]);
+    }, [props.target, vmdFileName, controller, forceUpdate]);
 
     const onUsePhysicsChangeCallback = React.useCallback((value: boolean): void => {
-        const mmdModel = target.ref as MmdModel;
+        const mmdModel = props.target as MmdModel;
         const mmdPlayer = mmdModel.gameObject.getComponent(MmdPlayer)!;
         mmdPlayer.usePhysics = value;
-        setTarget({ref: target.ref});
-    }, [target]);
+        setForceUpdate(forceUpdate + 1);
+    }, [props.target, forceUpdate]);
 
     const onUseIkChangeCallback = React.useCallback((value: boolean): void => {
-        const mmdModel = target.ref as MmdModel;
+        const mmdModel = props.target as MmdModel;
         const mmdPlayer = mmdModel.gameObject.getComponent(MmdPlayer)!;
         mmdPlayer.useIk = value;
-        setTarget({ref: target.ref});
-    }, [target]);
+        setForceUpdate(forceUpdate + 1);
+    }, [props.target, forceUpdate]);
 
     const applyRad2Deg = React.useCallback((EulerTuple: [number, number, number]): [number, number, number] => {
         return [
@@ -398,46 +388,46 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
-            {target.ref?.exists 
+            {props.target?.exists 
                 ? (
                     <ContainerDiv>
-                        {target.ref instanceof MmdModel && (
+                        {props.target instanceof MmdModel && (
                             <>
                                 <Label title="position">
                                     <Vector3Input
-                                        value={target.ref.transform.position.toArray()}
+                                        value={props.target.transform.position.toArray()}
                                         onChange={onPositionChangeCallback}
                                     />
                                 </Label>
                                 <Label title="rotation">
                                     <Vector3Input
-                                        value={applyRad2Deg(target.ref.transform.eulerAngles.toArray() as [number, number, number])}
+                                        value={applyRad2Deg(props.target.transform.eulerAngles.toArray() as [number, number, number])}
                                         onChange={onRotationChangeCallback}
                                     />
                                 </Label>
                                 <PaddingDiv />
                                 <Label title="cast shadow">
                                     <CheckBoxInput
-                                        value={target.ref.skinnedMesh?.castShadow ?? true}
+                                        value={props.target.skinnedMesh?.castShadow ?? true}
                                         onChange={onCastShadowChangeCallback}
-                                        enabled={target.ref.skinnedMesh !== null}
+                                        enabled={props.target.skinnedMesh !== null}
                                     />
                                 </Label>
                                 <Label title="receive shadow">
                                     <CheckBoxInput
-                                        value={target.ref.skinnedMesh?.receiveShadow ?? true}
+                                        value={props.target.skinnedMesh?.receiveShadow ?? true}
                                         onChange={onReceiveShadowChangeCallback}
-                                        enabled={target.ref.skinnedMesh !== null}
+                                        enabled={props.target.skinnedMesh !== null}
                                     />
                                 </Label>
                                 <PaddingDiv />
-                                <TextInfo title="model" content={target.ref.gameObject.name} />
+                                <TextInfo title="model" content={props.target.gameObject.name} />
                                 <RemoveButton onClick={onRemoveModelCallback}>
                                     remove model
                                 </RemoveButton>
                             </>
                         )}
-                        {target.ref instanceof MmdCamera && (
+                        {props.target instanceof MmdCamera && (
                             <>
                                 <TextInfo title="mp3 file" content={soundFileName ?? "none"} />
                                 <FileDropArea onFiles={onSoundFilesCallback} />
@@ -452,15 +442,15 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
                                 )}
                             </>
                         )}
-                        {(target.ref instanceof MmdCamera || target.ref instanceof MmdModel) && (
+                        {(props.target instanceof MmdCamera || props.target instanceof MmdModel) && (
                             <>
                                 <TextInfo
                                     title="motion"
                                     content={
-                                        target.ref.isAnimationLoading(vmdFileName)
+                                        props.target.isAnimationLoading(vmdFileName)
                                             ? "loading..."
-                                            : target.ref.animations.size > 0
-                                                ? target.ref.animations.keys().next().value
+                                            : props.target.animations.size > 0
+                                                ? props.target.animations.keys().next().value
                                                 : "none"
                                     }/>
                                 <FileDropArea onFiles={onFilesCallback} />
@@ -477,20 +467,20 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
                                 )}
                             </>
                         )}
-                        {target.ref instanceof MmdModel && (
+                        {props.target instanceof MmdModel && (
                             <>
                                 <Label title="use physics">
                                     <CheckBoxInput
-                                        value={(target.ref.gameObject.getComponent(MmdPlayer)?.usePhysics) ?? true}
+                                        value={(props.target.gameObject.getComponent(MmdPlayer)?.usePhysics) ?? true}
                                         onChange={onUsePhysicsChangeCallback}
-                                        enabled={target.ref.gameObject.getComponent(MmdPlayer) !== null}
+                                        enabled={props.target.gameObject.getComponent(MmdPlayer) !== null}
                                     />
                                 </Label>
                                 <Label title="use ik">
                                     <CheckBoxInput
-                                        value={(target.ref.gameObject.getComponent(MmdPlayer)?.useIk) ?? true}
+                                        value={(props.target.gameObject.getComponent(MmdPlayer)?.useIk) ?? true}
                                         onChange={onUseIkChangeCallback}
-                                        enabled={target.ref.gameObject.getComponent(MmdPlayer) !== null}
+                                        enabled={props.target.gameObject.getComponent(MmdPlayer) !== null}
                                     />
                                 </Label>
                             </>

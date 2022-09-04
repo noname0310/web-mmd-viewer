@@ -92,7 +92,7 @@ export function FileDropArea(props: FileDropAreaProps): JSX.Element {
                 props.onFiles(files);
             });
         });
-    }, []);
+    }, [props]);
 
     const changeCallback = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -101,7 +101,7 @@ export function FileDropArea(props: FileDropAreaProps): JSX.Element {
         if (!fileList) return;
         const files = Array.from(fileList);
         props.onFiles(files);
-    }, []);
+    }, [props]);
 
     return (
         <FileDropAreaLabel width={props.width} height={props.height}>
