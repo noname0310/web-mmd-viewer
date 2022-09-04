@@ -254,6 +254,10 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
     const [motionFiles, setMotionFiles] = React.useState<File[]>([]);
     const [vmdFileName, setVmdFileName] = React.useState("");
 
+    React.useEffect(() => {
+        setVmdFileName(props.target?.animations.keys().next().value ?? "");
+    }, [props.target]);
+
     const onFilesCallback = React.useCallback((files: File[]): void => {
         if (props.target!.isAnimationLoading(vmdFileName)) return;
         files = files.filter(file => file.name.endsWith(".vmd"));
