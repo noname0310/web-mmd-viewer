@@ -16,7 +16,7 @@ const EditorRightPanelDiv = styled.div<PanelHiddenProps>`
     top: 0;
     right: ${(props): string => props.hidden ? "-300px" : "0"};
     width: 300px;
-    height: 80%;
+    height: 90%;
     background-color: #222;
     color: #fff;
 
@@ -58,8 +58,8 @@ export function EditorRightPanel(): JSX.Element {
             <ToggleButtonDiv onClick={toggleButtonOnClickCallback}>
                 {isHidden ? "<" : ">"}
             </ToggleButtonDiv>
-            <ObjectListView height="calc(100% - 350px)" onTargetSelected={onModelSelectedCallback} />
-            <Inspector height="350px" target={selectedModel} />
+            <ObjectListView height="calc(100% - 400px)" onTargetSelected={onModelSelectedCallback} />
+            <Inspector height="400px" target={selectedModel} />
         </EditorRightPanelDiv>
     );
 }
