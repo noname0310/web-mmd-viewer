@@ -39,6 +39,12 @@ async function entriesToFiles(entries: FileSystemEntry[]): Promise<File[]> {
         const file = await new Promise<File>((resolve, reject) => {
             entry.file(resolve, reject);
         });
+        if (file.webkitRelativePath === "") {
+            Object.defineProperty(file, "webkitRelativePath", {
+                writable: true
+            });
+            (file as any).webkitRelativePath = entry.fullPath;
+        }
         files.push(file);
     }
     return files;
