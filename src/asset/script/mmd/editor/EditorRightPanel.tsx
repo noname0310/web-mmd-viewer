@@ -25,6 +25,7 @@ const EditorRightPanelDiv = styled.div<PanelHiddenProps>`
 
     padding-top: 10px;
     box-sizing: border-box;
+    overflow: hidden;
 
     transition: right 0.5s;
 
