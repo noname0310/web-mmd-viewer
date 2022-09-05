@@ -382,15 +382,13 @@ export class MMdPhysicsOverride extends MMDPhysics {
 
     //override private methods
 
-    private _createWorldDisposeList?: any[];
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _createWorld(): Ammo.btDiscreteDynamicsWorld {
-        if (this._createWorldDisposeList === undefined) {
-            this._createWorldDisposeList = [];
+        if ((this as any)._createWorldDisposeList === undefined) {
+            (this as any)._createWorldDisposeList = [];
         }
 
-        const createWorldDisposeList = this._createWorldDisposeList;
+        const createWorldDisposeList = (this as any)._createWorldDisposeList as any[];
         for (let i = 0; i < createWorldDisposeList.length; ++i) {
             Ammo.destroy(createWorldDisposeList[i]);
         }
@@ -402,7 +400,7 @@ export class MMdPhysicsOverride extends MMDPhysics {
         const solver = new Ammo.btSequentialImpulseConstraintSolver();
         const world = new Ammo.btDiscreteDynamicsWorld(dispatcher, cache, solver, config);
 
-        this._createWorldDisposeList.push(world, solver, cache, dispatcher, config);
+        (this as any)._createWorldDisposeList.push(world, solver, cache, dispatcher, config);
 
         return world;
     }
@@ -421,16 +419,19 @@ export class MMdPhysicsOverride extends MMDPhysics {
         for (let i = 0; i < transforms.length; ++i) {
             Ammo.destroy(transforms[i]);
         }
+        transforms.length = 0;
 
         const quaternions = resourceManager.quaternions as Ammo.btQuaternion[];
         for (let i = 0; i < quaternions.length; ++i) {
             Ammo.destroy(quaternions[i]);
         }
+        quaternions.length = 0;
 
         const vector3s = resourceManager.vector3s as Ammo.btVector3[];
         for (let i = 0; i < vector3s.length; ++i) {
             Ammo.destroy(vector3s[i]);
         }
+        vector3s.length = 0;
 
         const world = this.world as unknown as Ammo.btDiscreteDynamicsWorld;
 
@@ -439,19 +440,21 @@ export class MMdPhysicsOverride extends MMDPhysics {
             world.removeRigidBody(bodies[i].body as Ammo.btRigidBody);
             (bodies[i] as RigidBody).dispose();
         }
+        bodies.length = 0;
 
         const constraints = this.constraints;
         for (let i = 0; i < constraints.length; ++i) {
             world.removeConstraint((constraints[i] as any).constraint as Ammo.btTypedConstraint);
             Ammo.destroy((constraints[i] as any).constraint);
         }
+        constraints.length = 0;
 
-        const createWorldDisposeList = this._createWorldDisposeList;
-        if (createWorldDisposeList) {
-            for (let i = 0; i < createWorldDisposeList.length; ++i) {
-                Ammo.destroy(createWorldDisposeList[i]);
-            }
-            createWorldDisposeList.length = 0;
+        const createWorldDisposeList = (this as any)._createWorldDisposeList as any[];
+        if (createWorldDisposeList === undefined) {
+            throw new Error("createWorldDisposeList is undefined");
+        }
+        for (let i = 0; i < createWorldDisposeList.length; ++i) {
+            Ammo.destroy(createWorldDisposeList[i]);
         }
     }
 }
