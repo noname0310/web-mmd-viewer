@@ -11,7 +11,7 @@ interface PanelHiddenProps {
     hidden: boolean;
 }
 
-const EditorRightPanelDiv = styled.div<PanelHiddenProps>`
+const EditorWrapperDiv = styled.div<PanelHiddenProps>`
     position: absolute;
     top: 0;
     right: ${(props): string => props.hidden ? "-300px" : "0"};
@@ -24,8 +24,7 @@ const EditorRightPanelDiv = styled.div<PanelHiddenProps>`
     flex-direction: column;
 
     padding-top: 10px;
-    box-sizing: border-box;
-    overflow: hidden;
+    padding-bottom: 10px;
 
     transition: right 0.5s;
 
@@ -44,6 +43,12 @@ const ToggleButtonDiv = styled.div`
     user-select: none;
 `;
 
+const EditorRightPanelDiv = styled.div`
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+`;
+
 export function EditorRightPanel(): JSX.Element {
     const [isHidden, setIsHidden] = React.useState(false);
     const [selectedModel, setSelectedModel] = React.useState<MmdModel|MmdCamera|null>(null);
@@ -57,12 +62,14 @@ export function EditorRightPanel(): JSX.Element {
     }, []);
 
     return (
-        <EditorRightPanelDiv hidden={isHidden}>
+        <EditorWrapperDiv hidden={isHidden}>
             <ToggleButtonDiv onClick={toggleButtonOnClickCallback}>
                 {isHidden ? "<" : ">"}
             </ToggleButtonDiv>
-            <ObjectListView height="calc(100% - 400px)" onTargetSelected={onModelSelectedCallback} />
-            <Inspector height="400px" target={selectedModel} />
-        </EditorRightPanelDiv>
+            <EditorRightPanelDiv>
+                <ObjectListView height="calc(100% - 400px - 10px)" onTargetSelected={onModelSelectedCallback} />
+                <Inspector height="400px" target={selectedModel} />
+            </EditorRightPanelDiv>
+        </EditorWrapperDiv>
     );
 }

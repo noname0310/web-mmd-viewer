@@ -27,7 +27,7 @@ const TitleDiv = styled.div`
 
 const ContentDiv = styled.div`
     width: 100%;
-    height: calc(100% - 66px);
+    height: calc(100% - 58px);
 `;
 
 export interface PanelItemProps extends PanelWidthHeightProps {

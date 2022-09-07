@@ -77,8 +77,7 @@ function ObjectListAddItem(props: Omit<FileDropAreaProps, "width"|"height">): JS
 const ListContainerDiv = styled.div`
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    padding-top: 0;
+    padding: 0 10px;
     overflow: auto;
     user-select: none;
     height: 100%;
