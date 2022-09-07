@@ -140,7 +140,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                         transparent: true,
                         fog: false
                     });
-                    const sunGeometry = new THREE.SphereBufferGeometry(600, 32, 32);
+                    const sunGeometry = new THREE.SphereGeometry(600, 32, 32);
                     const sun = new THREE.Mesh(sunGeometry, sunMaterial);
                     sun.frustumCulled = false;
                     sun.matrixAutoUpdate = false;

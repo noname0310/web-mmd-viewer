@@ -118,7 +118,7 @@ export class AsYouLikeItBootstrapper extends BaseBootstrapper {
                             const texture = new THREE.VideoTexture(videoElement);
                             const aspect = 1280 / 720;
                             const plane = new THREE.Mesh(
-                                new THREE.PlaneBufferGeometry(aspect, 1),
+                                new THREE.PlaneGeometry(aspect, 1),
                                 new THREE.MeshBasicMaterial({ map: texture })
                             );
                             plane.material.depthTest = true;

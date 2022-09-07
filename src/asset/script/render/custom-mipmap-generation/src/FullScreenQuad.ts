@@ -1,4 +1,4 @@
-import { Mesh, OrthographicCamera, PlaneBufferGeometry } from "three/src/Three";
+import { Mesh, OrthographicCamera, PlaneGeometry } from "three/src/Three";
 
 export class FullScreenQuad {
     private _mesh: THREE.Mesh;
@@ -18,7 +18,7 @@ export class FullScreenQuad {
 
     public constructor(material?: THREE.Material) {
         const camera = new OrthographicCamera(- 1, 1, 1, - 1, 0, 1);
-        const geometry = new PlaneBufferGeometry(2, 2);
+        const geometry = new PlaneGeometry(2, 2);
 
         this._mesh = new Mesh(geometry, material);
         this._camera = camera;
