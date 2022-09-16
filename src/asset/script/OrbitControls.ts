@@ -52,7 +52,7 @@ export class OrbitControls extends Component {
     }
 
     public onDestroy(): void {
-        this._orbitControls!.dispose();
+        this._orbitControls?.dispose();
         this._orbitControls = null;
         this._camera = null;
     }
