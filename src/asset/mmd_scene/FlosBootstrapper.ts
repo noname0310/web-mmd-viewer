@@ -382,6 +382,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
                         modelLoadingText.innerText = "model loaded";
                         model.geometry.name = c.gameObject.name + "-geometry";
                         model.castShadow = true;
+                        model.receiveShadow = true;
                         model.frustumCulled = false;
 
                         const materials = (model.material instanceof Array ? model.material : [model.material]);

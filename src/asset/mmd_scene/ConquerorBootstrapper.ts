@@ -388,14 +388,10 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                     });
                     c.asyncLoadModel("mmd/YYB miku Crown Knight/YYB miku Crown Knight.pmx", model => {
                         modelLoadingText.innerText = "model loaded";
-                        model!.traverse(object => {
-                            if ((object as THREE.Mesh).isMesh) {
-                                object.castShadow = true;
-                                object.receiveShadow = true;
-                                object.frustumCulled = false;
-                            }
-                        });
-
+                        model.castShadow = true;
+                        model.receiveShadow = true;
+                        model.frustumCulled = false;
+                        
                         const materials = model!.material instanceof Array ? model!.material : [model!.material];
                         for (let i = 0; i < materials.length; ++i) {
                             materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
