@@ -34,6 +34,7 @@ import { OrbitControls } from "../script/OrbitControls";
 import { WebGLGlobalPostProcessVolume } from "../script/render/WebGLGlobalPostProcessVolume";
 import { Ui } from "../script/Ui";
 import FabricNormal from "../texture/fabric02.png";
+import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -218,6 +219,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                     .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                         c.enabled = false;
                         c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
+                        if (!unsafeIsComponent(c)) return;
                         c.startCoroutine(function*(): CoroutineIterator {
                             for (; ;) {
                                 c.updateWorldMatrix();
@@ -241,6 +243,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
 
                         c.asyncLoadModel("mmd/a_spherical_structure_stage/model.pmx", model => {
                             modelLoadingText.innerText = "stage loaded";
+                            if (!unsafeIsComponent(c)) return;
                             model.geometry.name = c.gameObject.name + "-geometry";
                             model.castShadow = true;
                             model.receiveShadow = true;
@@ -285,6 +288,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                             }
                         });
                         c.asyncLoadModel("mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx", model => {
+                            if (!unsafeIsComponent(c)) return;
                             modelLoadingText.innerText = "model loaded";
                             model.geometry.name = c.gameObject.name + "-geometry";
                             model.castShadow = true;
@@ -364,6 +368,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
 
+                        if (!unsafeIsComponent(c)) return;
                         c.startCoroutine(function*(): CoroutineIterator {
                             const headPosition = new THREE.Vector3();
                             const cameraNormal = new THREE.Vector3();

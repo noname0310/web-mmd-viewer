@@ -11,6 +11,7 @@ import { MmdModel } from "../script/mmd/MmdModel";
 import { MmdPlayer } from "../script/mmd/MmdPlayer";
 import { Ui } from "../script/Ui";
 import { UiController } from "../script/UiController";
+import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class GameManagerPrefab extends Prefab {
     private _orbitCamera = new PrefabRef<Camera>();
@@ -112,6 +113,7 @@ export class GameManagerPrefab extends Prefab {
                         if(modelLoaders[i].ref) {
                             c.addModelLoader(modelLoaders[i].ref!);
 
+                            if (!unsafeIsComponent(c)) return;
                             const mmdPlayer = c.gameObject.addComponent(MmdPlayer)!;
                             c.addMmdPlayer(mmdPlayer);
                             mmdPlayer.usePhysics = this._usePhysics.ref!;

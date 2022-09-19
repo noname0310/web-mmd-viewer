@@ -11,7 +11,7 @@
     "author": "noname0310",
     "license": "MIT",
     "devDependencies": {
-        "@types/react": "^18.0.19",
+        "@types/react": "^18.0.20",
         "@types/react-dom": "^18.0.6",
         "@types/styled-components": "^5.1.26",
         "@typescript-eslint/eslint-plugin": "^5.37.0",
@@ -36,7 +36,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "styled-components": "^5.3.5",
-        "the-world-engine": "^0.4.39",
+        "the-world-engine": "^0.4.40",
         "tw-engine-498tokio": "^0.1.24"
     }
 }

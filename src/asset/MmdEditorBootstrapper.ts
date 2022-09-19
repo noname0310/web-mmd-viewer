@@ -22,6 +22,7 @@ import { MmdCamera } from "./script/mmd/MmdCamera";
 import { MmdController } from "./script/mmd/MmdController";
 import { OrbitControls } from "./script/OrbitControls";
 import { UiController } from "./script/UiController";
+import { unsafeIsComponent } from "./unsafeIsComponent";
 
 export class MmdEditorBootstrapper extends Bootstrapper {
     public run(): SceneBuilder {
@@ -129,6 +130,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                 .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                     c.enabled = false;
                     c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function*(): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();

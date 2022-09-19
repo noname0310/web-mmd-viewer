@@ -20,6 +20,7 @@ import { MmdCamera } from "../script/mmd/MmdCamera";
 import { MmdModel } from "../script/mmd/MmdModel";
 import { OrbitControls } from "../script/OrbitControls";
 import { Ui } from "../script/Ui";
+import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -122,6 +123,7 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
                 .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                     c.enabled = false;
                     c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function*(): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();

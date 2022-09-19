@@ -1,11 +1,11 @@
-import { Camera, CameraType, Color, GameObjectBuilder, Prefab, PrefabRef } from "the-world-engine";
+import { Camera, CameraType, Color, GameObjectBuilder, InitializeComponent, Prefab, PrefabRef } from "the-world-engine";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
 import { MmdCamera } from "../script/mmd/MmdCamera";
 
 export class MmdCameraPrefab extends Prefab {
-    private _cameraInitializer: ((c: Camera) => void)|null = null;
-    private _cameraLoaderInitializer: ((c: MmdCamera) => void)|null = null;
+    private _cameraInitializer: ((c: InitializeComponent<Camera>) => void)|null = null;
+    private _cameraLoaderInitializer: ((c: InitializeComponent<MmdCamera>) => void)|null = null;
     private _audioUrl = new PrefabRef<string>();
     private _cameraChildBuilder: GameObjectBuilder|null = null;
 
@@ -13,13 +13,13 @@ export class MmdCameraPrefab extends Prefab {
     private _camera = new PrefabRef<Camera>();
     private _audioPlayer = new PrefabRef<AudioPlayer>();
 
-    public withCameraInitializer(initializer: (c: Camera) => void): this {
+    public withCameraInitializer(initializer: (c: InitializeComponent<Camera>) => void): this {
         if (this._cameraInitializer !== null) throw new Error("cameraInitializer is already set");
         this._cameraInitializer = initializer;
         return this;
     }
 
-    public withCameraLoaderInitializer(initializer: (c: MmdCamera) => void): this {
+    public withCameraLoaderInitializer(initializer: (c: InitializeComponent<MmdCamera>) => void): this {
         if (this._cameraLoaderInitializer !== null) throw new Error("cameraLoaderInitializer is already set");
         this._cameraLoaderInitializer = initializer;
         return this;

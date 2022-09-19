@@ -31,6 +31,7 @@ import { SSRPassOverride } from "../script/render/SSRPassOverride";
 //import { SSRPass } from "./script/screenSpaceReflectionsPass/src/SSRPass";
 import { Ui } from "../script/Ui";
 import EntranceHallHdr from "../texture/entrance_hall_1k.hdr";
+import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class RuSeBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -129,6 +130,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
+                    if (!unsafeIsComponent(c)) return;
                     c.initializer((scene, camera, screen) => {
                         const ssrPass = new SSRPassOverride(/*scene, camera*/ {
                             renderer: c.engine.webGL!.webglRenderer!,
@@ -196,6 +198,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                 .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                     c.enabled = false;
                     c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function*(): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();
@@ -411,6 +414,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                             modelAnimationLoadingText.innerText = "animation loaded";
                         });
 
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function*(): CoroutineIterator {
                         const headPosition = new THREE.Vector3();
                         const cameraNormal = new THREE.Vector3();

@@ -35,6 +35,7 @@ import { OrbitControls } from "../script/OrbitControls";
 import { WebGLGlobalPostProcessVolume } from "../script/render/WebGLGlobalPostProcessVolume";
 import { Ui } from "../script/Ui";
 import WaterNormal from "../texture/waternormals.jpg";
+import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class NotitleBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -199,6 +200,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
                 .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                     c.enabled = false;
                     c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function* (): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();
@@ -213,6 +215,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
                 new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
             )
                 .withComponent(Object3DContainer<Water>, c => {
+                    if (!unsafeIsComponent(c)) return;
                     const water = new Water(
                         new THREE.PlaneGeometry(10000, 10000),
                         {
@@ -256,6 +259,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
                     skyUniforms["mieDirectionalG"].value = 1;
 
                     const sun = new THREE.Vector3();
+                    if (!unsafeIsComponent(c)) return;
                     const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
                     let renderTarget: THREE.WebGLRenderTarget;
 
@@ -269,6 +273,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
 
                         renderTarget = pmremGenerator.fromScene(sky as any);
 
+                        if (!unsafeIsComponent(c)) return;
                         c.engine.scene.unsafeGetThreeScene().environment = renderTarget.texture;
                     }
 
@@ -338,6 +343,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("mmd-camera-focus-controller")
                 .withComponent(Object3DContainer, c => {
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function* (): CoroutineIterator {
                         const headPosition1 = new THREE.Vector3();
                         const headPosition2 = new THREE.Vector3();

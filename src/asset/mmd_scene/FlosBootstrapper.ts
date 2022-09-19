@@ -40,6 +40,7 @@ import { Ui } from "../script/Ui";
 import FabricNormal from "../texture/fabric02.png";
 import WaterHouseMatcap from "../texture/waterhouse_matcap.png";
 import WaterNormal from "../texture/waternormals.jpg";
+import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class FlosBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
@@ -233,6 +234,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
                 .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
                     c.enabled = false;
                     c.setObject3D(new THREE.CameraHelper(directionalLight.ref!.object3D!.shadow.camera), object3D => object3D.dispose());
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function*(): CoroutineIterator {
                         for (; ;) {
                             c.updateWorldMatrix();
@@ -247,6 +249,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
                 new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
             )
                 .withComponent(Object3DContainer<Water>, c => {
+                    if (!unsafeIsComponent(c)) return;
                     const water = new Water(
                         new THREE.PlaneGeometry( 10000, 10000 ),
                         {
@@ -292,6 +295,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
                     skyUniforms["mieDirectionalG"].value = 1;
     
                     const sun = new THREE.Vector3();
+                    if (!unsafeIsComponent(c)) return;
                     const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
                     let renderTarget: THREE.WebGLRenderTarget;
     
@@ -305,6 +309,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
     
                         renderTarget = pmremGenerator.fromScene(sky as any);
     
+                        if (!unsafeIsComponent(c)) return;
                         c.engine.scene.unsafeGetThreeScene().environment = renderTarget.texture;
                     }
     
@@ -332,6 +337,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
 
                     c.asyncLoadModel("mmd/water house 20200627/water house.pmx", model => {
                         modelLoadingText.innerText = "stage loaded";
+                        if (!unsafeIsComponent(c)) return;
                         model.geometry.name = c.gameObject.name + "-geometry";
                         model.castShadow = true;
                         model.receiveShadow = true;
@@ -380,6 +386,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
                     });
                     c.asyncLoadModel("mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx", model => {
                         modelLoadingText.innerText = "model loaded";
+                        if (!unsafeIsComponent(c)) return;
                         model.geometry.name = c.gameObject.name + "-geometry";
                         model.castShadow = true;
                         model.receiveShadow = true;
@@ -453,6 +460,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
 
+                    if (!unsafeIsComponent(c)) return;
                     c.startCoroutine(function*(): CoroutineIterator {
                         const headPosition = new THREE.Vector3();
                         const cameraNormal = new THREE.Vector3();
