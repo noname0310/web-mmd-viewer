@@ -7,6 +7,7 @@ import { DaybreakFrontlineBootstrapper } from "../mmd_scene/DaybreakFrontlineBoo
 import { FlosBootstrapper } from "../mmd_scene/FlosBootstrapper";
 //import { InterpolationTestBootstrapper } from "./InterpolationTestBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "../mmd_scene/MmdGenericBootstrapper";
+import { MusicMusicBootstrapper } from "../mmd_scene/MusicMusicBootstrapper";
 import { NotitleBootstrapper } from "../mmd_scene/NotitleBootstrapper";
 import { PizzicatoDropsBootstrapper } from "../mmd_scene/PizzicatoDropsBootstrapper";
 import { RuSeBootstrapper } from "../mmd_scene/RuSeBootstrapper";
@@ -153,6 +154,11 @@ export class ListMmdViewBuilder {
             }
         } as MmdLoadParams);
 
+        const button13 = document.createElement("button");
+        button13.className = "select_bootstrapper_button";
+        button13.innerText = "music music";
+        button13.onclick = (): void => runGame(MusicMusicBootstrapper);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -165,10 +171,11 @@ export class ListMmdViewBuilder {
         bootstrapperSelectPanel.appendChild(button10);
         bootstrapperSelectPanel.appendChild(button11);
         bootstrapperSelectPanel.appendChild(button12);
+        bootstrapperSelectPanel.appendChild(button13);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button11.onclick(new MouseEvent("click"));
+        button13.onclick(new MouseEvent("click"));
 
         // runGame(MmdGenericBootstrapper, {
         //     models: [
