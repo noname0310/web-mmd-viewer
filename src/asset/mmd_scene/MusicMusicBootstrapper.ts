@@ -84,7 +84,8 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                 .withAudioPlayer(audioPlayer)
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
-                .withUsePhysics(new PrefabRef(false))
+                .withUsePhysics(new PrefabRef(true))
+                .withPhysicsMaximumStepCount(new PrefabRef(3))
                 .make())
 
             .withChild(instantiater.buildGameObject("asset-manager")
@@ -119,7 +120,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                 .getComponent(Camera, orbitCamera))
             
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
-                .withAudioUrl(new PrefabRef("mmd/flos/flos_YuNi.mp3"))
+                .withAudioUrl(new PrefabRef("mmd/music_music/Music Music toa featHatsune Miku(sync).mp3"))
                 .withCameraInitializer(c => {
                     c.backgroundColor = Color.fromHex("#a9caeb");
                 })
@@ -135,7 +136,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                         }
                     });
 
-                    c.asyncLoadAnimation("animation1", "mmd/flos/flos_camera_mod2.vmd", () => {
+                    c.asyncLoadAnimation("animation1", "mmd/music_music/camera.vmd", () => {
                         cameraLoadingText.innerText = "camera loaded";
                     });
                 })
@@ -384,7 +385,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                                 .innerText = type + ": " + Math.round(percentComplete) + "% loading";
                         }
                     });
-                    c.asyncLoadModel("mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx", model => {
+                    c.asyncLoadModel("mmd/YYB Hatsune Miku_10th - faceforward/YYB Hatsune Miku_10th_v1.02 - faceforward-physedit2.pmx", model => {
                         modelLoadingText.innerText = "model loaded";
                         if (!unsafeIsComponent(c)) return;
                         model.geometry.name = c.gameObject.name + "-geometry";
@@ -421,28 +422,6 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                                 hair.needsUpdate = true;
                             }
                         }
-                        {
-                            const shoes = converted.find(m => m.name === "Shoes")!;
-                            shoes.roughness = 0;
-                            shoes.metalness = 0.6;
-                            shoes.envMapIntensity = 0.8;
-                            shoes.lightMapIntensity = 0.2;
-                            shoes.envMap?.dispose();
-                            shoes.envMap = assetManager.ref!.assets.get("waterHouseEnv") as THREE.Texture;
-                            shoes.needsUpdate = true;
-                        }
-                        {
-                            const clothes = ["Derss", "Top"];
-                            for (let i = 0; i < clothes.length; ++i) {
-                                const cloth = converted.find(m => m.name === clothes[i])!;
-                                cloth.roughness = 0.8;
-                                cloth.normalMapType = THREE.TangentSpaceNormalMap;
-                                cloth.normalMap?.dispose();
-                                cloth.normalMap = assetManager.ref!.assets.get("fabricNormal") as THREE.Texture;
-                                cloth.normalScale = new THREE.Vector2(1, 1);
-                                cloth.needsUpdate = true;
-                            }
-                        }
                     });
 
                     c.onDisposeObject3D.addListener(mesh => {
@@ -453,9 +432,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                     });
 
                     c.asyncLoadAnimation("animation1", [
-                        "mmd/flos/flos_model.vmd",
-                        "mmd/flos/flos_physics reduce 4.vmd"
-                        // "mmd/flos/combined.vmd"
+                        "mmd/music_music/motion.vmd"
                     ], () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
