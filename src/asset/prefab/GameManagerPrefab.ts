@@ -23,6 +23,7 @@ export class GameManagerPrefab extends Prefab {
     private _cameraAnimationName = new PrefabRef<string>();
     private _useIk = new PrefabRef<boolean>(true);
     private _usePhysics = new PrefabRef<boolean>(true);
+    private _physicsMaximumStepCount = new PrefabRef<number>(1);
 
     private _animationPlayer = new PrefabRef<AnimationSequencePlayer>();
 
@@ -68,6 +69,11 @@ export class GameManagerPrefab extends Prefab {
 
     public withUsePhysics(usePhysics: PrefabRef<boolean>): this {
         this._usePhysics = usePhysics;
+        return this;
+    }
+
+    public withPhysicsMaximumStepCount(physicsMaximumStepCount: PrefabRef<number>): this {
+        this._physicsMaximumStepCount = physicsMaximumStepCount;
         return this;
     }
 
@@ -122,7 +128,7 @@ export class GameManagerPrefab extends Prefab {
                     }
 
                     c.cameraLoader = this._cameraLoader.ref;
-                    c.physicsMaximumStepCount = 1;
+                    c.physicsMaximumStepCount = this._physicsMaximumStepCount.ref ?? 1;
 
                     if (this._modelAnimationName.ref) {
                         c.asyncPlay(
