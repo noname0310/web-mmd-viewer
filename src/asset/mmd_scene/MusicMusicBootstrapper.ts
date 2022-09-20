@@ -356,7 +356,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                                 .innerText = type + ": " + Math.round(percentComplete) + "% loading";
                         }
                     });
-                    c.asyncLoadModel("mmd/yyb_piano_dress_miku_and_rin__models_download__by_studiolollydolly_ddqrv1s/YYB Piano dress Miku/YYB Piano dress Miku Collision fix FF.pmx", model => {
+                    c.asyncLoadModel("mmd/yyb_piano_miku/YYB Piano Miku/Piano Miku FF D CF2.pmx", model => {
                         modelLoadingText.innerText = "model loaded";
                         if (!unsafeIsComponent(c)) return;
                         model.geometry.name = c.gameObject.name + "-geometry";
