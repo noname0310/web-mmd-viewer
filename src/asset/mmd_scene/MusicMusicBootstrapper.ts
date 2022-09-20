@@ -24,7 +24,6 @@ import {
     WebGLRendererLoader
 } from "the-world-engine";
 import { Sky } from "three/examples/jsm/objects/Sky";
-import { Water } from "three/examples/jsm/objects/Water";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
@@ -39,7 +38,6 @@ import { WebGLGlobalPostProcessVolume } from "../script/render/WebGLGlobalPostPr
 import { Ui } from "../script/Ui";
 import FabricNormal from "../texture/fabric02.png";
 import WaterHouseMatcap from "../texture/waterhouse_matcap.png";
-import WaterNormal from "../texture/waternormals.jpg";
 import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class MusicMusicBootstrapper extends BaseBootstrapper {
@@ -68,8 +66,6 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
-
-        const water = new PrefabRef<Object3DContainer<Water>>();
         
         let depthOfFieldEffect: DepthOfFieldEffect|null = null;
 
@@ -245,43 +241,6 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                 })
                 .getComponent(Object3DContainer, directionalLight))
 
-            .withChild(instantiater.buildGameObject("water",
-                new THREE.Vector3(0, -20, 0),
-                new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
-            )
-                .withComponent(Object3DContainer<Water>, c => {
-                    if (!unsafeIsComponent(c)) return;
-                    const water = new Water(
-                        new THREE.PlaneGeometry( 10000, 10000 ),
-                        {
-                            textureWidth: 512,
-                            textureHeight: 512,
-                            waterNormals: new THREE.TextureLoader().load(WaterNormal, (texture) => {
-                                texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                            }),
-                            sunDirection: new THREE.Vector3(),
-                            sunColor: 0xffffff,
-                            waterColor: 0x001e0f,
-                            distortionScale: 3.7,
-                            fog: c.engine.scene.unsafeGetThreeScene().fog !== undefined
-                        }
-                    );
-                    water.geometry.name = "water-geometry";
-
-                    c.setObject3D(water, object3D => {
-                        object3D.material.dispose();
-                        object3D.geometry.dispose();
-                    });
-
-                    c.startCoroutine(function*(): CoroutineIterator {
-                        for (; ;) {
-                            water.material.uniforms["time"].value += 1.0 / 60.0;
-                            yield null;
-                        }
-                    }());
-                })
-                .getComponent(Object3DContainer, water))
-
             .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(450000))
                 .active(true)
                 .withComponent(Object3DContainer<Sky>, c => {
@@ -304,8 +263,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                         sun.copy(directionalLight.ref!.transform.localPosition).normalize();
     
                         sky.material.uniforms["sunPosition"].value.copy(sun);
-                        water.ref!.object3D!.material.uniforms["sunDirection"].value.copy( sun ).normalize();
-    
+
                         if ( renderTarget !== undefined ) renderTarget.dispose();
     
                         renderTarget = pmremGenerator.fromScene(sky as any);
@@ -324,7 +282,26 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                     });
                 }))
 
+            .withChild(instantiater.buildGameObject("ground",
+                undefined,
+                new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
+            )
+                .active(true)
+                .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
+                    const mesh = new THREE.Mesh(
+                        new THREE.PlaneGeometry(1000, 1000),
+                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true })
+                    );
+                    mesh.receiveShadow = true;
+                    mesh.frustumCulled = false;
+                    c.setObject3D(mesh, object3D => {
+                        object3D.geometry.dispose();
+                        object3D.material.dispose();
+                    });
+                }))
+            
             .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, 0))
+                .active(false)
                 .withComponent(MmdModel, c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
                     const modelLoadingText = document.createElement("div");
@@ -336,19 +313,13 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                         }
                     });
 
-                    c.asyncLoadModel("mmd/water house 20200627/water house.pmx", model => {
+                    c.asyncLoadModel("mmd/Church/main body.pmx", model => {
                         modelLoadingText.innerText = "stage loaded";
                         if (!unsafeIsComponent(c)) return;
                         model.geometry.name = c.gameObject.name + "-geometry";
                         model.castShadow = true;
                         model.receiveShadow = true;
                         model.frustumCulled = false;
-
-                        model.traverse(object => {
-                            if (object.name === "Chair 1") {
-                                object.position.y = -100;
-                            }
-                        });
 
                         c.object3DContainer!.updateWorldMatrix();
 
