@@ -80,7 +80,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                 .withAudioPlayer(audioPlayer)
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
-                .withUsePhysics(new PrefabRef(true))
+                .withUsePhysics(new PrefabRef(false))
                 .withPhysicsMaximumStepCount(new PrefabRef(3))
                 .make())
 
@@ -403,7 +403,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                     });
 
                     c.asyncLoadAnimation("animation1", [
-                        "mmd/music_music/motion.vmd"
+                        "mmd/music_music/combined.vmd"
                     ], () => {
                         modelAnimationLoadingText.innerText = "animation loaded";
                     });
