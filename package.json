@@ -11,24 +11,24 @@
     "author": "noname0310",
     "license": "MIT",
     "devDependencies": {
-        "@types/react": "^18.0.20",
+        "@types/react": "^18.0.21",
         "@types/react-dom": "^18.0.6",
         "@types/styled-components": "^5.1.26",
-        "@typescript-eslint/eslint-plugin": "^5.37.0",
-        "@typescript-eslint/parser": "^5.37.0",
+        "@typescript-eslint/eslint-plugin": "^5.38.0",
+        "@typescript-eslint/parser": "^5.38.0",
         "copy-webpack-plugin": "^11.0.0",
-        "eslint": "^8.23.1",
+        "eslint": "^8.24.0",
         "eslint-plugin-simple-import-sort": "^8.0.0",
         "eslint-webpack-plugin": "^3.2.0",
         "file-loader": "^6.2.0",
-        "html-loader": "^4.1.0",
+        "html-loader": "^4.2.0",
         "html-webpack-plugin": "^5.5.0",
-        "ts-loader": "^9.3.1",
+        "ts-loader": "^9.4.1",
         "typescript": "^4.8.3",
         "webpack": "^5.74.0",
         "webpack-bundle-analyzer": "^4.6.1",
         "webpack-cli": "^4.10.0",
-        "webpack-dev-server": "^4.11.0"
+        "webpack-dev-server": "^4.11.1"
     },
     "dependencies": {
         "ammojs-typed": "^1.0.6",
@@ -36,7 +36,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "styled-components": "^5.3.5",
-        "the-world-engine": "^0.4.40",
+        "the-world-engine": "^0.4.41",
         "tw-engine-498tokio": "^0.1.24"
     }
 }
