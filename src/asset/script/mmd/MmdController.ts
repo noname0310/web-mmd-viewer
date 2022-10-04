@@ -1,8 +1,9 @@
-import { Camera, Component, CoroutineIterator, DuckThreeCamera, EventContainer, IEventContainer, ReadonlyVector3, WritableVector3 } from "the-world-engine";
+import { Camera, Component, CoroutineIterator, EventContainer, IEventContainer, ReadonlyVector3, WritableVector3 } from "the-world-engine";
 import { Vector3 } from "three/src/Three";
 import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
+import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./loader/MmdCameraAnimationLoader";
 import { MmdCamera } from "./MmdCamera";
 import { MmdModel } from "./MmdModel";
 import { MmdPlayer } from "./MmdPlayer";
@@ -55,7 +56,7 @@ export class MmdController extends Component {
 
     private *playInternal(modelAnimationName: string|string[], cameraAnimationName?: string): CoroutineIterator {
         let camera: Camera|null = null;
-        let cameraAnimation: THREE.AnimationClip|null = null;
+        let cameraAnimation: MmdCameraAnimationClip|null = null;
 
         if (cameraAnimationName) {
             const cameraLoader = this._cameraLoader!;
@@ -64,6 +65,10 @@ export class MmdController extends Component {
             camera = cameraLoader.camera;
             cameraAnimation = cameraLoader.animations.get(cameraAnimationName)!;
         }
+
+        const cameraAnimationInstance = camera !== null && cameraAnimation !== null 
+            ? MmdCameraAnimationLoader.createInstance(camera, cameraAnimation)
+            : null;
 
         const modelLoaders = this._modelLoaders!;
         for (let i = 0; i < modelLoaders.length; ++i) {
@@ -87,20 +92,10 @@ export class MmdController extends Component {
             const modelAnimation = modelLoader.animations.get(animationName)!;
 
             mmdPlayer.manualUpdate = true;
-
-            if (i == 0 && camera && cameraAnimation) {
-                mmdPlayer.play(
-                    model,
-                    { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount },
-                    DuckThreeCamera.createInterface(camera),
-                    { animation: cameraAnimation }
-                );
-            } else {
-                mmdPlayer.play(
-                    model,
-                    { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
-                );
-            }
+            mmdPlayer.play(
+                model,
+                { animation: modelAnimation, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
+            );
             endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
         }
 
@@ -116,10 +111,12 @@ export class MmdController extends Component {
                 modelLoaders.length === 1
                     ? (frame: number): void => {
                         firstMmdPlayer.process(frame);
+                        cameraAnimationInstance?.process(frame);
                     }
                     : (frame: number): void => {
                         for (let i = 0; i < mmdPlayerCount; ++i) {
                             mmdPlayers[i].process(frame);
+                            cameraAnimationInstance?.process(frame);
                         }
                     }
             ]

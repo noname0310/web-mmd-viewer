@@ -2,6 +2,8 @@ import { Pmd, Pmx, Vmd } from "three/examples/jsm/libs/mmdparser.module";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
+import { QuaternionUtils } from "../QuaternionUtils";
+
 export class MMDLoaderOverride extends MMDLoader {
     public forceAllInterpolateToCubic = false;
 
@@ -619,9 +621,9 @@ class AnimationBuilder {
 
                 for (let j = 0; j < 3; j++) positions.push(basePosition[j] + position[j]);
                 for (let j = 0; j < 4; j++) rotations.push(rotation[j]);
-                for (let j = 0; j < 3; j++) pushInterpolation(pInterpolations, interpolation, j);
+                for (let j = 0; j < 3; j++) pushInterpolation(pInterpolations, interpolation, j * 16);
 
-                pushInterpolation(rInterpolations, interpolation, 3);
+                pushInterpolation(rInterpolations, interpolation, 3 * 16);
             }
 
             const targetName = ".bones[" + key + "]";
@@ -711,7 +713,7 @@ class AnimationBuilder {
         const fInterpolations: number[] = [];
 
         const quaternion = new THREE.Quaternion();
-        const euler = new THREE.Euler();
+        // const euler = new THREE.Euler();
         const position = new THREE.Vector3();
         const center = new THREE.Vector3();
 
@@ -731,12 +733,12 @@ class AnimationBuilder {
             position.set(0, 0, - distance);
             center.set(pos[0], pos[1], pos[2]);
 
-            euler.set(- rot[0], - rot[1], - rot[2]);
-            quaternion.setFromEuler(euler);
-            //QuaternionUtils.rotationYawPitchRoll(-rot[1], -rot[0], -rot[2], quaternion);
+            // euler.set(- rot[0], - rot[1], - rot[2]);
+            // quaternion.setFromEuler(euler);
+            QuaternionUtils.rotationYawPitchRoll(-rot[1], -rot[0], -rot[2], quaternion);
 
-            position.add(center);
             position.applyQuaternion(quaternion);
+            position.add(center);
 
             pushVector3(centers, center);
             pushQuaternion(quaternions, quaternion);
@@ -857,10 +859,7 @@ class CubicBezierInterpolation extends THREE.Interpolant {
         const offset1 = i1 * stride;
         const offset0 = offset1 - stride;
 
-        // No interpolation if next key frame is in one frame in 30fps.
-        // This is from MMD animation spec.
-        // '1.5' is for precision loss. times are Float32 in Three.js Animation system.
-        const weight1 = ((t1 - t0) < 1 / 30 * 1.5) ? 0.0 : (t - t0) / (t1 - t0);
+        const weight1 = (t - t0) / (t1 - t0);
 
         if (stride === 4) { // Quaternion
             const x1 = params[i1 * 4 + 0];

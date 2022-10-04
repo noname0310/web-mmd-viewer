@@ -1,16 +1,15 @@
 import { Camera, Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, WaitUntil } from "the-world-engine";
-import * as THREE from "three/src/Three";
 
-import { MMDLoaderOverride } from "./loader/MMDLoaderOverride";
+import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./loader/MmdCameraAnimationLoader";
 
 
 export class MmdCamera extends Component {
     public override readonly requiredComponents = [Camera];
 
-    private readonly _loader = new MMDLoaderOverride();
+    private readonly _loader = new MmdCameraAnimationLoader();
 
     private _camera: Camera|null = null;
-    private readonly _animations: Map<string, THREE.AnimationClip> = new Map();
+    private readonly _animations: Map<string, MmdCameraAnimationClip> = new Map();
     private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(event: ProgressEvent<EventTarget>) => void>();
 
@@ -42,7 +41,7 @@ export class MmdCamera extends Component {
     public asyncLoadAnimation(
         animationName: string,
         url: string,
-        onComplete?: (animation: THREE.AnimationClip) => void
+        onComplete?: (animation: MmdCameraAnimationClip) => void
     ): void {
         this._loadingAnimations.add(animationName);
         
@@ -70,12 +69,12 @@ export class MmdCamera extends Component {
         animationName: string,
         url: string,
         onProgress?: (event: ProgressEvent<EventTarget>) => void,
-        onComplete?: (animation: THREE.AnimationClip) => void
+        onComplete?: (animation: MmdCameraAnimationClip) => void
     ): CoroutineIterator {
         if (this._camera === null) throw new Error("Unreachable");
 
-        let animation: THREE.AnimationClip|null = null;
-        this._loader.loadAnimation(url, new THREE.Camera(), object => animation = object as THREE.AnimationClip, onProgress);
+        let animation: MmdCameraAnimationClip|null = null;
+        this._loader.loadAnimationFromUrl(url, object => animation = object, onProgress);
         yield new WaitUntil(() => animation !== null);
         this._animations.set(animationName, animation!);
 
@@ -92,7 +91,7 @@ export class MmdCamera extends Component {
         return this._camera;
     }
 
-    public get animations(): ReadonlyMap<string, THREE.AnimationClip> {
+    public get animations(): ReadonlyMap<string, MmdCameraAnimationClip> {
         return this._animations;
     }
 
