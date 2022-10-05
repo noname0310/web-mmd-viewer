@@ -5,18 +5,21 @@ import { MmdEditorBootstrapper } from "./asset/MmdEditorBootstrapper";
 import { AudioPermissionSolver } from "./asset/script/AudioPermissionSolver";
 import { ListMmdViewBuilder } from "./asset/script/ListMmdViewBuilder";
 
-const listViewMode = false;
+const listMmdViewBuilder: typeof ListMmdViewBuilder|null = null;
+const mmdEditorBootstrapper: typeof MmdEditorBootstrapper|null = MmdEditorBootstrapper;
 
 async function startGame(): Promise<void> {
     await AudioPermissionSolver.invoke();
     await Ammo(Ammo);
 
-    if (listViewMode) {
-        ListMmdViewBuilder.invoke();
-    } else {
+    if (listMmdViewBuilder) {
+        listMmdViewBuilder.invoke();
+    } else if (mmdEditorBootstrapper) {
         const game = new Game(document.getElementById("game_view")!);
-        game.run(MmdEditorBootstrapper);
+        game.run(mmdEditorBootstrapper);
         game.inputHandler.startHandleEvents();
+    } else {
+        throw new Error("No bootstrapper.");
     }
 }
 
