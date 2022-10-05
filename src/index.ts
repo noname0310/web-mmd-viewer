@@ -1,7 +1,7 @@
 import Ammo from "ammojs-typed";
 import { Game } from "the-world-engine";
-import { MmdEditorBootstrapper } from "./asset/MmdEditorBootstrapper";
 
+import { MmdEditorBootstrapper } from "./asset/MmdEditorBootstrapper";
 import { AudioPermissionSolver } from "./asset/script/AudioPermissionSolver";
 import { ListMmdViewBuilder } from "./asset/script/ListMmdViewBuilder";
 
