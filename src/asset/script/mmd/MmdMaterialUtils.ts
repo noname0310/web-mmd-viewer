@@ -30,6 +30,25 @@ export class MmdMaterialUtils {
         return material;
     }
 
+    public static forceDisposeObjectMembers(object: any): void {
+        const values = Object.values(object);
+        for (let i = 0; i < values.length; ++i) {
+            const value = values[i];
+            if ((value as { dispose?: () => void }).dispose) {
+                (value as { dispose: () => void }).dispose();
+            }
+
+            if (value instanceof Array) {
+                for (let j = 0; j < value.length; ++j) {
+                    const arrayValue = value[j];
+                    if ((arrayValue as { dispose?: () => void }).dispose) {
+                        (arrayValue as { dispose: () => void }).dispose();
+                    }
+                }
+            }
+        }
+    }
+
     public static disposeTexture(material: MMDToonMaterial): void {
         if (!material.isMMDToonMaterial) return;
         material.map?.dispose();
