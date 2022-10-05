@@ -110,12 +110,13 @@ export class MmdModel extends Component {
                 if (model.material instanceof Array) {
                     const materials = model.material;
                     for (let i = 0; i < materials.length; ++i) {
+                        MmdMaterialUtils.disposeTexture(materials[i] as MMDToonMaterial);
                         materials[i].dispose();
                     }
                 } else {
+                    MmdMaterialUtils.disposeTexture(model.material as MMDToonMaterial);
                     model.material.dispose();
                 }
-                MmdMaterialUtils.disposeTexture(model.material as MMDToonMaterial);
             }
         }, onProgress);
         yield new WaitUntil(() => model !== null);
@@ -123,11 +124,12 @@ export class MmdModel extends Component {
             object3D.geometry.dispose();
             if (object3D.material instanceof Array) {
                 for (let i = 0; i < object3D.material.length; ++i) {
+                    MmdMaterialUtils.disposeTexture(object3D.material[i] as MMDToonMaterial);
                     object3D.material[i].dispose();
                 }
             } else {
-                object3D.material.dispose();
                 MmdMaterialUtils.disposeTexture(object3D.material as MMDToonMaterial);
+                object3D.material.dispose();
             }
             this._onDisposeObject3DEvent.invoke(object3D);
         });
