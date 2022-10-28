@@ -373,7 +373,6 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         const animationNames: string[] = [];
         for (let i = 0; i < models.length; ++i) {
             const model = models[i];
-            (globalThis as any).model = model;
             if (model.animations.size === 0) continue;
 
             animationNames.push(model.animations.keys().next().value);

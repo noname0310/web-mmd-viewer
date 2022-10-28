@@ -172,8 +172,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                         // ssrPass.raymarchTargetScale = 1;
                         // ssrPass.renderTargetScale = 1;
                         // ssrPass.stride = 60;
-                        (globalThis as any).ssrPass = ssrPass;
-
+                        
                         const adaptiveTonemappingPass = new AdaptiveToneMappingPass(false, 256);
                         adaptiveTonemappingPass.setMiddleGrey(8);
 
