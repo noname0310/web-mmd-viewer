@@ -6,6 +6,7 @@ import {
     DepthOfFieldEffect,
     EdgeDetectionMode,
     EffectPass,
+    KernelSize,
     SMAAEffect,
     SMAAPreset,
     TextureEffect,
@@ -152,7 +153,7 @@ export class FlosBootstrapper extends BaseBootstrapper {
                             luminanceThreshold: 0.55,
                             luminanceSmoothing: 0.7,
                             intensity: 0.8,
-                            kernelSize: 8
+                            kernelSize: KernelSize.MEDIUM
                         });
 
                         depthOfFieldEffect = new DepthOfFieldEffect(camera, {

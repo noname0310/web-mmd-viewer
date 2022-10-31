@@ -160,7 +160,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                             luminanceThreshold: 0.8,
                             luminanceSmoothing: 0.3,
                             intensity: 0.6,
-                            kernelSize: 16
+                            kernelSize: KernelSize.MEDIUM
                         });
 
                         depthOfFieldEffect = new DepthOfFieldEffect(camera, {
