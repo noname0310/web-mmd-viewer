@@ -57,6 +57,8 @@ export class WebGLGlobalPostProcessVolume extends Component {
 
     private readonly onCameraChanged = (camera: Camera): void => {
         if (this._renderPass !== null) {
+            //TODO: optimize to setCamera
+
             const renderPassPosition = this._effectComposer?.passes.indexOf(this._renderPass);
             this._effectComposer?.removePass(this._renderPass);
             this._renderPass.dispose();
