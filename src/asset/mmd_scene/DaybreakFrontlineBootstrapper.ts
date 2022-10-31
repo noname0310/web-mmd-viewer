@@ -154,6 +154,8 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
+                    c.reinitializeWhenScreenSizeChanged = false;
+
                     c.initializer((_scene, camera, _screen) => {
                         const bloomEffect = new BloomEffect({
                             blendFunction: BlendFunction.ADD,
@@ -212,7 +214,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                         });
 
                         const effectPass = new EffectPass(camera, bloomEffect/*, depthOfFieldEffect, cocTextureEffect*/, smaaEffect, godRaysEffect, toneMappingEffect, contrastEffect);
-                        return [[effectPass]];
+                        return [effectPass];
                     });
                 }))
 

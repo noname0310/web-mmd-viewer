@@ -132,6 +132,8 @@ export class NotitleBootstrapper extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
+                    c.reinitializeWhenScreenSizeChanged = false;
+
                     c.initializer((_scene, camera, _screen) => {
                         const bloomEffect = new BloomEffect({
                             blendFunction: BlendFunction.ADD,
@@ -174,7 +176,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
 
                         const effectPass = new EffectPass(camera, bloomEffect, depthOfFieldEffect, cocTextureEffect, smaaEffect, toneMappingEffect);
 
-                        return [[effectPass]];
+                        return [effectPass];
                     });
                 }))
 

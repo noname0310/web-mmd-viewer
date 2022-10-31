@@ -140,6 +140,8 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
 
                 .withChild(instantiater.buildGameObject("post-process-volume")
                     .withComponent(WebGLGlobalPostProcessVolume, c => {
+                        c.reinitializeWhenScreenSizeChanged = false;
+
                         c.initializer((_scene, camera, _screen) => {
                             const bloomEffect = new BloomEffect({
                                 blendFunction: BlendFunction.ADD,
@@ -193,7 +195,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                                 contrastEffect
                             );
                             
-                            return [[effectPass]];
+                            return [effectPass];
                         });
                     }))
                 

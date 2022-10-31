@@ -1,5 +1,5 @@
 import { EffectComposer, Pass, RenderPass } from "postprocessing";
-import { Camera, CameraContainer, Component, EngineGlobalObject, IReadonlyGameScreen, WebGLGlobalObject } from "the-world-engine";
+import { Camera, CameraContainer, Component, EngineGlobalObject, IReadonlyGameScreen } from "the-world-engine";
 import { WebGLRenderer } from "three/src/Three";
 
 class EffectComposerRc {
@@ -25,6 +25,7 @@ class EffectComposerRc {
             effectComposerRc = new EffectComposerRc(engineGlobalObject, effectComposer);
             screen.onResize.addListener(effectComposerRc.onScreenResize);
             EffectComposerRc._map.set(engineGlobalObject, effectComposerRc);
+            engineGlobalObject.webGL!.effectComposer = effectComposer as any;
         }
         effectComposerRc._referenceCount += 1;
         return effectComposerRc._effectComposer;
@@ -39,6 +40,7 @@ class EffectComposerRc {
                 const screen = engineGlobalObject.screen;
                 screen.onResize.removeListener(effectComposerRc.onScreenResize);
                 EffectComposerRc._map.delete(engineGlobalObject);
+                engineGlobalObject.webGL!.effectComposer = null;
             }
         }
     }
@@ -53,27 +55,15 @@ export class WebGLGlobalPostProcessVolume extends Component {
 
     private _passes: readonly Pass[] = [];
 
-    private _initializer: ((scene: THREE.Scene, camera: THREE.Camera, screen: IReadonlyGameScreen) => readonly[readonly Pass[], (() => void)?])|null = null;
+    private _initializer: ((scene: THREE.Scene, camera: THREE.Camera, screen: IReadonlyGameScreen) => readonly Pass[])|null = null;
 
     private readonly onCameraChanged = (camera: Camera): void => {
         if (this._renderPass !== null) {
-            //TODO: optimize to setCamera
-
-            const renderPassPosition = this._effectComposer?.passes.indexOf(this._renderPass);
-            this._effectComposer?.removePass(this._renderPass);
-            this._renderPass.dispose();
-            
-            this._renderPass = new RenderPass(this.engine.scene.unsafeGetThreeScene(), (camera as any).threeCamera!);
-            
-            if (renderPassPosition !== undefined && renderPassPosition !== -1) {
-                this._effectComposer?.addPass(this._renderPass, renderPassPosition);
-            } else {
-                this._effectComposer?.addPass(this._renderPass);
-            }
+            this._renderPass.mainCamera = (camera as any).threeCamera!;
         }
         if (this._reInitializeWhenCameraChanged && this._initializer && this._effectComposer) {
             const threeScene = this.engine.scene.unsafeGetThreeScene();
-            const [passes] = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
+            const passes = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
             this.initializeEffectComposer(this._effectComposer, this._passes, passes);
             this._passes = passes;
         }
@@ -83,7 +73,7 @@ export class WebGLGlobalPostProcessVolume extends Component {
         if (this._reinitializeWhenScreenSizeChanged && this._initializer && this._effectComposer) {
             const threeScene = this.engine.scene.unsafeGetThreeScene();
             const camera = this.engine.cameraContainer.camera!;
-            const [passes] = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
+            const passes = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
             this.initializeEffectComposer(this._effectComposer, this._passes, passes);
             this._passes = passes;
         }
@@ -116,12 +106,10 @@ export class WebGLGlobalPostProcessVolume extends Component {
         }
 
         if (this._initializer) {
-            const [passes] = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
+            const passes = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
             this.initializeEffectComposer(effectComposer, this._passes, passes);
             this._passes = passes;
         }
-
-        (this.engine.webGL as WebGLGlobalObject).effectComposer = effectComposer as any;
     }
 
     public onDisable(): void {
@@ -181,10 +169,10 @@ export class WebGLGlobalPostProcessVolume extends Component {
      * set initializer for effect composer. this callback will be called multiple times when switching camera. or when screen size is changed.
      * 
      * i recommend you make this callback as pure function.
-     * @param initializer its return value is tuple of passes and disposer. you must dispose passes in disposer.
+     * @param initializer its return value is passes.
      */
     public initializer(
-        initializer: (scene: THREE.Scene, camera: THREE.Camera, screen: IReadonlyGameScreen) => readonly[readonly Pass[]]
+        initializer: (scene: THREE.Scene, camera: THREE.Camera, screen: IReadonlyGameScreen) => readonly Pass[]
     ): void {
         if (this._effectComposer) {
             this.removeAndDisposePasses(this._effectComposer, this._passes);
@@ -196,7 +184,7 @@ export class WebGLGlobalPostProcessVolume extends Component {
         if (this._effectComposer) {
             const threeScene = this.engine.scene.unsafeGetThreeScene();
             const camera = this.engine.cameraContainer.camera!;
-            const [passes] = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
+            const passes = this._initializer(threeScene, (camera as any).threeCamera!, this.engine.screen);
             this.initializeEffectComposer(this._effectComposer, this._passes, passes);
             this._passes = passes;
         }
