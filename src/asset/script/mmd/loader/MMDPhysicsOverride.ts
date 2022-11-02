@@ -372,6 +372,65 @@ export class ResourceManagerOverride {
 }
 
 export class MMdPhysicsOverride extends MMDPhysics {
+    public override update(delta: number): this {
+        delta;
+        const manager = this.manager as unknown as ResourceManagerOverride;
+        const mesh = this.mesh;
+
+        // rigid bodies and constrains are for
+        // mesh's world scale (1, 1, 1).
+        // Convert to (1, 1, 1) if it isn't.
+
+        let isNonDefaultScale = false;
+
+        const position = manager.allocThreeVector3();
+        const quaternion = manager.allocThreeQuaternion();
+        const scale = manager.allocThreeVector3();
+
+        mesh.matrixWorld.decompose(position, quaternion, scale);
+
+        if (
+            Math.abs(scale.x - 1) > 0.000001 ||
+            Math.abs(scale.y - 1) > 0.000001 ||
+            Math.abs(scale.z - 1) > 0.000001
+        ) {
+            isNonDefaultScale = true;
+        }
+
+        let parent = null;
+
+        if (isNonDefaultScale) {
+            parent = mesh.parent;
+
+            if (parent !== null) mesh.parent = null;
+
+            scale.copy(this.mesh.scale);
+
+            mesh.scale.set(1, 1, 1);
+            mesh.updateMatrixWorld(true);
+        }
+
+        // calculate physics and update bones
+
+        (this as any)._updateRigidBodies();
+        (this as any)._stepSimulation(delta);
+        (this as any)._updateBones();
+
+        // restore mesh if converted above
+
+        if (isNonDefaultScale) {
+            if (parent !== null) mesh.parent = parent;
+            mesh.scale.copy(scale);
+            mesh.updateMatrixWorld(true);
+        }
+
+        manager.freeThreeVector3(scale);
+        manager.freeThreeQuaternion(quaternion);
+        manager.freeThreeVector3(position);
+
+        return this;
+    }
+
     public override setGravity(gravity: THREE.Vector3): this {
         const ammoVector3 = new Ammo.btVector3(gravity.x, gravity.y, gravity.z);
         (this.world as unknown as Ammo.btDiscreteDynamicsWorld).setGravity(ammoVector3);
