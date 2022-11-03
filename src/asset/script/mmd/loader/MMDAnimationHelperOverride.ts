@@ -21,7 +21,8 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
         );
     }
 
-    _animateMesh(mesh: THREE.SkinnedMesh, delta: number) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public _animateMesh(mesh: THREE.SkinnedMesh, delta: number): void {
         const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { sortedBonesData?: GeometryBone[] };
 
         const mixer = objects.mixer;
@@ -41,7 +42,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
 
             // PMX animation system special path
             if ((this.configuration as any).pmxAnimation &&
-                mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === 'pmx') {
+                mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === "pmx") {
 
                 if (!objects.sortedBonesData) objects.sortedBonesData = (this as any)._sortBoneDataArray(mesh.geometry.userData.MMD.bones.slice());
 
