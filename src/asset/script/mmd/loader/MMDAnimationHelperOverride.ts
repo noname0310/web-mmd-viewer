@@ -1,5 +1,5 @@
 import { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver";
-import { GrantSolver as ThreeGrantSolver, MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper";
+import { GrantSolver as ThreeGrantSolver, MMDAnimationHelper, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 import * as THREE from "three/src/Three";
 
 import { GeometryBone } from "./MMDLoaderOverride";
@@ -21,6 +21,59 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
         );
     }
 
+    _animateMesh(mesh: THREE.SkinnedMesh, delta: number) {
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { sortedBonesData?: GeometryBone[] };
+
+        const mixer = objects.mixer;
+        const ikSolver = objects.ikSolver;
+        const grantSolver = objects.grantSolver;
+        const physics = objects.physics;
+        const looped = objects.looped;
+
+        if (mixer && this.enabled.animation) {
+            // alternate solution to save/restore bones but less performant?
+            //mesh.pose();
+            //this._updatePropertyMixersBuffer( mesh );
+
+            (this as any)._restoreBones(mesh);
+            mixer.update(delta);
+            (this as any)._saveBones(mesh);
+
+            // PMX animation system special path
+            if ((this.configuration as any).pmxAnimation &&
+                mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === 'pmx') {
+
+                if (!objects.sortedBonesData) objects.sortedBonesData = (this as any)._sortBoneDataArray(mesh.geometry.userData.MMD.bones.slice());
+
+                this._animatePMXMesh(
+                    mesh,
+                    objects.sortedBonesData!,
+                    ikSolver && this.enabled.ik ? ikSolver : null,
+                    grantSolver && this.enabled.grant ? (grantSolver as unknown as GrantSolver) : null
+                );
+            } else {
+                if (ikSolver && this.enabled.ik) {
+                    mesh.updateMatrixWorld(true);
+                    ikSolver.update();
+                }
+
+                if (grantSolver && this.enabled.grant) {
+                    grantSolver.update();
+                }
+            }
+        }
+
+        if (looped === true && this.enabled.physics) {
+            if (physics && this.configuration.resetPhysicsOnLoop) physics.reset();
+            objects.looped = false;
+        }
+
+        if (physics && this.enabled.physics && !this.sharedPhysics) {
+            this.onBeforePhysics(mesh);
+            physics.update(delta);
+        }
+    }
+
     // PMX Animation system is a bit too complex and doesn't great match to
     // Three.js Animation system. This method attempts to simulate it as much as
     // possible but doesn't perfectly simulate.
@@ -29,7 +82,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     // only if your PMX model animation doesn't work well.
     // If you need better method you would be required to write your own.
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public _animatePMXMesh(mesh: THREE.SkinnedMesh, sortedBonesData: GeometryBone[], ikSolver: CCDIKSolver, grantSolver: GrantSolver): this {
+    public _animatePMXMesh(mesh: THREE.SkinnedMesh, sortedBonesData: GeometryBone[], ikSolver: CCDIKSolver|null, grantSolver: GrantSolver|null): this {
         _quaternionIndex = 0;
         _grantResultMap.clear();
 
@@ -65,7 +118,7 @@ function getQuaternion(): THREE.Quaternion {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _grantResultMap = new Map();
 
-function updateOne(mesh: THREE.SkinnedMesh, boneIndex: number, ikSolver: CCDIKSolver, grantSolver: GrantSolver): void {
+function updateOne(mesh: THREE.SkinnedMesh, boneIndex: number, ikSolver: CCDIKSolver|null, grantSolver: GrantSolver|null): void {
     const bones = mesh.skeleton.bones;
     const bonesData = mesh.geometry.userData.MMD.bones;
     const boneData = bonesData[boneIndex];

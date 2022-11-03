@@ -8,7 +8,7 @@ import { ListMmdViewBuilder } from "./asset/script/ListMmdViewBuilder";
 const listMmdViewBuilder: typeof ListMmdViewBuilder|null = ListMmdViewBuilder;
 const mmdEditorBootstrapper: typeof MmdEditorBootstrapper|null = null;
 
-// TODO: add IK on off animation track (support only pmx animation)
+// TODO: add IK on off animation track
 
 async function startGame(): Promise<void> {
     await AudioPermissionSolver.invoke();
