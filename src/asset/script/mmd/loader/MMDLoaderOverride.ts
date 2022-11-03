@@ -30,7 +30,7 @@ type GrantEntryItem = {
     visited: boolean;
 };
 
-type GeometryBone = {
+export type GeometryBone = {
     index: number;
     transformationClass: number | undefined;
     parent: number;
