@@ -2,7 +2,7 @@ import { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver";
 import { GrantSolver as ThreeGrantSolver, MMDAnimationHelper, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 import * as THREE from "three/src/Three";
 
-import { GeometryBone } from "./MMDLoaderOverride";
+import { GeometryBone, MmdUserData } from "./MMDLoaderOverride";
 import { MMdPhysicsOverride } from "./MMDPhysicsOverride";
 
 export class MMDAnimationHelperOverride extends MMDAnimationHelper {
@@ -15,8 +15,8 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
 
         return new MMdPhysicsOverride(
             mesh,
-            mesh.geometry.userData.MMD.rigidBodies,
-            mesh.geometry.userData.MMD.constraints,
+            (mesh.geometry.userData.MMD as MmdUserData).rigidBodies,
+            (mesh.geometry.userData.MMD as MmdUserData).constraints,
             params
         );
     }
@@ -42,9 +42,10 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
 
             // PMX animation system special path
             if ((this.configuration as any).pmxAnimation &&
-                mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === "pmx") {
+                mesh.geometry.userData.MMD && (mesh.geometry.userData.MMD as MmdUserData).format === "pmx") {
 
-                if (!objects.sortedBonesData) objects.sortedBonesData = (this as any)._sortBoneDataArray(mesh.geometry.userData.MMD.bones.slice());
+                if (!objects.sortedBonesData) objects.sortedBonesData = 
+                    (this as any)._sortBoneDataArray((mesh.geometry.userData.MMD as MmdUserData).bones.slice());
 
                 this._animatePMXMesh(
                     mesh,
@@ -96,7 +97,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     }
 
     public createGrantSolver(mesh: THREE.SkinnedMesh): ThreeGrantSolver {
-        return new GrantSolver(mesh, mesh.geometry.userData.MMD.grants) as unknown as ThreeGrantSolver;
+        return new GrantSolver(mesh, (mesh.geometry.userData.MMD as MmdUserData).grants) as unknown as ThreeGrantSolver;
     }
 }
 
@@ -121,7 +122,7 @@ const _grantResultMap = new Map();
 
 function updateOne(mesh: THREE.SkinnedMesh, boneIndex: number, ikSolver: CCDIKSolver|null, grantSolver: GrantSolver|null): void {
     const bones = mesh.skeleton.bones;
-    const bonesData = mesh.geometry.userData.MMD.bones;
+    const bonesData = (mesh.geometry.userData.MMD as MmdUserData).bones;
     const boneData = bonesData[boneIndex];
     const bone = bones[boneIndex];
 
@@ -158,7 +159,7 @@ function updateOne(mesh: THREE.SkinnedMesh, boneIndex: number, ikSolver: CCDIKSo
         // @TODO: Updating world matrices every time solving an IK bone is
         // costly. Optimize if possible.
         mesh.updateMatrixWorld(true);
-        ikSolver.updateOne(boneData.ik);
+        ikSolver.updateOne(boneData.ik as any); //TODO: pr to three typed
 
         // No confident, but it seems the grant results with ik links should be updated?
         const links = boneData.ik.links;

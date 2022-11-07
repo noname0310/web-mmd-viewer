@@ -1,4 +1,4 @@
-import { Pmd, Pmx, Vmd } from "three/examples/jsm/libs/mmdparser.module";
+import { ModelFormat, Pmd, Pmx, Vmd } from "three/examples/jsm/libs/mmdparser.module";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 
@@ -54,6 +54,37 @@ export type GeometryBone = {
     grant?: GrantEntryItem["param"];
 };
 
+export type IK = {
+    target: number;
+    effector: number;
+    iteration: number;
+    maxAngle: number;
+    links: {
+        index: number;
+        enabled: boolean;
+        limitation?: THREE.Vector3 | undefined;
+    }[];
+};
+
+export type Grant = {
+    index: number;
+    parentIndex: number;
+    ratio: number;
+    isLocal: boolean;
+    affectRotation: boolean;
+    affectPosition: boolean;
+    transformationClass: number;
+}
+
+export type MmdUserData = {
+    bones: GeometryBone[];
+    iks: IK[];
+    grants: Grant[];
+    rigidBodies: Pmd["rigidBodies"] & Pmx["rigidBodies"];
+    constraints: Pmd["constraints"] & Pmx["constraints"];
+    format: ModelFormat;
+};
+
 type GeometryMorphTarget = { name: string; };
 
 type MmdBufferGeomatry = THREE.BufferGeometry & {
@@ -87,29 +118,11 @@ class GeometryBuilder {
         const morphTargets: GeometryMorphTarget[] = [];
         const morphPositions: THREE.Float32BufferAttribute[] = [];
 
-        const iks: {
-            target: number;
-            effector: number;
-            iteration: number;
-            maxAngle: number;
-            links: {
-                index: number;
-                enabled: boolean;
-                limitation?: THREE.Vector3 | undefined;
-            }[];
-        }[] = [];
-        const grants: {
-            index: number;
-            parentIndex: number;
-            ratio: number;
-            isLocal: boolean;
-            affectRotation: boolean;
-            affectPosition: boolean;
-            transformationClass: number;
-        }[] = [];
+        const iks: IK[] = [];
+        const grants: Grant[] = [];
 
-        const rigidBodies: Pmd["rigidBodies"]&Pmx["rigidBodies"] = [];
-        const constraints = [];
+        const rigidBodies: Pmd["rigidBodies"] & Pmx["rigidBodies"] = [];
+        const constraints: Pmd["constraints"] & Pmx["constraints"] = [];
 
         // for work
         let offset = 0;
@@ -524,7 +537,7 @@ class GeometryBuilder {
         geometry.morphAttributes.position = morphPositions;
         geometry.morphTargetsRelative = false;
 
-        geometry.userData.MMD = {
+        (geometry.userData.MMD as MmdUserData) = {
             bones: bones,
             iks: iks,
             grants: grants,
@@ -559,7 +572,7 @@ class AnimationBuilder {
     }
 
     public buildSkeletalAnimation(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
-        const rigidBodies: { name: string; }[] = mesh.geometry.userData.MMD.rigidBodies;
+        const rigidBodies = (mesh.geometry.userData.MMD as MmdUserData).rigidBodies;
         const rigidBodyNameSet = new Set<string>();
         for (let i = 0, il = rigidBodies.length; i < il; ++i) {
             rigidBodyNameSet.add(rigidBodies[i].name);
