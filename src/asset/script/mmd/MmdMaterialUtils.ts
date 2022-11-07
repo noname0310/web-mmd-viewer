@@ -21,6 +21,7 @@ export class MmdMaterialUtils {
         material.roughness = 1;
         material.metalness = 0;
         material.emissive = new THREE.Color(0x000000);
+        material.side = mmdMaterial.side;
         material.needsUpdate = true;
 
         mmdMaterial.dispose();
