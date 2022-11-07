@@ -182,7 +182,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                             });
 
                             const contrastEffect = new BrightnessContrastEffect({
-                                brightness: -0.05,
+                                brightness: 0.0,
                                 contrast: 0.25
                             });
                             
@@ -290,7 +290,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                     .innerText = type + ": " + Math.round(percentComplete) + "% loading";
                             }
                         });
-                        c.asyncLoadModel("mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx", model => {
+                        c.asyncLoadModel("mmd/YYB Hatsune Miku_10th - faceforward/YYB Hatsune Miku_10th_v1.02 - faceforward.pmx", model => {
                             if (!unsafeIsComponent(c)) return;
                             modelLoadingText.innerText = "model loaded";
                             model.geometry.name = c.gameObject.name + "-geometry";
@@ -333,26 +333,37 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                     hair.needsUpdate = true;
                                 }
                             }
+
                             {
-                                const shoes = converted.find(m => m.name === "Shoes")!;
-                                shoes.roughness = 0;
-                                shoes.metalness = 0.6;
-                                shoes.envMapIntensity = 0.8;
-                                shoes.lightMapIntensity = 0.2;
-                                shoes.envMap?.dispose();
-                                shoes.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
-                                shoes.needsUpdate = true;
+                                const clearcoatCloths = ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "q201", "q202"];
+                                for (let i = 0; i < clearcoatCloths.length; ++i) {
+                                    const cloth = converted.find(m => m.name === clearcoatCloths[i])!;
+                                    cloth.roughness = 0.1;
+                                    cloth.metalness = 0.0;
+                                    cloth.envMapIntensity = 0.5;
+                                    cloth.lightMapIntensity = 0.5;
+                                    cloth.envMap?.dispose();
+                                    cloth.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
+                                    cloth.needsUpdate = true;
+                                }
                             }
                             {
-                                const clothes = ["Derss", "Top"];
+                                const clothes = ["q01", "q02", "q03", "q04"];
                                 for (let i = 0; i < clothes.length; ++i) {
                                     const cloth = converted.find(m => m.name === clothes[i])!;
                                     cloth.roughness = 0.8;
                                     cloth.normalMapType = THREE.TangentSpaceNormalMap;
                                     cloth.normalMap?.dispose();
                                     cloth.normalMap = assetManager.ref!.assets.get("fabricNormal") as THREE.Texture;
-                                    cloth.normalScale = new THREE.Vector2(1, 1);
+                                    cloth.normalScale = new THREE.Vector2(0.5, 0.5);
                                     cloth.needsUpdate = true;
+                                }
+                            }
+                            {
+                                const glowCloths = ["q301", "q302"];
+                                for (let i = 0; i < glowCloths.length; ++i) {
+                                    const cloth = converted.find(m => m.name === glowCloths[i])!;
+                                    cloth.emissive = new THREE.Color().setRGB(0.3, 0.3, 0.3);
                                 }
                             }
                         });
