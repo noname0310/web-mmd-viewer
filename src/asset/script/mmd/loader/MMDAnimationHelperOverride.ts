@@ -2,7 +2,7 @@ import { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver";
 import { GrantSolver as ThreeGrantSolver, MMDAnimationHelper, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 import * as THREE from "three/src/Three";
 
-import { GeometryBone, MmdUserData } from "./MMDLoaderOverride";
+import { GeometryBone, IK, MmdUserData } from "./MMDLoaderOverride";
 import { MMdPhysicsOverride } from "./MMDPhysicsOverride";
 
 export class MMDAnimationHelperOverride extends MMDAnimationHelper {
@@ -22,8 +22,19 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
+    public _createCCDIKSolver(mesh: THREE.SkinnedMesh): CCDIKSolver {
+        const iks = (mesh.geometry.userData.MMD as MmdUserData).iks;
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables?: WeakMap<IK, boolean> };
+        objects.ikEnables = new WeakMap<IK, boolean>();
+        for (let i = 0, il = iks.length; i < il; i++) {
+            objects.ikEnables.set(iks[i], true);
+        }
+        return new CCDIKSolver(mesh, iks as any); //TODO: pr to three typed
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public _animateMesh(mesh: THREE.SkinnedMesh, delta: number): void {
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { sortedBonesData?: GeometryBone[] };
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { sortedBonesData?: GeometryBone[], ikEnables?: WeakMap<IK, boolean> };
 
         const mixer = objects.mixer;
         const ikSolver = objects.ikSolver;
@@ -56,7 +67,14 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
             } else {
                 if (ikSolver && this.enabled.ik) {
                     mesh.updateMatrixWorld(true);
-                    ikSolver.update();
+
+                    const ikEnables = objects.ikEnables!;
+                    const iks = (mesh.geometry.userData.MMD as MmdUserData).iks;
+                    for (let i = 0, il = iks.length; i < il; i++) {
+                        if (ikEnables.get(iks[i]) === true) {
+                            ikSolver.updateOne(iks[i] as any); //TODO: pr to three typed
+                        }
+                    }
                 }
 
                 if (grantSolver && this.enabled.grant) {
@@ -87,9 +105,10 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     public _animatePMXMesh(mesh: THREE.SkinnedMesh, sortedBonesData: GeometryBone[], ikSolver: CCDIKSolver|null, grantSolver: GrantSolver|null): this {
         _quaternionIndex = 0;
         _grantResultMap.clear();
-
+        
+        const mixer = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: WeakMap<IK, boolean> };
         for (let i = 0, il = sortedBonesData.length; i < il; i++) {
-            updateOne(mesh, sortedBonesData[i].index, ikSolver, grantSolver);
+            updateOne(mesh, sortedBonesData[i].index, ikSolver, grantSolver, mixer);
         }
 
         mesh.updateMatrixWorld(true);
@@ -120,7 +139,13 @@ function getQuaternion(): THREE.Quaternion {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _grantResultMap = new Map();
 
-function updateOne(mesh: THREE.SkinnedMesh, boneIndex: number, ikSolver: CCDIKSolver|null, grantSolver: GrantSolver|null): void {
+function updateOne(
+    mesh: THREE.SkinnedMesh,
+    boneIndex: number,
+    ikSolver: CCDIKSolver|null,
+    grantSolver: GrantSolver|null,
+    mixer: MMDAnimationHelperMixer & { ikEnables: WeakMap<IK, boolean> }
+): void {
     const bones = mesh.skeleton.bones;
     const bonesData = (mesh.geometry.userData.MMD as MmdUserData).bones;
     const boneData = bonesData[boneIndex];
@@ -146,7 +171,7 @@ function updateOne(mesh: THREE.SkinnedMesh, boneIndex: number, ikSolver: CCDIKSo
 
         if (!_grantResultMap.has(parentIndex)) {
 
-            updateOne(mesh, parentIndex, ikSolver, grantSolver);
+            updateOne(mesh, parentIndex, ikSolver, grantSolver, mixer);
 
         }
 
@@ -154,8 +179,7 @@ function updateOne(mesh: THREE.SkinnedMesh, boneIndex: number, ikSolver: CCDIKSo
 
     }
 
-    if (ikSolver && boneData.ik) {
-
+    if (ikSolver && boneData.ik && mixer.ikEnables.get(boneData.ik) === true) {
         // @TODO: Updating world matrices every time solving an IK bone is
         // costly. Optimize if possible.
         mesh.updateMatrixWorld(true);
