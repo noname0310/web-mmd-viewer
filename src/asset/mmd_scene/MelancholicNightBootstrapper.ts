@@ -210,7 +210,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                         light.castShadow = true;
                         light.shadow.mapSize.width = 1024 * 8;
                         light.shadow.mapSize.height = 1024 * 8;
-                        const radius = 200;
+                        const radius = 50;
                         light.shadow.camera.top = radius;
                         light.shadow.camera.bottom = -radius;
                         light.shadow.camera.left = -radius;
