@@ -2,7 +2,7 @@ import { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver";
 import { GrantSolver as ThreeGrantSolver, MMDAnimationHelper, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 import * as THREE from "three/src/Three";
 
-import { GeometryBone, IK, MmdUserData } from "./MMDLoaderOverride";
+import { GeometryBone, MmdUserData } from "./MMDLoaderOverride";
 import { MMdPhysicsOverride } from "./MMDPhysicsOverride";
 
 export class MMDAnimationHelperOverride extends MMDAnimationHelper {
@@ -24,17 +24,26 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _createCCDIKSolver(mesh: THREE.SkinnedMesh): CCDIKSolver {
         const iks = (mesh.geometry.userData.MMD as MmdUserData).iks;
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables?: WeakMap<IK, boolean> };
-        objects.ikEnables = new WeakMap<IK, boolean>();
+        const bones = (mesh.geometry.userData.MMD as MmdUserData).bones;
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables?: boolean[], boneIkMapper?: Map<string, number> };
+        objects.ikEnables = [];
+        objects.boneIkMapper = new Map();
         for (let i = 0, il = iks.length; i < il; i++) {
-            objects.ikEnables.set(iks[i], true);
+            objects.ikEnables.push(true);
         }
+        for (let i = 0, j = 0, il = bones.length; i < il; i++) {
+            if (bones[i].ik) {
+                objects.boneIkMapper.set(bones[i].name, j);
+                j += 1;
+            }
+        }
+
         return new CCDIKSolver(mesh, iks as any); //TODO: pr to three typed
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _animateMesh(mesh: THREE.SkinnedMesh, delta: number): void {
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { sortedBonesData?: GeometryBone[], ikEnables?: WeakMap<IK, boolean> };
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { sortedBonesData?: GeometryBone[], ikEnables?: boolean[], boneIkMapper?: Map<string, number> };
 
         const mixer = objects.mixer;
         const ikSolver = objects.ikSolver;
@@ -71,7 +80,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
                     const ikEnables = objects.ikEnables!;
                     const iks = (mesh.geometry.userData.MMD as MmdUserData).iks;
                     for (let i = 0, il = iks.length; i < il; i++) {
-                        if (ikEnables.get(iks[i]) === true) {
+                        if (ikEnables[i] === true) {
                             ikSolver.updateOne(iks[i] as any); //TODO: pr to three typed
                         }
                     }
@@ -106,7 +115,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
         _quaternionIndex = 0;
         _grantResultMap.clear();
         
-        const mixer = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: WeakMap<IK, boolean> };
+        const mixer = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> };
         for (let i = 0, il = sortedBonesData.length; i < il; i++) {
             updateOne(mesh, sortedBonesData[i].index, ikSolver, grantSolver, mixer);
         }
@@ -144,7 +153,7 @@ function updateOne(
     boneIndex: number,
     ikSolver: CCDIKSolver|null,
     grantSolver: GrantSolver|null,
-    mixer: MMDAnimationHelperMixer & { ikEnables: WeakMap<IK, boolean> }
+    mixer: MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> }
 ): void {
     const bones = mesh.skeleton.bones;
     const bonesData = (mesh.geometry.userData.MMD as MmdUserData).bones;
@@ -176,10 +185,9 @@ function updateOne(
         }
 
         grantSolver.addGrantRotation(bone, _grantResultMap.get(parentIndex), ratio);
-
     }
 
-    if (ikSolver && boneData.ik && mixer.ikEnables.get(boneData.ik) === true) {
+    if (ikSolver && boneData.ik && mixer.ikEnables[mixer.boneIkMapper.get(boneData.name)!] === true) {
         // @TODO: Updating world matrices every time solving an IK bone is
         // costly. Optimize if possible.
         mesh.updateMatrixWorld(true);
