@@ -9805,6 +9805,7 @@ export type Pmx = {
         englishComment: string;
         vertexCount: number;
         faceCount: number;
+        textureCount: number;
         materialCount: number;
         boneCount: number;
         morphCount: number;
