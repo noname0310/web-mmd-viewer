@@ -9841,8 +9841,6 @@ export type Pmx = {
         edgeSize: number;
         textureIndex: number;
         envTextureIndex: number;
-        textureIndex: number;
-        envTextureIndex: number;
         envFlag: number;
         toonFlag: number;
         comment: string;
