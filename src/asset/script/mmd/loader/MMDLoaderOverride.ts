@@ -1,3 +1,4 @@
+import { MMDParser } from "@noname0310/mmd-parser";
 import { ModelFormat, Pmd, Pmx, Vmd } from "three/examples/jsm/libs/mmdparser.module";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
@@ -10,6 +11,7 @@ export class MMDLoaderOverride extends MMDLoader {
     public constructor(manager?: THREE.LoadingManager) {
         super(manager);
 
+        this.parser = MMDParser;
         this.animationBuilder = new AnimationBuilder(this);
         (this.meshBuilder as any).geometryBuilder = new GeometryBuilder();
     }
