@@ -9844,6 +9844,7 @@ export type Pmx = {
         envTextureIndex: number;
         envFlag: number;
         toonFlag: number;
+        toonIndex: number;
         comment: string;
         faceCount: number;
     }[];
@@ -9887,7 +9888,7 @@ export type Pmx = {
         panel: number;
         type: number;
         elementCount: number;
-        elements: GroupMorph[] | VertexMorph[] | BoneMorph[] | UvMorph[] | MaterialMorph[];
+        elements: (GroupMorph | VertexMorph | BoneMorph | UvMorph | MaterialMorph)[];
     }[];
     frames: {
         name: string;
