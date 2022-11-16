@@ -330,7 +330,7 @@ export class SSRPass extends Pass {
             packedReplacement.reset(scene, true);
         };
 
-        scene.autoUpdate = false;
+        scene.matrixAutoUpdate = false;
         renderer.shadowMap.enabled = false;
         renderer.autoClear = true;
         renderer.setClearColor(_blackColor, 0);

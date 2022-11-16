@@ -12,7 +12,7 @@ export class RendererState {
     public autoClearDepth: boolean;
     public autoClearStencil: boolean;
     public background: THREE.Color | THREE.Texture | null;
-    public autoUpdate: boolean;
+    public matrixAutoUpdate: boolean;
 
     public constructor() {
         this.clearAlpha = 0;
@@ -28,7 +28,7 @@ export class RendererState {
         this.autoClearStencil = true;
 
         this.background = null;
-        this.autoUpdate = true;
+        this.matrixAutoUpdate = true;
     }
 
     public copy(renderer: THREE.WebGLRenderer, scene: THREE.Scene): void {
@@ -48,7 +48,7 @@ export class RendererState {
         if (scene) {
             this.overrideMaterial = scene.overrideMaterial;
             this.background = scene.background;
-            this.autoUpdate = scene.autoUpdate;
+            this.matrixAutoUpdate = scene.matrixAutoUpdate;
         }
     }
 
@@ -69,7 +69,7 @@ export class RendererState {
         if (scene) {
             scene.overrideMaterial = this.overrideMaterial;
             scene.background = this.background;
-            scene.autoUpdate = this.autoUpdate;
+            scene.matrixAutoUpdate = this.matrixAutoUpdate;
         }
 
         this.renderTarget = null;
