@@ -1,7 +1,8 @@
-import { MMDParser } from "@noname0310/mmd-parser";
-import { ModelFormat, Pmd, Pmx, Vmd } from "three/examples/jsm/libs/mmdparser.module";
+import { MMDParser, ModelFormat, Pmd, Pmx, Vmd } from "@noname0310/mmd-parser";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
+import { AnimationClip, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
+import { EmptyBooleanInterpolator } from "../interpolation/EmptyInterpolator";
 
 import { QuaternionUtils } from "../QuaternionUtils";
 
@@ -553,6 +554,8 @@ class GeometryBuilder {
     }
 }
 
+type MmdPropertyAnimationClip = AnimationClip<[{ name: "visible"; track: AnimationTrack<boolean>; }, { name: string; track: AnimationTrack<boolean>; }]>;
+
 class AnimationBuilder {
     private readonly _mmdLoader: MMDLoaderOverride;
 
@@ -790,6 +793,52 @@ class AnimationBuilder {
         tracks.push(this.createTrack(".fov", THREE.NumberKeyframeTrack, times, fovs, fInterpolations, true));
 
         return new THREE.AnimationClip("", - 1, tracks);
+    }
+
+    public buildPropertyAnimation(vmd: Vmd): MmdPropertyAnimationClip {
+        const properites = vmd.properties;
+
+        const visibleTrack: AnimationKey<boolean>[] = [];
+        const ikStateTracks = new Map<string, AnimationKey<boolean>[]>();
+
+        properites.sort((a, b) => a.frameNum - b.frameNum);
+
+        for (let i = 0; i < properites.length; i++) {
+            const propertyFrame = properites[i];
+            const frameNum = propertyFrame.frameNum;
+
+            visibleTrack.push(new AnimationKey(frameNum, propertyFrame.visible, InterpolationKind.Step));
+
+            const ikStates = propertyFrame.ikStates;
+            for (let j = 0; j < ikStates.length; j++) {
+                const ikState = ikStates[j];
+                const ikName = ikState.name;
+
+                let ikTrack = ikStateTracks.get(ikName);
+                if (ikTrack === undefined) {
+                    ikTrack = [];
+                    ikStateTracks.set(ikName, ikTrack);
+                }
+
+                ikTrack.push(new AnimationKey(frameNum, ikState.enabled, InterpolationKind.Step));
+            }
+        }
+
+        const tracks = [
+            {
+                name: "visible",
+                track: AnimationTrack.createTrack(visibleTrack, EmptyBooleanInterpolator, 30)
+            }
+        ];
+
+        for (const [ikName, ikTrack] of ikStateTracks) {
+            tracks.push({
+                name: ikName,
+                track: AnimationTrack.createTrack(ikTrack, EmptyBooleanInterpolator, 30)
+            });
+        }
+
+        return new AnimationClip(tracks, undefined, undefined, 30);
     }
 
     private createTrack(
