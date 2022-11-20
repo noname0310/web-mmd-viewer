@@ -2,8 +2,8 @@ import { MMDParser, ModelFormat, Pmd, Pmx, Vmd } from "@noname0310/mmd-parser";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 import { AnimationClip, AnimationClipInstance, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
-import { EmptyBooleanInterpolator } from "../interpolation/EmptyInterpolator";
 
+import { EmptyBooleanInterpolator } from "../interpolation/EmptyInterpolator";
 import { QuaternionUtils } from "../QuaternionUtils";
 
 export class MMDLoaderOverride extends MMDLoader {

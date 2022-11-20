@@ -2,6 +2,7 @@ import { MMDParser, Vmd } from "@noname0310/mmd-parser";
 import * as THREE from "three/src/Three";
 import { AnimationClipBindInfo } from "tw-engine-498tokio";
 import { AnimationClipBindItem } from "tw-engine-498tokio/dist/asset/script/animation/bind/AnimationClipBindInfo";
+
 import { MmdPlayer } from "../MmdPlayer";
 import { AnimationBuilder, MMDLoaderOverride, MmdPropertyAnimationClip, MmdPropertyAnimationClipInstance } from "./MMDLoaderOverride";
 
@@ -97,7 +98,7 @@ export class MmdModelAnimationLoader {
         ];
 
         const trackMap = animation.propertyAnimationClip.trackMap;
-        for (const [key, _trackIndex] of trackMap) {
+        for (const [key ] of trackMap) {
             if (player.isIkExists(key)) {
                 bindInfo.push({
                     trackName: key,
