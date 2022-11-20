@@ -554,7 +554,7 @@ class GeometryBuilder {
     }
 }
 
-export type MmdPropertyAnimationClipTrackData = [{ name: "visible"; track: AnimationTrack<boolean>; }, { name: string; track: AnimationTrack<boolean>; }];
+export type MmdPropertyAnimationClipTrackData = { name: string; track: AnimationTrack<boolean>; }[];
 
 export type MmdPropertyAnimationClip = AnimationClip<MmdPropertyAnimationClipTrackData>;
 
