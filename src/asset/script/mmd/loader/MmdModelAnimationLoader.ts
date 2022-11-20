@@ -107,7 +107,16 @@ export class MmdModelAnimationLoader {
             }
         }
 
-        const propertyAnimationClipInstance = animation.propertyAnimationClip.createInstance(new AnimationClipBindInfo(bindInfo));
+        const [propertyAnimationClipInstance, bindResult] = animation.propertyAnimationClip.tryCreateInstance(new AnimationClipBindInfo(bindInfo));
+
+        if (!bindResult.isBindSuccess) {
+            console.warn("Failed to bind animation clip.");
+
+            const bindFailTrackNames = bindResult.bindFailTrackNames;
+            for (let i = 0, il = bindFailTrackNames.length; i < il; i++) {
+                console.warn(`Failed to bind track: ${bindFailTrackNames[i]}`);
+            }
+        }
 
         return new MmdModelAnimationClipInstance(
             animation.modelAnimationClip,
