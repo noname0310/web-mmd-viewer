@@ -1,6 +1,6 @@
 import { MMDParser, Vmd } from "@noname0310/mmd-parser";
 import * as THREE from "three/src/Three";
-import { AnimationClipBindInfo, AnimationTrack } from "tw-engine-498tokio";
+import { AnimationClipBindInfo } from "tw-engine-498tokio";
 import { AnimationClipBindItem } from "tw-engine-498tokio/dist/asset/script/animation/bind/AnimationClipBindInfo";
 import { MmdPlayer } from "../MmdPlayer";
 import { AnimationBuilder, MMDLoaderOverride, MmdPropertyAnimationClip, MmdPropertyAnimationClipInstance } from "./MMDLoaderOverride";
@@ -105,7 +105,7 @@ export class MmdModelAnimationLoader {
                 });
             }
         }
-        
+
         const propertyAnimationClipInstance = animation.propertyAnimationClip.createInstance(new AnimationClipBindInfo(bindInfo));
 
         return new MmdModelAnimationClipInstance(
