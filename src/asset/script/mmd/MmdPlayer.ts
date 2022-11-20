@@ -192,6 +192,21 @@ export class MmdPlayer extends Component {
         if (!this._model || !this._model.object3D) return null;
         return this._helper.objects.get(this._model.object3D) as Omit<MMDAnimationHelperMixer, "duration">;
     }
+
+    public isIkEnabled(ikBoneName: string): boolean {
+        if (!this._model || !this._model.object3D) return false;
+        return this._helper.isIkEnabled(this._model.object3D, ikBoneName);
+    }
+
+    public setIkEnabled(ikBoneName: string, enabled: boolean): void {
+        if (!this._model || !this._model.object3D) return;
+        this._helper.setIkEnabled(this._model.object3D, ikBoneName, enabled);
+    }
+
+    public isIkExists(ikBoneName: string): boolean {
+        if (!this._model || !this._model.object3D) return false;
+        return this._helper.isIkExists(this._model.object3D, ikBoneName);
+    }
     
     public process(frameTime: number): void {
         frameTime = Math.min(frameTime, this._animationEndFrame);

@@ -127,6 +127,23 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     public createGrantSolver(mesh: THREE.SkinnedMesh): ThreeGrantSolver {
         return new GrantSolver(mesh, (mesh.geometry.userData.MMD as MmdUserData).grants) as unknown as ThreeGrantSolver;
     }
+
+    public isIkEnabled(mesh: THREE.SkinnedMesh, name: string): boolean {
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> };
+        const index = objects.boneIkMapper.get(name);
+        return index !== undefined ? objects.ikEnables[index] : false;
+    }
+
+    public setIkEnabled(mesh: THREE.SkinnedMesh, name: string, enabled: boolean): void {
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> };
+        const index = objects.boneIkMapper.get(name);
+        if (index !== undefined) objects.ikEnables[index] = enabled;
+    }
+
+    public isIkExists(mesh: THREE.SkinnedMesh, name: string): boolean {
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { boneIkMapper: Map<string, number> };
+        return objects.boneIkMapper.has(name);
+    }
 }
 
 // Keep working quaternions for less GC
