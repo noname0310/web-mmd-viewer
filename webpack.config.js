@@ -53,7 +53,8 @@ module.exports = {
             template: "./src/index.html"
         }),
         new ESLintPlugin({
-            extensions: ["ts", "tsx"]
+            extensions: ["ts", "tsx"],
+            fix: true
         }),
         new CopyWebpackPlugin({
             patterns: [{ from: "mmd", to: "mmd" }]
