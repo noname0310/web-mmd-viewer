@@ -1,4 +1,4 @@
-import { 
+import {
     BlendFunction,
     BloomEffect,
     BrightnessContrastEffect,
@@ -67,7 +67,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
-        
+
         let depthOfFieldEffect: DepthOfFieldEffect|null = null;
 
         const assetManager = new PrefabRef<GlobalAssetManager>();
@@ -97,7 +97,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                     c.addAsset("fabricNormal", fabricNormal);
                 })
                 .getComponent(GlobalAssetManager, assetManager))
-                
+
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
@@ -115,7 +115,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/music_music/Music Music toa featHatsune Miku(sync).mp3"))
                 .withCameraInitializer(c => {
@@ -189,7 +189,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                             brightness: -0.05,
                             contrast: 0.25
                         });
-                        
+
                         const effectPass = new EffectPass(camera,
                             bloomEffect,
                             depthOfFieldEffect,
@@ -198,7 +198,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                             toneMappingEffect,
                             contrastEffect
                         );
-                        
+
                         const chromaticAberrationEffect = new ChromaticAberrationEffect({
                             offset: new THREE.Vector2(1e-3, 5e-4).multiplyScalar(0.5),
                             radialModulation: false,
@@ -206,11 +206,11 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                         });
 
                         const chromaticAberrationPass = new EffectPass(camera, chromaticAberrationEffect);
-                        
+
                         return [effectPass, chromaticAberrationPass];
                     });
                 }))
-            
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6), object3D => object3D.dispose());
@@ -249,32 +249,32 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                 .withComponent(Object3DContainer<Sky>, c => {
                     const sky = new Sky();
                     sky.geometry.name = "sky-geometry";
-                    
+
                     const skyUniforms = sky.material.uniforms;
-                    
+
                     skyUniforms["turbidity"].value = 40;
                     skyUniforms["rayleigh"].value = 1;
                     skyUniforms["mieCoefficient"].value = 0.002;
                     skyUniforms["mieDirectionalG"].value = 1;
-    
+
                     const sun = new THREE.Vector3();
                     if (!unsafeIsComponent(c)) return;
                     const pmremGenerator = new THREE.PMREMGenerator(c.engine.webGL!.webglRenderer!);
                     let renderTarget: THREE.WebGLRenderTarget;
-    
+
                     function updateSun(): void {
                         sun.copy(directionalLight.ref!.transform.localPosition).normalize();
-    
+
                         sky.material.uniforms["sunPosition"].value.copy(sun);
 
-                        if ( renderTarget !== undefined ) renderTarget.dispose();
-    
+                        if (renderTarget !== undefined) renderTarget.dispose();
+
                         renderTarget = pmremGenerator.fromScene(sky as any);
-    
+
                         if (!unsafeIsComponent(c)) return;
                         c.engine.scene.unsafeGetThreeScene().environment = renderTarget.texture;
                     }
-    
+
                     updateSun();
 
                     c.setObject3D(sky, object3D => {
@@ -302,7 +302,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                         object3D.material.dispose();
                     });
                 }))
-            
+
             .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, 0))
                 .active(false)
                 .withComponent(MmdModel, c => {
@@ -420,7 +420,7 @@ export class MusicMusicBootstrapper extends BaseBootstrapper {
                         function linearize(depth: number, camera: Camera): number {
                             const zfar = camera.far;
                             const znear = camera.near;
-                            return - zfar * znear / (depth * (zfar - znear) - zfar);
+                            return -zfar * znear / (depth * (zfar - znear) - zfar);
                         }
 
                         yield null;

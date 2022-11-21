@@ -50,7 +50,7 @@ export class ClockCalibrator implements IAnimationClock {
 
     private _lastCurrentTime = 0;
     private _lastNow = 0;
-    
+
     public get currentTime(): number {
         const currentTime = this._animationClock.currentTime;
         if (this._lastCurrentTime !== currentTime) {

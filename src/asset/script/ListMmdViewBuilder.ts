@@ -37,7 +37,7 @@ export class ListMmdViewBuilder {
             }
             currentBootsrapper = bootstrapperCtor;
             currentInteropObject = interopObject;
-            
+
             currentGame = new Game(document.getElementById("game_view")!);
             currentGame.run(bootstrapperCtor, interopObject);
             currentGame.inputHandler.startHandleEvents();

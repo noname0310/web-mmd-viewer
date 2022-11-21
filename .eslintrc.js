@@ -101,7 +101,17 @@ module.exports = {
                 "format": ["PascalCase"]
             }
         ],
-        "no-debugger": "warn",
+        "comma-dangle": [
+            "error",
+            "never"
+        ],
+        "comma-spacing": [
+            "error"
+        ],
+        "eol-last": [
+            "error",
+            "always"
+        ],
         "indent": [
             "error",
             4
@@ -109,6 +119,13 @@ module.exports = {
         "linebreak-style": [
             "error",
             "unix"
+        ],
+        "keyword-spacing": [
+            "error"
+        ],
+        "no-debugger": "warn",
+        "no-trailing-spaces": [
+            "error"
         ],
         "quotes": [
             "error",
@@ -118,14 +135,26 @@ module.exports = {
             "error",
             "always"
         ],
-        "comma-dangle": [
-            "error",
-            "never"
-        ],
-        "comma-spacing": [
+        "semi-spacing": [
             "error"
         ],
         "simple-import-sort/imports": "error",
-        "simple-import-sort/exports": "error"
+        "simple-import-sort/exports": "error",
+        "space-before-blocks": [
+            "error"
+        ],
+        "space-before-function-paren": [
+            "error",
+            "never"
+        ],
+        "space-in-parens": [
+            "error"
+        ],
+        "space-infix-ops": [
+            "error"
+        ],
+        "space-unary-ops": [
+            "error"
+        ]
     }
 };

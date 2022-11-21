@@ -64,7 +64,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
             if ((this.configuration as any).pmxAnimation &&
                 mesh.geometry.userData.MMD && (mesh.geometry.userData.MMD as MmdUserData).format === "pmx") {
 
-                if (!objects.sortedBonesData) objects.sortedBonesData = 
+                if (!objects.sortedBonesData) objects.sortedBonesData =
                     (this as any)._sortBoneDataArray((mesh.geometry.userData.MMD as MmdUserData).bones.slice());
 
                 this._animatePMXMesh(
@@ -114,7 +114,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     public _animatePMXMesh(mesh: THREE.SkinnedMesh, sortedBonesData: GeometryBone[], ikSolver: CCDIKSolver|null, grantSolver: GrantSolver|null): this {
         _quaternionIndex = 0;
         _grantResultMap.clear();
-        
+
         const mixer = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> };
         for (let i = 0, il = sortedBonesData.length; i < il; i++) {
             updateOne(mesh, sortedBonesData[i].index, ikSolver, grantSolver, mixer);

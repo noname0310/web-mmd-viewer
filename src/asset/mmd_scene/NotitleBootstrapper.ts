@@ -101,7 +101,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/notitle/REOL - No title.mp3"))
                 .withCameraInitializer(c => {
@@ -234,7 +234,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
                             fog: c.engine.scene.unsafeGetThreeScene().fog !== undefined
                         }
                     );
-                    
+
                     c.setObject3D(water, object3D => {
                         object3D.geometry.dispose();
                         object3D.material.dispose();
@@ -356,7 +356,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
                         function linearize(depth: number, camera: Camera): number {
                             const zfar = camera.far;
                             const znear = camera.near;
-                            return - zfar * znear / (depth * (zfar - znear) - zfar);
+                            return -zfar * znear / (depth * (zfar - znear) - zfar);
                         }
 
                         yield null;

@@ -158,7 +158,7 @@ export class PackedMipMapGenerator {
             // 2 * currHeight -- 1 to leave space for other mips, 1 to draw current mip
             const yOffset = targetHeight - 2 * currHeight;
             renderer.setRenderTarget(target);
-            (mipQuad.camera as any).setViewOffset(currWidth, currHeight, - width, - yOffset, targetWidth, targetHeight);
+            (mipQuad.camera as any).setViewOffset(currWidth, currHeight, -width, -yOffset, targetWidth, targetHeight);
             mipQuad.render(renderer);
 
             // TODO: Is this the fastest way to do this? Can I just copy the subframe from the original texture to the next?

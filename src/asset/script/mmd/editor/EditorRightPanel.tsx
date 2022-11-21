@@ -52,7 +52,7 @@ const EditorRightPanelDiv = styled.div`
 export function EditorRightPanel(): JSX.Element {
     const [isHidden, setIsHidden] = React.useState(false);
     const [selectedModel, setSelectedModel] = React.useState<MmdModel|MmdCamera|null>(null);
-    
+
     const toggleButtonOnClickCallback = React.useCallback((): void => {
         setIsHidden(!isHidden);
     }, [isHidden]);

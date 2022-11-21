@@ -20,7 +20,7 @@ export class MmdInterpolator {
 
             c /= 2.0;
 
-            t += (ft < 0) ? c : - c;
+            t += (ft < 0) ? c : -c;
             s = 1.0 - t;
         }
         return (sst3! * y1) + (stt3! * y2) + ttt!;

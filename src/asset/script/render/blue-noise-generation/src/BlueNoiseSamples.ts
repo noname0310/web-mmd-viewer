@@ -9,9 +9,9 @@ export class BlueNoiseSamples {
 
     public constructor(size: number) {
         this.count = 0;
-        this.size = - 1;
-        this.sigma = - 1;
-        this.radius = - 1;
+        this.size = -1;
+        this.sigma = -1;
+        this.radius = -1;
         this.lookupTable = null;
         this.score = null;
         this.binaryPattern = null;
@@ -24,7 +24,7 @@ export class BlueNoiseSamples {
         const { score, binaryPattern } = this;
 
         let currValue = Infinity;
-        let currIndex = - 1;
+        let currIndex = -1;
         for (let i = 0, l = binaryPattern!.length; i < l; i++) {
             if (binaryPattern![i] !== 0) {
                 continue;
@@ -43,8 +43,8 @@ export class BlueNoiseSamples {
     public findCluster(): number {
         const { score, binaryPattern } = this;
 
-        let currValue = - Infinity;
-        let currIndex = - 1;
+        let currValue = -Infinity;
+        let currIndex = -1;
         for (let i = 0, l = binaryPattern!.length; i < l; i++) {
             if (binaryPattern![i] !== 1) {
                 continue;
@@ -68,15 +68,15 @@ export class BlueNoiseSamples {
         // generate a radius in which the score will be updated under the
         // assumption that e^-10 is insignificant enough to be the border at
         // which we drop off.
-        const radius = ~ ~(Math.sqrt(10 * 2 * (sigma ** 2)) + 1);
+        const radius = ~~(Math.sqrt(10 * 2 * (sigma ** 2)) + 1);
         const lookupWidth = 2 * radius + 1;
         const lookupTable = new Float32Array(lookupWidth * lookupWidth);
         const sigma2 = sigma * sigma;
-        for (let x = - radius; x <= radius; x++) {
-            for (let y = - radius; y <= radius; y++) {
+        for (let x = -radius; x <= radius; x++) {
+            for (let y = -radius; y <= radius; y++) {
                 const index = (radius + y) * lookupWidth + x + radius;
                 const dist2 = x * x + y * y;
-                lookupTable[index] = Math.E ** (- dist2 / (2 * sigma2));
+                lookupTable[index] = Math.E ** (-dist2 / (2 * sigma2));
             }
         }
 
@@ -100,7 +100,7 @@ export class BlueNoiseSamples {
 
         for (let i = 0, l = binaryPattern!.length; i < l; i++) {
             if (binaryPattern![i] === 0) {
-                const y = ~ ~(i / size);
+                const y = ~~(i / size);
                 const x = i - y * size;
                 this.updateScore(x, y, 1);
                 binaryPattern![i] = 1;
@@ -119,9 +119,9 @@ export class BlueNoiseSamples {
         // const radius = Math.floor( size / 2 );
         const radius = this.radius;
         const lookupWidth = 2 * radius + 1;
-        for (let px = - radius; px <= radius; px++) {
+        for (let px = -radius; px <= radius; px++) {
 
-            for (let py = - radius; py <= radius; py++) {
+            for (let py = -radius; py <= radius; py++) {
 
                 // const dist2 = px * px + py * py;
                 // const value = Math.E ** ( - dist2 / ( 2 * sigma2 ) );
@@ -145,7 +145,7 @@ export class BlueNoiseSamples {
         this.binaryPattern![index] = 1;
 
         const size = this.size;
-        const y = ~ ~(index / size);
+        const y = ~~(index / size);
         const x = index - y * size;
         this.updateScore(x, y, 1);
         this.count++;
@@ -155,9 +155,9 @@ export class BlueNoiseSamples {
         this.binaryPattern![index] = 0;
 
         const size = this.size;
-        const y = ~ ~(index / size);
+        const y = ~~(index / size);
         const x = index - y * size;
-        this.updateScore(x, y, - 1);
+        this.updateScore(x, y, -1);
         this.count--;
     }
 

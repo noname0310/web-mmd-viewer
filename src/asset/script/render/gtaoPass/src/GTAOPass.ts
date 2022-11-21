@@ -65,7 +65,7 @@ export class GTAOPass extends Pass {
     public static NORMAL = 2;
     public static AO_SAMPLE = 3;
     public static COLOR_SAMPLE = 4;
-    
+
     public static NO_BLUR = 0;
     public static BOX_BLUR = 1;
     public static CROSS_BLUR = 2;
@@ -337,8 +337,8 @@ export class GTAOPass extends Pass {
         gtaoMaterial.uniforms.projInfo.value.set(
             2.0 / (width * projection.elements[4 * 0 + 0]),
             2.0 / (height * projection.elements[4 * 1 + 1]),
-            - 1.0 / projection.elements[4 * 0 + 0],
-            - 1.0 / projection.elements[4 * 1 + 1]
+            -1.0 / projection.elements[4 * 0 + 0],
+            -1.0 / projection.elements[4 * 1 + 1]
         );
         gtaoMaterial.uniforms.clipInfo.value.set(
             (camera as any).near,

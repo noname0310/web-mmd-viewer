@@ -105,7 +105,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-                
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/daybreak_frontline/Daybreak Frontline miku.mp3"))
                 .withCameraInitializer(c => {
@@ -207,7 +207,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                             averageLuminance: 0.01,
                             adaptationRate: 1.0
                         });
-                        
+
                         const contrastEffect = new BrightnessContrastEffect({
                             brightness: -0.05,
                             contrast: 0.15
@@ -395,7 +395,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                         function linearize(depth: number, camera: Camera): number {
                             const zfar = camera.far;
                             const znear = camera.near;
-                            return - zfar * znear / (depth * (zfar - znear) - zfar);
+                            return -zfar * znear / (depth * (zfar - znear) - zfar);
                         }
 
                         yield null;

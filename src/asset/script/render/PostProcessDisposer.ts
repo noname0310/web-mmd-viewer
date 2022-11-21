@@ -19,7 +19,7 @@ export class PostProcessDisposer {
                 prop instanceof THREE.Material ||
                 prop instanceof THREE.Texture ||
                 prop instanceof THREE.BufferGeometry ||
-                prop instanceof FullScreenQuad 
+                prop instanceof FullScreenQuad
             );
 
             if (isDisposable) prop.dispose();
@@ -27,7 +27,7 @@ export class PostProcessDisposer {
             if (prop instanceof Array) {
                 for (let j = 0; j < prop.length; ++j) {
                     const item = prop[j];
-                    
+
                     const isDisposable = (
                         item instanceof THREE.WebGLRenderTarget ||
                         item instanceof THREE.Material ||

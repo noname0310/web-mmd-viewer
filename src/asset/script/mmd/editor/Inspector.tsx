@@ -93,7 +93,7 @@ function Vector3Input(props: Vector3InputProps): JSX.Element {
 
     return (
         <NumberInputWrapper>
-            <NumberInput 
+            <NumberInput
                 type="number"
                 value={x}
                 name="0"
@@ -216,7 +216,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
     const [showImportSoundFileDialog, setShowImportSoundFileDialog] = React.useState(false);
     const [soundFiles, setSoundFiles] = React.useState<File[]>([]);
     const [soundFileName, setSoundFileName] = React.useState<string|null>(null);
-    
+
     const onSoundFilesCallback = React.useCallback((files: File[]): void => {
         files = files.filter(file => file.name.endsWith(".mp3"));
         if (files.length === 0) return;
@@ -249,7 +249,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
         });
         setShowImportSoundFileDialog(false);
     }, [controller]);
-    
+
     const [showImportMotionDialog, setShowImportMotionDialog] = React.useState(false);
     const [motionFiles, setMotionFiles] = React.useState<File[]>([]);
     const [vmdFileName, setVmdFileName] = React.useState("");
@@ -391,7 +391,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
     return (
         <PanelItem title="Inspector" width={props.width} height={props.height}>
-            {props.target?.exists 
+            {props.target?.exists
                 ? (
                     <ContainerDiv>
                         {props.target instanceof MmdModel && (

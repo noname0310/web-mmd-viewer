@@ -1,4 +1,4 @@
-import { 
+import {
     BlendFunction,
     BloomEffect,
     BrightnessContrastEffect,
@@ -63,7 +63,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
-        
+
         let depthOfFieldEffect: DepthOfFieldEffect|null = null;
 
         const assetManager = new PrefabRef<GlobalAssetManager>();
@@ -109,9 +109,9 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2))
-                
+
                 .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                     .withAudioUrl(new PrefabRef("mmd/the_truth_of_planetariums/the truth of planetariums.mp3"))
                     .withCameraInitializer(c => {
@@ -185,7 +185,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                                 brightness: -0.05,
                                 contrast: 0.25
                             });
-                            
+
                             const effectPass = new EffectPass(camera,
                                 bloomEffect,
                                 depthOfFieldEffect,
@@ -194,11 +194,11 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                                 toneMappingEffect,
                                 contrastEffect
                             );
-                            
+
                             return [effectPass];
                         });
                     }))
-                
+
                 .withChild(instantiater.buildGameObject("ambient-light")
                     .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                         c.setObject3D(new THREE.HemisphereLight(0xdfd7ff, 0xffffff, 0.220), object3D => object3D.dispose());
@@ -380,7 +380,7 @@ export class TheTruthOfPlanetariumsBootstrapper extends BaseBootstrapper {
                             function linearize(depth: number, camera: Camera): number {
                                 const zfar = camera.far;
                                 const znear = camera.near;
-                                return - zfar * znear / (depth * (zfar - znear) - zfar);
+                                return -zfar * znear / (depth * (zfar - znear) - zfar);
                             }
 
                             yield null;

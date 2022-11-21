@@ -61,7 +61,7 @@ export interface FileDropAreaProps extends FileDropAreaWidthHeightProps {
 
 export function FileDropArea(props: FileDropAreaProps): JSX.Element {
     const fileDropInput = React.useRef<HTMLInputElement>(null);
-    
+
     React.useEffect(() => {
         if (!fileDropInput.current) return;
 

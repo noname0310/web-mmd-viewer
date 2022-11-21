@@ -69,7 +69,7 @@ export class ConquerorLightAnimation {
             ])
         }
     ]);
-    
+
     public static readonly sequence = new AnimationSequence([
         new RangedAnimation(this._ambientLightAnimationClip),
         new RangedAnimation(this._spotLightAnimationClip),
@@ -85,7 +85,7 @@ export class ConquerorLightAnimation {
         const ambientLightClipBindInfo = new AnimationClipBindInfo([
             {
                 trackName: "ambientLight_intensity" as const,
-                target: (value: number): void => { 
+                target: (value: number): void => {
                     ambientLight.intensity = value;
                 }
             }

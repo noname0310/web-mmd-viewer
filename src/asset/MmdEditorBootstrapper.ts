@@ -69,7 +69,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                     c.playbackRateSlider = document.getElementById("playback_rate_slider")! as HTMLInputElement;
                     c.playbackRateSlider.value = "1";
                 }))
-            
+
             .withChild(instantiater.buildGameObject("mmd-player")
                 .withComponent(AnimationSequencePlayer, c => {
                     c.loopMode = AnimationLoopMode.None;
@@ -97,7 +97,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab, new THREE.Vector3(0, 15, 20))
                 .withCameraInitializer(c => {
                     c.priority = 0;
@@ -106,7 +106,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                 .getCameraLoader(mmdCameraLoader)
                 .getAudioPlayer(audioPlayer)
                 .make())
-            
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());

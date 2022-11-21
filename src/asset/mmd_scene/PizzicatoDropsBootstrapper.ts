@@ -47,7 +47,7 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
-        
+
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
                 .withCamera(camera)
@@ -58,7 +58,7 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .make())
-            
+
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
@@ -76,7 +76,7 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/pizzicato_drops/pizzicato_drops.mp3"))
                 .withCameraLoaderInitializer(c => {
@@ -99,7 +99,7 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
                 .getCameraLoader(mmdCameraLoader)
                 .getAudioPlayer(audioPlayer)
                 .make())
-                
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());
@@ -166,12 +166,12 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
                     });
                 }))
 
-            
+
             .withChild(instantiater.buildGameObject("sky", undefined, undefined, new THREE.Vector3().setScalar(1000))
                 .active(false)
                 .withComponent(Object3DContainer<Sky>, c => {
                     const sky = new Sky();
-                    
+
                     const sun = new THREE.Vector3();
                     const effectController = {
                         turbidity: 10,
@@ -182,22 +182,22 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
                         azimuth: 180,
                         exposure: renderer.toneMappingExposure
                     };
-    
+
                     function guiChanged(): void {
-    
+
                         const uniforms = sky.material.uniforms;
                         uniforms[ "turbidity" ].value = effectController.turbidity;
                         uniforms[ "rayleigh" ].value = effectController.rayleigh;
                         uniforms[ "mieCoefficient" ].value = effectController.mieCoefficient;
                         uniforms[ "mieDirectionalG" ].value = effectController.mieDirectionalG;
-    
-                        const phi = THREE.MathUtils.degToRad( 90 - effectController.elevation );
-                        const theta = THREE.MathUtils.degToRad( effectController.azimuth );
-    
-                        sun.setFromSphericalCoords( 1, phi, theta );
-    
-                        uniforms[ "sunPosition" ].value.copy( sun );
-    
+
+                        const phi = THREE.MathUtils.degToRad(90 - effectController.elevation);
+                        const theta = THREE.MathUtils.degToRad(effectController.azimuth);
+
+                        sun.setFromSphericalCoords(1, phi, theta);
+
+                        uniforms[ "sunPosition" ].value.copy(sun);
+
                         renderer.toneMappingExposure = effectController.exposure;
                     }
 
@@ -249,7 +249,7 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
                             }
                         });
                     });
-                    c.asyncLoadAnimation("animation1", 
+                    c.asyncLoadAnimation("animation1",
                         [
                             "mmd/pizzicato_drops/model.vmd"//, "mmd/pizzicato_drops/physics_reduce4.vmd"
                         ], () => {

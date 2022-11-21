@@ -60,7 +60,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
 
         const interopObject = this.interopObject;
         if (interopObject == null) throw new Error("interopObject is null");
-        
+
         return this.sceneBuilder
             .withChild(instantiater.buildGameObject("game-bootstrap")
                 .withComponent(GenericBootstrapManager, c => {
@@ -71,7 +71,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
                     c.audioPlayer = audioPlayer;
                     c.mmdSettings = new PrefabRef(interopObject.settings ?? null);
                 }))
-            
+
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
@@ -89,7 +89,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef(interopObject.audioUrl))
                 .withCameraLoaderInitializer(c => {
@@ -112,7 +112,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
                 .getCameraLoader(mmdCameraLoader)
                 .getAudioPlayer(audioPlayer)
                 .make())
-            
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());

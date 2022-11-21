@@ -39,7 +39,7 @@ export class GenericBootstrapManager extends Component {
             .withModelAnimationName(new PrefabRef("animation1"))
             .withUsePhysics(new PrefabRef(mmdSettings?.usePhysics ?? true))
             .withUseIk(new PrefabRef(mmdSettings?.useIk ?? true));
-        
+
         for (let i = 0; i < modelLoaders.length; ++i) {
             prefab.withModelLoader(new PrefabRef(modelLoaders[i]));
         }

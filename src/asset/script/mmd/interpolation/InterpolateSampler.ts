@@ -25,7 +25,7 @@ export class InterpolateSampler extends Component {
             this.spawnSample(spawnPosition);
         }
     }
-    
+
     private spawnSample(worldPosition: ReadonlyVector3): void {
         const gameObject = this.engine.scene.addChildFromBuilder(
             this.engine.instantiater.buildGameObject("trace", worldPosition)

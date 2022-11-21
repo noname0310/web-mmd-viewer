@@ -200,10 +200,10 @@ class GeometryBuilder {
                 pos: boneData.position.slice(0, 3),
                 rotq: [0, 0, 0, 1],
                 scl: [1, 1, 1],
-                rigidBodyType: boneTypeTable[i] !== undefined ? boneTypeTable[i] : - 1
+                rigidBodyType: boneTypeTable[i] !== undefined ? boneTypeTable[i] : -1
             };
 
-            if (bone.parent !== - 1) {
+            if (bone.parent !== -1) {
                 bone.pos[0] -= data.bones[bone.parent].position[0];
                 bone.pos[1] -= data.bones[bone.parent].position[1];
                 bone.pos[2] -= data.bones[bone.parent].position[2];
@@ -346,7 +346,7 @@ class GeometryBuilder {
             for (const boneIndex in grantEntryMap) {
 
                 const grantEntry = grantEntryMap[boneIndex];
-                
+
                 // TODO: it makes type error i think it is human error
                 const parentGrantEntry = grantEntryMap[(grantEntry as any).parentIndex] || rootEntry;
                 //const parentGrantEntry = grantEntryMap[grantEntry.param.parentIndex] || rootEntry;
@@ -407,7 +407,7 @@ class GeometryBuilder {
 
         for (let i = 0; i < data.metadata.morphCount; i++) {
             const morph = data.morphs[i];
-            
+
             if (morphNameSet.has(morph.name)) continue;
             morphNameSet.add(morph.name);
 
@@ -489,7 +489,7 @@ class GeometryBuilder {
                  * So unify being offset.
                  */
             if (data.metadata.format === "pmx") {
-                if (params.boneIndex !== - 1) {
+                if (params.boneIndex !== -1) {
 
                     const bone = data.bones[params.boneIndex];
                     params.position[0] -= bone.position[0];
@@ -512,7 +512,7 @@ class GeometryBuilder {
 
             // Refer to http://www20.atpages.jp/katwat/wp/?p=4135
             if (bodyA.type !== 0 && bodyB.type === 2) {
-                if (bodyA.boneIndex !== - 1 && bodyB.boneIndex !== - 1 && data.bones[bodyB.boneIndex].parentIndex === bodyA.boneIndex) {
+                if (bodyA.boneIndex !== -1 && bodyB.boneIndex !== -1 && data.bones[bodyB.boneIndex].parentIndex === bodyA.boneIndex) {
                     bodyB.type = 1;
                 }
             }
@@ -577,7 +577,7 @@ export class AnimationBuilder {
             tracks.push(tracks2[i]);
         }
 
-        return new THREE.AnimationClip("", - 1, tracks);
+        return new THREE.AnimationClip("", -1, tracks);
     }
 
     public buildSkeletalAnimation(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
@@ -620,7 +620,7 @@ export class AnimationBuilder {
         for (const key in motions) {
             const array = motions[key];
 
-            array.sort(function (a, b) {
+            array.sort(function(a, b) {
                 return a.frameNum - b.frameNum;
             });
 
@@ -655,7 +655,7 @@ export class AnimationBuilder {
             tracks.push(this.createTrack(targetName + ".quaternion", THREE.QuaternionKeyframeTrack, times, rotations, rInterpolations, !forceAllInterpolateToCubic && !boneHasRigidBody));
         }
 
-        return new THREE.AnimationClip("", - 1, tracks);
+        return new THREE.AnimationClip("", -1, tracks);
     }
 
     public buildMorphAnimation(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
@@ -677,7 +677,7 @@ export class AnimationBuilder {
         for (const key in morphs) {
             const array = morphs[key];
 
-            array.sort(function (a, b) {
+            array.sort(function(a, b) {
                 return a.frameNum - b.frameNum;
             });
 
@@ -692,7 +692,7 @@ export class AnimationBuilder {
             tracks.push(new THREE.NumberKeyframeTrack(".morphTargetInfluences[" + morphTargetDictionary[key] + "]", times, values));
         }
 
-        return new THREE.AnimationClip("", - 1, tracks);
+        return new THREE.AnimationClip("", -1, tracks);
     }
 
     public buildPropertyAnimation(vmd: Vmd): MmdPropertyAnimationClip {
@@ -765,7 +765,7 @@ export class AnimationBuilder {
 
         const cameras = vmd.cameras === undefined ? [] : vmd.cameras.slice();
 
-        cameras.sort(function (a, b) {
+        cameras.sort(function(a, b) {
             return a.frameNum - b.frameNum;
         });
 
@@ -798,7 +798,7 @@ export class AnimationBuilder {
 
             times.push(time);
 
-            position.set(0, 0, - distance);
+            position.set(0, 0, -distance);
             center.set(pos[0], pos[1], pos[2]);
 
             // euler.set(- rot[0], - rot[1], - rot[2]);
@@ -842,7 +842,7 @@ export class AnimationBuilder {
         tracks.push(this.createTrack(".position", THREE.VectorKeyframeTrack, times, positions, pInterpolations, true));
         tracks.push(this.createTrack(".fov", THREE.NumberKeyframeTrack, times, fovs, fInterpolations, true));
 
-        return new THREE.AnimationClip("", - 1, tracks);
+        return new THREE.AnimationClip("", -1, tracks);
     }
 
     private createTrack(
@@ -985,7 +985,7 @@ class CubicBezierInterpolation extends THREE.Interpolant {
 
             c /= 2.0;
 
-            t += (ft < 0) ? c : - c;
+            t += (ft < 0) ? c : -c;
             s = 1.0 - t;
         }
         return (sst3! * y1) + (stt3! * y2) + ttt!;
@@ -1072,7 +1072,7 @@ class CubicBezierStepInterpolation extends THREE.Interpolant {
 
             c /= 2.0;
 
-            t += (ft < 0) ? c : - c;
+            t += (ft < 0) ? c : -c;
             s = 1.0 - t;
         }
         return (sst3! * y1) + (stt3! * y2) + ttt!;

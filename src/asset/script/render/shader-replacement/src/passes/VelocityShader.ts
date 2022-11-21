@@ -52,8 +52,8 @@ export const velocity_vertex =
 
 		// Get the previous vertex position
 		transformed = vec3( position );
-		${ ShaderChunk.skinbase_vertex.replace( /mat4 /g, "" ).replace( /getBoneMatrix/g, "getPrevBoneMatrix" ) }
-		${ ShaderChunk.skinning_vertex.replace( /vec4 /g, "" ) }
+		${ ShaderChunk.skinbase_vertex.replace(/mat4 /g, "").replace(/getBoneMatrix/g, "getPrevBoneMatrix") }
+		${ ShaderChunk.skinning_vertex.replace(/vec4 /g, "") }
 		prevPosition = prevModelViewMatrix * vec4( transformed, 1.0 );
 
 		newPosition =  projectionMatrix * newPosition;

@@ -1,5 +1,5 @@
 import { Euler, Quaternion, Vector2, Vector3 } from "three/src/Three";
-import { 
+import {
     IAnimationInterpolator,
     QuaternionHermiteInterpolator,
     ScalarHermiteInterpolator,
@@ -17,7 +17,7 @@ export const ScalarBezierInterpolator = new class implements IAnimationInterpola
         const bezierGradient = MmdInterpolator.interpolate(inTangent.x, outTangent.x, inTangent.y, outTangent.y, gradient);
         return this.lerp(start, end, bezierGradient);
     }
-}; 
+};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Vector2BezierInterpolator = new class implements IAnimationInterpolator<Vector2, Vector2> {
@@ -27,7 +27,7 @@ export const Vector2BezierInterpolator = new class implements IAnimationInterpol
 
     public cubic(start: Vector2, end: Vector2, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector2): Vector2 {
         if (!out) out = new Vector2();
-        
+
         const bezierGradient = MmdInterpolator.interpolate(inTangent.x, outTangent.x, inTangent.y, outTangent.y, gradient);
         return this.lerp(start, end, bezierGradient, out);
     }
@@ -41,7 +41,7 @@ export const Vector3BezierInterpolator = new class implements IAnimationInterpol
 
     public cubic(start: Vector3, end: Vector3, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Vector3): Vector3 {
         if (!out) out = new Vector3();
-        
+
         const bezierGradient = MmdInterpolator.interpolate(inTangent.x, outTangent.x, inTangent.y, outTangent.y, gradient);
         return this.lerp(start, end, bezierGradient, out);
     }
@@ -55,7 +55,7 @@ export const Vector3IndependentBezierInterpolator = new class implements IAnimat
 
     public cubic(start: Vector3, end: Vector3, inTangents: readonly [Vector2, Vector2, Vector2], outTangents: readonly [Vector2, Vector2, Vector2], gradient: number, out?: Vector3): Vector3 {
         if (!out) out = new Vector3();
-        
+
         const bezierGradientX = MmdInterpolator.interpolate(inTangents[0].x, outTangents[0].x, inTangents[0].y, outTangents[0].y, gradient);
         const bezierGradientY = MmdInterpolator.interpolate(inTangents[1].x, outTangents[1].x, inTangents[1].y, outTangents[1].y, gradient);
         const bezierGradientZ = MmdInterpolator.interpolate(inTangents[2].x, outTangents[2].x, inTangents[2].y, outTangents[2].y, gradient);
@@ -76,7 +76,7 @@ export const QuaternionBezierInterpolator = new class implements IAnimationInter
 
     public cubic(start: Quaternion, end: Quaternion, inTangent: Vector2, outTangent: Vector2, gradient: number, out?: Quaternion): Quaternion {
         if (!out) out = new Quaternion();
-        
+
         const bezierGradient = MmdInterpolator.interpolate(inTangent.x, outTangent.x, inTangent.y, outTangent.y, gradient);
         return this.lerp(start, end, bezierGradient, out);
     }

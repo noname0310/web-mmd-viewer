@@ -65,7 +65,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
         const assetManager = new PrefabRef<GlobalAssetManager>();
 
         const ssrPassSelects: THREE.Mesh[] = [];
-        
+
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
                 .withCamera(camera)
@@ -77,7 +77,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .make())
 
-                
+
             .withChild(instantiater.buildGameObject("asset-manager")
                 .withComponent(GlobalAssetManager, c => {
                     const env = new RGBELoader().load(EntranceHallHdr, () => {/*do nothing*/});
@@ -86,7 +86,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                     c.addAsset("env", env);
                 })
                 .getComponent(GlobalAssetManager, assetManager))
-            
+
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
@@ -104,7 +104,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/ruse/ruse.mp3"))
                 .withCameraLoaderInitializer(c => {
@@ -163,7 +163,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                             aperture: 0,
                             maxblur: 0.02
                         });
-                        
+
                         return [[ssrPass, adaptiveTonemappingPass, smaaPass, aoPass, bloomPass, bokehPass], (): void => {
                             PostProcessDisposer.disposePass(ssrPass);
                             PostProcessDisposer.disposePass(adaptiveTonemappingPass);
@@ -174,7 +174,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                         }];
                     });
                 }))
-            
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5), object3D => object3D.dispose());
@@ -242,7 +242,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-stage",
-                new THREE.Vector3(0, 0, 0), 
+                new THREE.Vector3(0, 0, 0),
                 new THREE.Quaternion()//.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2)
             )
                 .withComponent(MmdModel, c => {
@@ -323,7 +323,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                         });
 
                         const materials = model!.material instanceof Array ? model!.material : [model!.material];
-                        
+
                         for (let i = 0; i < materials.length; ++i) {
                             const material = materials[i];
                             const name = material.name;
@@ -347,7 +347,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                             const material = materials[i];
                             const name = material.name;
                             if (name !== "宝石" &&
-                            name !== "銀の王冠" && 
+                            name !== "銀の王冠" &&
                             name !== "銀1") continue;
 
                             const standardMaterial = materials[i] = MmdMaterialUtils.convert(material as MMDToonMaterial);
@@ -407,7 +407,7 @@ export class RuSeBootstrapper extends BaseBootstrapper {
                             MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
                         }
                     });
-                    c.asyncLoadAnimation("animation1", 
+                    c.asyncLoadAnimation("animation1",
                         [
                             "mmd/ruse/model.vmd"
                         ], () => {

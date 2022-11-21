@@ -1,7 +1,7 @@
 import TestAudio from "../audio/audioTest.mp3";
 
 export class AudioPermissionSolver {
-    public static async invoke(): Promise<void> {        
+    public static async invoke(): Promise<void> {
         let audioTest: HTMLAudioElement|null = new Audio(TestAudio);
 
         try {

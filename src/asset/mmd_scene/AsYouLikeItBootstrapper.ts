@@ -45,7 +45,7 @@ export class AsYouLikeItBootstrapper extends BaseBootstrapper {
 
         const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
         const audioPlayer = new PrefabRef<AudioPlayer>();
-        
+
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
                 .withCamera(camera)
@@ -75,7 +75,7 @@ export class AsYouLikeItBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-            
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/as_you_like_it/as_you_like_it.mp3"))
                 .withCameraLoaderInitializer(c => {
@@ -110,12 +110,12 @@ export class AsYouLikeItBootstrapper extends BaseBootstrapper {
                             animationPlayer.ref!.onAnimationProcess.addListener(frame => {
                                 video.process(frame, audioPlayer.ref!.playbackRate);
                             });
-                            
+
                             const videoElement = video.htmlVideo;
                             videoElement.autoplay = false;
                             videoElement.src = encodeURI("mmd/as_you_like_it/Background 30帧_x264.mp4");
                             videoElement.muted = true;
-                            
+
                             const texture = new THREE.VideoTexture(videoElement);
                             const aspect = 1280 / 720;
                             const plane = new THREE.Mesh(
@@ -145,7 +145,7 @@ export class AsYouLikeItBootstrapper extends BaseBootstrapper {
                             }());
                         }))
                 .make())
-            
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());
@@ -219,7 +219,7 @@ export class AsYouLikeItBootstrapper extends BaseBootstrapper {
                     loadingText.appendChild(modelLoadingText);
                     const modelAnimationLoadingText = document.createElement("div");
                     loadingText.appendChild(modelAnimationLoadingText);
-                    
+
                     c.onProgress.addListener((type, e) => {
                         if (e.lengthComputable) {
                             const percentComplete = e.loaded / e.total * 100;

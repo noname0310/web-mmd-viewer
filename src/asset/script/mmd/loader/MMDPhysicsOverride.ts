@@ -262,7 +262,7 @@ export class ResourceManagerOverride {
 
     public negativeVector3(v: Ammo.btVector3): Ammo.btVector3 {
         const v2 = this.allocVector3();
-        v2.setValue(- v.x(), - v.y(), - v.z());
+        v2.setValue(-v.x(), -v.y(), -v.z());
         return v2;
     }
 
@@ -574,7 +574,7 @@ class RigidBody {
      * @return {RidigBody}
      */
     public updateFromBone(): RigidBody {
-        if (this.params.boneIndex !== - 1 && this.params.type === 0) {
+        if (this.params.boneIndex !== -1 && this.params.type === 0) {
             this._setTransformFromBone();
         }
 
@@ -587,7 +587,7 @@ class RigidBody {
      * @return {RidigBody}
      */
     public updateBone(): RigidBody {
-        if (this.params.type === 0 || this.params.boneIndex === - 1) {
+        if (this.params.type === 0 || this.params.boneIndex === -1) {
             return this;
         }
 
@@ -636,7 +636,7 @@ class RigidBody {
         const manager = this.manager;
         const params = (this as any).params;
         const bones = this.mesh.skeleton.bones;
-        const bone = (params.boneIndex === - 1)
+        const bone = (params.boneIndex === -1)
             ? new THREE.Bone()
             : bones[params.boneIndex];
 

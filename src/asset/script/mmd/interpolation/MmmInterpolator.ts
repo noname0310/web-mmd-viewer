@@ -9,11 +9,11 @@ export class MmmInterpolator {
      * interpolate a bezier curve
      * @param _p2 0..127 range integer
      * @param _p3 0..127 range integer
-     * @param interop 
-     * @param start 
-     * @param framediff 
-     * @param t 
-     * @returns 
+     * @param interop
+     * @param start
+     * @param framediff
+     * @param t
+     * @returns
      */
     public static interpolate(_p2: Vector2, _p3: Vector2, interop: number, start: number, framediff: number, t: {out: number}): number {
         if (interop == 0) {

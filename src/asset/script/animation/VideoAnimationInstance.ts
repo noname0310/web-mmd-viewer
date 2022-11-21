@@ -21,7 +21,7 @@ export class VideoAnimationInstance {
         if (Math.abs(video!.currentTime - elapsedTime) > 1) {
             video!.currentTime = elapsedTime;
         }
-        
+
         if (Math.abs(video!.currentTime - elapsedTime) > 0.1) {
             video!.playbackRate = playbackRate + (video!.currentTime < elapsedTime ? 0.1 : -0.1);
         } else {

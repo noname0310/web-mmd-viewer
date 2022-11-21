@@ -54,7 +54,7 @@ export class BokehDepthPass extends Pass {
     public materialDepth: THREE.ShaderMaterial;
     public fsQuad: FullScreenQuad;
     private readonly _oldClearColor: THREE.Color;
-    
+
     public constructor(scene: THREE.Scene, camera: THREE.Camera, params: BokehPass2Params) {
         super();
 
@@ -69,7 +69,7 @@ export class BokehDepthPass extends Pass {
         this.renderTargetDepth = new THREE.WebGLRenderTarget(width, height);
 
         this.renderTargetDepth.texture.name = "BokehPass.depth";
-        
+
         // depth material
 
         const depthShader = BokehDepthShader;
@@ -94,18 +94,18 @@ export class BokehDepthPass extends Pass {
         // Render depth into texture
 
         const depthUniforms = this.materialDepth.uniforms as typeof BokehDepthShader.uniforms;
-        
+
         const camera = this.camera;
         depthUniforms["mNear"].value = camera.near;
         depthUniforms["mFar"].value = camera.far;
 
         this.scene.overrideMaterial = this.materialDepth;
-        
-        renderer.getClearColor( this._oldClearColor );
+
+        renderer.getClearColor(this._oldClearColor);
         const oldClearAlpha = renderer.getClearAlpha();
         const oldAutoClear = renderer.autoClear;
         renderer.autoClear = false;
-        
+
         renderer.setClearColor(0xffffff);
         renderer.setClearAlpha(1.0);
         renderer.setRenderTarget(this.renderTargetDepth);

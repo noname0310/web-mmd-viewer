@@ -101,8 +101,8 @@ export class GameManagerPrefab extends Prefab {
                     c.playbackRateSlider = document.getElementById("playback_rate_slider")! as HTMLInputElement;
                     c.playbackRateSlider.value = "1";
                 }))
-            
-            
+
+
             .withChild(instantiater.buildGameObject("mmd-player")
                 .withComponent(AnimationSequencePlayer, c => {
                     c.animationClock = new ClockCalibrator(this._audioPlayer.ref!);
@@ -116,7 +116,7 @@ export class GameManagerPrefab extends Prefab {
 
                     const modelLoaders = this._modelLoaders;
                     for (let i = 0; i < modelLoaders.length; ++i) {
-                        if(modelLoaders[i].ref) {
+                        if (modelLoaders[i].ref) {
                             c.addModelLoader(modelLoaders[i].ref!);
 
                             if (!unsafeIsComponent(c)) return;

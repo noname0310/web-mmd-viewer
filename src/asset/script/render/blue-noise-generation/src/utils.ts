@@ -1,6 +1,6 @@
 export function shuffleArray(array: Uint8Array|Uint16Array|Uint32Array|any[], random = Math.random): void {
     for (let i = array.length - 1; i > 0; i--) {
-        const replaceIndex = ~ ~((random() - 1e-6) * i);
+        const replaceIndex = ~~((random() - 1e-6) * i);
         const tmp = array[i];
         array[i] = array[replaceIndex];
         array[replaceIndex] = tmp;

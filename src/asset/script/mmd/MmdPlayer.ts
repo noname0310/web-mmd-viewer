@@ -125,7 +125,7 @@ export class MmdPlayer extends Component {
 
         duration = Math.max(duration, audio?.duration ?? 0);
 
-        
+
         this._animationEndFrame = Math.floor(duration * this._manualUpdateFps);
     }
 
@@ -140,7 +140,7 @@ export class MmdPlayer extends Component {
     public get elapsedTime(): number {
         return this._elapsedTime;
     }
-    
+
     public get manualUpdate(): boolean {
         return this._manualUpdate;
     }
@@ -207,7 +207,7 @@ export class MmdPlayer extends Component {
         if (!this._model || !this._model.object3D) return false;
         return this._helper.isIkExists(this._model.object3D, ikBoneName);
     }
-    
+
     public process(frameTime: number): void {
         frameTime = Math.min(frameTime, this._animationEndFrame);
 

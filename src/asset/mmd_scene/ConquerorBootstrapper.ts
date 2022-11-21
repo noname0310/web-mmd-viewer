@@ -73,7 +73,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
         const ambientLight = new PrefabRef<Object3DContainer<THREE.HemisphereLight>>();
         const spotLight = new PrefabRef<Object3DContainer<THREE.SpotLight>>();
         const stageLoader = new PrefabRef<MmdModel[]>();
-        
+
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
                 .withCamera(camera)
@@ -92,7 +92,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                 .withComponent(class extends Component {
                     public start(): void {
                         const stage = stageLoader.ref!.map(loader => loader.object3DContainer!);
-                        
+
                         const lightAnimationInstance = ConquerorLightAnimation.sequence.createInstance(
                             ConquerorLightAnimation.createBindInfo(ambientLight.ref!.object3D!, spotLight.ref!.object3D!, stage)
                         );
@@ -102,7 +102,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                         });
                     }
                 }))
-                
+
             .withChild(instantiater.buildGameObject("asset-manager")
                 .withComponent(GlobalAssetManager, c => {
                     const env = new RGBELoader().load(EntranceHallHdr, () => {/*do nothing*/});
@@ -111,7 +111,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                     c.addAsset("env", env);
                 })
                 .getComponent(GlobalAssetManager, assetManager))
-            
+
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
                 .withComponent(Camera, c => {
                     c.cameraType = CameraType.Perspective;
@@ -129,7 +129,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
-                
+
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withAudioUrl(new PrefabRef("mmd/conqueror/MMDConquerorIA.mp3"))
                 .withCameraLoaderInitializer(c => {
@@ -172,7 +172,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                         // ssrPass.raymarchTargetScale = 1;
                         // ssrPass.renderTargetScale = 1;
                         // ssrPass.stride = 60;
-                        
+
                         const adaptiveTonemappingPass = new AdaptiveToneMappingPass(false, 256);
                         adaptiveTonemappingPass.setMiddleGrey(8);
 
@@ -188,7 +188,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                             aperture: 0,
                             maxblur: 0.02
                         });
-                        
+
                         return [[ssrPass, adaptiveTonemappingPass, smaaPass, aoPass, bloomPass, bokehPass], (): void => {
                             PostProcessDisposer.disposePass(ssrPass);
                             PostProcessDisposer.disposePass(adaptiveTonemappingPass);
@@ -199,7 +199,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                         }];
                     });
                 }))
-            
+
             .withChild(instantiater.buildGameObject("ambient-light")
                 .withComponent(Object3DContainer<THREE.HemisphereLight>, c => {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9), object3D => object3D.dispose());
@@ -282,7 +282,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                 }))
 
             .withChild(instantiater.buildGameObject("mmd-stage",
-                new THREE.Vector3(0, 0, 0), 
+                new THREE.Vector3(0, 0, 0),
                 new THREE.Quaternion()//.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2)
             )
                 .withComponent(MmdModel, c => {
@@ -393,7 +393,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                         model.castShadow = true;
                         model.receiveShadow = true;
                         model.frustumCulled = false;
-                        
+
                         const materials = model!.material instanceof Array ? model!.material : [model!.material];
                         for (let i = 0; i < materials.length; ++i) {
                             materials[i] = MmdMaterialUtils.convert(materials[i] as MMDToonMaterial);
@@ -422,7 +422,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                             const material = materials[i];
                             const name = material.name;
                             if (name !== "宝石" &&
-                            name !== "銀の王冠" && 
+                            name !== "銀の王冠" &&
                             name !== "銀1") continue;
 
                             const standardMaterial = materials[i] as THREE.MeshStandardMaterial;
@@ -482,7 +482,7 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                             MmdMaterialUtils.disposeConvertedMaterialTexture(materials[i] as THREE.MeshStandardMaterial);
                         }
                     });
-                    c.asyncLoadAnimation("animation1", 
+                    c.asyncLoadAnimation("animation1",
                         [
                             "mmd/conqueror/model.vmd",
                             "mmd/conqueror/physics_reduce2.vmd"

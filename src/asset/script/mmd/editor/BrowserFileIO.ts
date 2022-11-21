@@ -29,7 +29,7 @@ export class BrowserFileIO {
             this.removeFiles(id);
         }
     }
-    
+
     public getURLModifier(): (url: string) => string {
         return (url: string) => {
             return this._objectUrlMap.get(this.normalizePath(url)) ?? url;

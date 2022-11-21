@@ -17,7 +17,7 @@ export class FullScreenQuad {
     }
 
     public constructor(material?: THREE.Material) {
-        const camera = new OrthographicCamera(- 1, 1, 1, - 1, 0, 1);
+        const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
         const geometry = new PlaneGeometry(2, 2);
 
         this._mesh = new Mesh(geometry, material);

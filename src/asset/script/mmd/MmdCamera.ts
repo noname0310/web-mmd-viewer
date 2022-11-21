@@ -24,7 +24,7 @@ export class MmdCamera extends Component {
 
     public start(): void {
         this._camera = this.gameObject.getComponent(Camera)!;
-        
+
         const initLoadAnimationFunc = this._initLoadAnimationFunc;
         for (let i = 0; i < initLoadAnimationFunc.length; ++i) {
             initLoadAnimationFunc[i]();
@@ -44,7 +44,7 @@ export class MmdCamera extends Component {
         onComplete?: (animation: MmdCameraAnimationClip) => void
     ): void {
         this._loadingAnimations.add(animationName);
-        
+
         if (!this._isReadyToLoad) {
             this._initLoadAnimationFunc.push(() => this.asyncLoadAnimation(animationName, url, onComplete));
             return;

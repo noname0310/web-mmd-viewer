@@ -10,4 +10,4 @@ export const EmptyBooleanInterpolator = new class implements IAnimationInterpola
     public cubic(): boolean {
         throw new Error("Method not implemented.");
     }
-}; 
+};

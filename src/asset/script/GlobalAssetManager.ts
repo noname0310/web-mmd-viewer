@@ -4,7 +4,7 @@ interface IDisposable {
     dispose(): void;
 }
 
-export class GlobalAssetManager extends Component {    
+export class GlobalAssetManager extends Component {
     public readonly assets: Map<string, IDisposable> = new Map();
 
     public addAsset(name: string, asset: IDisposable): void {

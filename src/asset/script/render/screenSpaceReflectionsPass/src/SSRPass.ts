@@ -149,7 +149,7 @@ export class SSRPass extends Pass {
     public scene: THREE.Scene;
     public camera: THREE.Camera;
     public debug: { display: number; };
-    
+
     private readonly _depthBuffer: WebGLRenderTarget;
     private readonly _depthReplacement: LinearDepthPass;
     private readonly _backfaceDepthBuffer: WebGLRenderTarget;
@@ -506,7 +506,7 @@ export class SSRPass extends Pass {
 
         }
 
-        if ((! !(marchMaterial as any).defines.USE_THICKNESS) !== useThickness) {
+        if ((!!(marchMaterial as any).defines.USE_THICKNESS) !== useThickness) {
 
             (marchMaterial as any).defines.USE_THICKNESS = useThickness ? 1.0 : 0.0;
             marchMaterial.needsUpdate = true;

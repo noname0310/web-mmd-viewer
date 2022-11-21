@@ -68,7 +68,7 @@ export class MmdController extends Component {
             cameraAnimation = cameraLoader.animations.get(cameraAnimationName)!;
         }
 
-        const cameraAnimationInstance = camera !== null && cameraAnimation !== null 
+        const cameraAnimationInstance = camera !== null && cameraAnimation !== null
             ? MmdCameraAnimationLoader.createInstance(camera, cameraAnimation)
             : null;
 
@@ -133,12 +133,12 @@ export class MmdController extends Component {
                     }
             ]
         );
-        
+
         this._onLoadCompleteEvent.invoke();
 
         this._animationSequencePlayer!.play();
     }
-    
+
     public addMmdPlayer(mmdPlayer: MmdPlayer): void {
         this._mmdPlayers.push(mmdPlayer);
     }
@@ -172,7 +172,7 @@ export class MmdController extends Component {
     public removeAllModelLoaders(): void {
         this._modelLoaders.length = 0;
     }
-    
+
     public get cameraLoader(): MmdCamera|null {
         return this._cameraLoader;
     }

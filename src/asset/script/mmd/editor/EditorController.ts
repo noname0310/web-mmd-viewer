@@ -72,7 +72,7 @@ export class EditorController extends Component {
         modelList.splice(index, 1);
         this._onModelsUpdatedEvent.invoke(this._modelList);
     }
-    
+
     public get models(): readonly MmdModel[] {
         return this._modelList;
     }

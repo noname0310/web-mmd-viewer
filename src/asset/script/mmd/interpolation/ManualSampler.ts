@@ -24,7 +24,7 @@ export class ManualSampler extends Component {
             this.spawnSample(spawnPosition);
         }
     }
-    
+
     private spawnSample(worldPosition: ReadonlyVector3): void {
         const gameObject = this.engine.scene.addChildFromBuilder(
             this.engine.instantiater.buildGameObject("trace", worldPosition)
@@ -49,7 +49,7 @@ export class ManualSampler extends Component {
         for (let i = 0; i < value.length; i++) {
             this._samples.push(value[i]);
         }
-        
+
         if (this._readyToSpawn) this.start();
     }
 }

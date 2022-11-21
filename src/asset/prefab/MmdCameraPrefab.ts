@@ -72,11 +72,11 @@ export class MmdCameraPrefab extends Prefab {
             .getComponent(Camera, this._camera)
             .getComponent(MmdCamera, this._cameraLoader)
             .getComponent(AudioPlayer, this._audioPlayer);
-        
+
         if (this._cameraChildBuilder !== null) {
             cameraBuilder.withChild(this._cameraChildBuilder);
         }
-        
+
         return this.gameObjectBuilder
             .withChild(cameraBuilder);
     }
