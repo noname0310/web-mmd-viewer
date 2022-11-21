@@ -116,12 +116,12 @@ module.exports = {
             "error",
             4
         ],
+        "keyword-spacing": [
+            "error"
+        ],
         "linebreak-style": [
             "error",
             "unix"
-        ],
-        "keyword-spacing": [
-            "error"
         ],
         "no-debugger": "warn",
         "no-trailing-spaces": [
