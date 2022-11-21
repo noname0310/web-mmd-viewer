@@ -99,11 +99,15 @@ export class MmdModelAnimationLoader {
 
         const trackMap = animation.propertyAnimationClip.trackMap;
         for (const [key ] of trackMap) {
+            if (key === "visible") continue;
+
             if (player.isIkExists(key)) {
                 bindInfo.push({
                     trackName: key,
                     target: (value: boolean) => player.setIkEnabled(key, value)
                 });
+            } else {
+                console.warn(`IK ${key} is not found.`);
             }
         }
 
