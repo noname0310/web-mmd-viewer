@@ -95,14 +95,13 @@ export class MmdController extends Component {
             const animationName = modelAnimationName instanceof Array ? modelAnimationName[i] : modelAnimationName;
             const modelAnimation = modelLoader.animations.get(animationName)!;
 
-            const animationClipInstance = MmdModelAnimationLoader.createInstance(model.object3D!, mmdPlayer, modelAnimation);
-
             mmdPlayer.manualUpdate = true;
             mmdPlayer.play(
                 model,
-                { animation: animationClipInstance.modelAnimationClip, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
+                { animation: modelAnimation.modelAnimationClip, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
             );
 
+            const animationClipInstance = MmdModelAnimationLoader.createInstance(model.object3D!, mmdPlayer, modelAnimation);
             propertyAnimationInstances.push(animationClipInstance.propertyAnimationClipInstance);
 
             endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
