@@ -123,7 +123,6 @@ export class ListMmdViewBuilder {
             cameraMotionUrl: "mmd/deep_blue_town/camera.vmd",
             audioUrl: "mmd/deep_blue_town/deep blue town.mp3",
             settings: {
-                useIk: false,
                 forceAllInterpolateToCubic: true
             }
         } as MmdLoadParams);

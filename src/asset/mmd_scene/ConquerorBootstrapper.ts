@@ -83,7 +83,6 @@ export class ConquerorBootstrapper extends BaseBootstrapper {
                 .withAudioPlayer(audioPlayer)
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
-                .withUseIk(new PrefabRef(false))
                 .withUsePhysics(new PrefabRef(false))
                 .getAnimationPlayer(animationPlayer)
                 .make())
