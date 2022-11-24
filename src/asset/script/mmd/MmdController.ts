@@ -120,13 +120,13 @@ export class MmdController extends Component {
                 modelLoaders.length === 1
                     ? (frame: number): void => {
                         firstMmdPlayer.process(frame);
-                        firstPropertyAnimationInstance.process(frame);
+                        firstPropertyAnimationInstance.process(frame * 2);
                         cameraAnimationInstance?.process(frame);
                     }
                     : (frame: number): void => {
                         for (let i = 0; i < mmdPlayerCount; ++i) {
                             mmdPlayers[i].process(frame);
-                            propertyAnimationInstances[i].process(frame);
+                            propertyAnimationInstances[i].process(frame * 2);
                             cameraAnimationInstance?.process(frame);
                         }
                     }
