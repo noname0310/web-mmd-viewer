@@ -478,6 +478,16 @@ class GeometryBuilder {
             morphPositions.push(attribute);
         }
 
+        // add default morph if no morphs for prevent shader error
+        if (morphTargets.length === 0) {
+            morphTargets.push({ name: "default" });
+
+            const attribute = new THREE.Float32BufferAttribute(data.metadata.vertexCount * 3, 3);
+            attribute.name = "default";
+
+            morphPositions.push(attribute);
+        }
+
         // rigid bodies from rigidBodies field.
         for (let i = 0; i < data.metadata.rigidBodyCount; i++) {
             const rigidBody = data.rigidBodies[i];
