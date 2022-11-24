@@ -183,7 +183,6 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                         const effectPass = new EffectPass(camera, bloomEffect/*, depthOfFieldEffect, cocTextureEffect*/, smaaEffect, toneMappingEffect, contrastEffect);
 
                         const godraysPass = new GodraysPass(directionalLight.ref!.object3D!, camera as THREE.PerspectiveCamera);
-                        godraysPass.renderToScreen = true;
 
                         return [effectPass, godraysPass];
                     });
