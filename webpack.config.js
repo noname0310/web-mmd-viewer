@@ -66,5 +66,6 @@ module.exports = {
         allowedHosts: "all",
         port: 20310
     },
+    devtool: "eval-cheap-source-map",
     mode: "development"
 };
