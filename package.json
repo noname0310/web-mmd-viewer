@@ -37,6 +37,7 @@
         "postprocessing": "^6.29.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-is": "^18.2.0",
         "styled-components": "^5.3.6",
         "the-world-engine": "^0.4.44",
         "three": "^0.146.0",
