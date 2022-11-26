@@ -16,28 +16,28 @@ module.exports = {
     },
     module: {
         rules: [{
-                test: /\.tsx?$/,
-                use: [{
-                    loader: "ts-loader"
-                }]
-            },
-            {
-                test: /\.(png|jpg|gif|hdr)$/,
-                type: "asset"
-            },
-            {
-                test: /\.(mp3|ogg|wav)$/,
-                loader: "file-loader",
-                options: {
-                    name: "asset/audio/[name].[ext]?[hash]"
-                }
-            },
-            {
-                test: /\.html$/,
-                use: [{
-                    loader: "html-loader"
-                }]
+            test: /\.tsx?$/,
+            use: [{
+                loader: "ts-loader"
+            }]
+        },
+        {
+            test: /\.(png|jpg|gif|hdr)$/,
+            type: "asset"
+        },
+        {
+            test: /\.(mp3|ogg|wav)$/,
+            loader: "file-loader",
+            options: {
+                name: "asset/audio/[name].[ext]?[hash]"
             }
+        },
+        {
+            test: /\.html$/,
+            use: [{
+                loader: "html-loader"
+            }]
+        }
         ]
     },
     resolve: {
@@ -57,7 +57,10 @@ module.exports = {
             fix: true
         }),
         new CopyWebpackPlugin({
-            patterns: [{ from: "mmd", to: "mmd" }]
+            patterns: [
+                { from: "mmd", to: "mmd" },
+                { from: "mmd_public", to: "mmd_public" }
+            ]
         })
         //new BundleAnalyzerPlugin()
     ],
