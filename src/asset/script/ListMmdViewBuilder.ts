@@ -179,7 +179,7 @@ export class ListMmdViewBuilder {
         bootstrapperSelectPanel.appendChild(button13);
         bootstrapperSelectPanel.appendChild(button14);
 
-        document.body.appendChild(bootstrapperSelectPanel);
+        //document.body.appendChild(bootstrapperSelectPanel);
 
         button14.onclick(new MouseEvent("click"));
 
