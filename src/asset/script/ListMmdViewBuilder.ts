@@ -181,7 +181,7 @@ export class ListMmdViewBuilder {
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button5.onclick(new MouseEvent("click"));
+        button14.onclick(new MouseEvent("click"));
 
         // runGame(MmdGenericBootstrapper, {
         //     models: [
