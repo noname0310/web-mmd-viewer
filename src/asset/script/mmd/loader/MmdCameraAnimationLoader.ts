@@ -1,5 +1,5 @@
+import { MMDParser, Vmd } from "@noname0310/mmd-parser";
 import { Camera } from "the-world-engine";
-import { MMDParser } from "three/examples/jsm/libs/mmdparser.module";
 import * as THREE from "three/src/Three";
 import { AnimationClip, AnimationClipBindInfo, AnimationClipInstance, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
 
@@ -30,7 +30,7 @@ export type MmdCameraAnimationClip = AnimationClip<CameraTrackData>;
 export type MmdCameraAnimationClipInstance = AnimationClipInstance<CameraTrackData>;
 
 export class MmdCameraAnimationLoader {
-    private readonly _parser = new MMDParser.Parser();
+    private readonly _parser = MMDParser;
     private readonly _fileLoader = new THREE.FileLoader();
     public frameRate = 60;
 
@@ -48,8 +48,7 @@ export class MmdCameraAnimationLoader {
         }, onProgress, onError);
     }
 
-    public loadAnimation(buffer: ArrayBufferLike): MmdCameraAnimationClip {
-        const vmd = this._parser.parseVmd(buffer, true);
+    public loadAnimationFromVmd(vmd: Vmd): MmdCameraAnimationClip {
         if (vmd.metadata.cameraCount === 0) {
             throw new Error("VMD does not contain camera animation.");
         }
@@ -159,6 +158,11 @@ export class MmdCameraAnimationLoader {
                 track: AnimationTrack.createTrack(fovKeyframes, ScalarBezierInterpolator, this.frameRate)
             }
         ], undefined, undefined, this.frameRate);
+    }
+
+    public loadAnimation(buffer: ArrayBufferLike): MmdCameraAnimationClip {
+        const vmd = this._parser.parseVmd(buffer, true);
+        return this.loadAnimationFromVmd(vmd);
     }
 
     public static createInstance(camera: Camera, animation: MmdCameraAnimationClip): MmdCameraAnimationClipInstance {
