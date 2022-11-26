@@ -5,6 +5,7 @@ import {
     DepthOfFieldEffect,
     EdgeDetectionMode,
     EffectPass,
+    GodRaysEffect,
     KernelSize,
     SMAAEffect,
     SMAAPreset,
@@ -20,6 +21,7 @@ import {
     CoroutineIterator,
     Object3DContainer,
     PrefabRef,
+    ReadonlyVector3,
     SceneBuilder,
     WebGLRendererLoader
 } from "the-world-engine";
@@ -71,6 +73,9 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
         const water = new PrefabRef<Object3DContainer<Water>>();
 
         let depthOfFieldEffect: DepthOfFieldEffect | null = null;
+
+        const sunVector: ReadonlyVector3 = new THREE.Vector3(5, 5, -50);
+        const sunMesh = new PrefabRef<Object3DContainer<THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>>>();
 
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -130,6 +135,24 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                 .getAudioPlayer(audioPlayer)
                 .make())
 
+            .withChild(instantiater.buildGameObject("sun", sunVector.clone().multiplyScalar(30))
+                .withComponent(Object3DContainer<THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>>, c => {
+                    const sunMaterial = new THREE.MeshBasicMaterial({
+                        color: 0xffddaa,
+                        transparent: true,
+                        fog: false
+                    });
+                    const sunGeometry = new THREE.SphereGeometry(600, 32, 32);
+                    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+                    sun.frustumCulled = false;
+                    sun.matrixAutoUpdate = false;
+                    c.setObject3D(sun, object3D => {
+                        object3D.geometry.dispose();
+                        object3D.material.dispose();
+                    });
+                })
+                .getComponent(Object3DContainer, sunMesh))
+
             .withChild(instantiater.buildGameObject("post-process-volume")
                 .withComponent(WebGLGlobalPostProcessVolume, c => {
                     c.reinitializeWhenScreenSizeChanged = false;
@@ -165,6 +188,17 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
 
                         smaaEffect.edgeDetectionMaterial.edgeDetectionThreshold = 0.01;
 
+                        const godRaysEffect = new GodRaysEffect(camera, sunMesh.ref!.object3D!, {
+                            height: 480,
+                            kernelSize: KernelSize.LARGE,
+                            density: 0.7,
+                            decay: 0.9,
+                            weight: 0.3,
+                            exposure: 0.3,
+                            samples: 60,
+                            clampMax: 1.0
+                        });
+
                         const toneMappingEffect = new ToneMappingEffect({
                             mode: ToneMappingMode.ACES_FILMIC,
                             resolution: 256,
@@ -180,9 +214,20 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                             contrast: 0.15
                         });
 
-                        const effectPass = new EffectPass(camera, bloomEffect/*, depthOfFieldEffect, cocTextureEffect*/, smaaEffect, toneMappingEffect, contrastEffect);
+                        godRaysEffect;
 
-                        const godraysPass = new GodraysPass(directionalLight.ref!.object3D!, camera as THREE.PerspectiveCamera);
+                        const effectPass = new EffectPass(camera, bloomEffect/*, depthOfFieldEffect, cocTextureEffect*/, smaaEffect, godRaysEffect, toneMappingEffect, contrastEffect);
+
+                        const godraysPass = new GodraysPass(
+                            directionalLight.ref!.object3D!,
+                            camera as THREE.PerspectiveCamera,
+                            {
+                                density: 0.005,
+                                edgeStrength: 10,
+                                edgeRadius: 10,
+                                distanceAttenuation: 0.1
+                            }
+                        );
 
                         return [effectPass, godraysPass];
                     });
@@ -193,7 +238,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                     c.setObject3D(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3), object3D => object3D.dispose());
                 }))
 
-            .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(5, 5, -50))
+            .withChild(instantiater.buildGameObject("directional-light", sunVector)
                 .withComponent(Object3DContainer<THREE.DirectionalLight>, c => {
                     const light = new THREE.DirectionalLight(0xffffff, 0.1);
                     light.castShadow = true;
