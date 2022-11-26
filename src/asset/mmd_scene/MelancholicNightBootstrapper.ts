@@ -259,7 +259,6 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                             );
                             env.scale.setScalar(120);
                             env.frustumCulled = false;
-                            env.receiveShadow = true;
                             env.material.side = THREE.BackSide;
 
                             const envContainer = this.gameObject.addComponent(Object3DContainer<GroundProjectedEnv>)!;
