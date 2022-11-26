@@ -16,12 +16,16 @@ import {
     Bootstrapper as BaseBootstrapper,
     Camera,
     CameraType,
+    Component,
     CoroutineIterator,
+    GameObject,
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
     WebGLRendererLoader
 } from "the-world-engine";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import { GroundProjectedEnv } from "three/examples/jsm/objects/GroundProjectedEnv";
 import * as THREE from "three/src/Three";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
@@ -68,6 +72,8 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
 
         const assetManager = new PrefabRef<GlobalAssetManager>();
 
+        const environment = new PrefabRef<GameObject>();
+
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
                 .withCamera(camera)
@@ -82,8 +88,14 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
 
             .withChild(instantiater.buildGameObject("asset-manager")
                 .withComponent(GlobalAssetManager, c => {
-                    const nightSkyDome = new THREE.TextureLoader().load("mmd/skydome/night.jpg");
-                    nightSkyDome.mapping = THREE.EquirectangularReflectionMapping;
+                    const nightSkyDome = new RGBELoader()
+                        .load(
+                            "mmd_public/env/st_peters_square/st_peters_square_night_4k.hdr",
+                            dataTexture => {
+                                dataTexture.mapping = THREE.EquirectangularReflectionMapping;
+                                environment.ref!.activeSelf = true;
+                            }
+                        );
                     c.addAsset("nightSkyDome", nightSkyDome);
 
                     const fabricNormal = new THREE.TextureLoader().load(FabricNormal);
@@ -113,7 +125,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2))
 
                 .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
-                    .withAudioUrl(new PrefabRef("mmd/melancholic_night/melancholic_night.mp3"))
+                    .withAudioUrl(new PrefabRef("mmd_public/motion/melancholic_night/melancholic_night.mp3"))
                     .withCameraInitializer(c => {
                         c.backgroundColor = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                     })
@@ -232,7 +244,31 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                     })
                     .getComponent(Object3DContainer, directionalLight))
 
+                .withChild(instantiater.buildGameObject("environment")
+                    .active(false)
+                    .withComponent(class extends Component {
+                        public onEnable(): void {
+                            const env = new GroundProjectedEnv(
+                                assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture,
+                                {
+                                    height: 50,
+                                    radius: 300
+                                }
+                            );
+                            env.scale.setScalar(120);
+                            env.frustumCulled = false;
+
+                            const envContainer = this.gameObject.addComponent(Object3DContainer<GroundProjectedEnv>)!;
+                            envContainer.setObject3D(env, object3D => {
+                                object3D.geometry.dispose();
+                                object3D.material.dispose();
+                            });
+                        }
+                    })
+                    .getGameObject(environment))
+
                 .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, 0))
+                    .active(false)
                     .withComponent(MmdModel, c => {
                         const loadingText = Ui.getOrCreateLoadingElement();
                         const modelLoadingText = document.createElement("div");
@@ -290,7 +326,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                     .innerText = type + ": " + Math.round(percentComplete) + "% loading";
                             }
                         });
-                        c.asyncLoadModel("mmd/YYB Hatsune Miku_10th - faceforward/YYB Hatsune Miku_10th_v1.02 - faceforward.pmx", model => {
+                        c.asyncLoadModel("mmd_public/model/yyb_hatsune_miku_10th_ff/yyb_hatsune_miku_10th_v1.02.pmx", model => {
                             if (!unsafeIsComponent(c)) return;
                             modelLoadingText.innerText = "model loaded";
                             model.geometry.name = c.gameObject.name + "-geometry";
