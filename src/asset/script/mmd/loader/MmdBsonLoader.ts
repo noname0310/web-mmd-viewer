@@ -1,5 +1,6 @@
 import { Pmx, Vmd } from "@noname0310/mmd-parser";
 import { deserialize, serialize } from "bson";
+import { FileLoader } from "three/src/Three";
 
 export class MmdBsonLoader {
     private constructor() { /* */ }
@@ -32,11 +33,18 @@ export class MmdBsonLoader {
         return data as Vmd | Pmx;
     }
 
-    public static async loadAndDeserialize(url: string): Promise<Vmd | Pmx> {
-        const response = await fetch(url);
-        const buffer = await response.arrayBuffer();
-        const data = this.deserialize(this.arrayBufferToBuffer(buffer));
-        return data;
+    public static loadAndDeserialize(
+        url: string,
+        onLoad: (data: Vmd | Pmx) => void,
+        onProgress?: (event: ProgressEvent<EventTarget>) => void,
+        onError?: (event: ErrorEvent) => void
+    ): void {
+        const loader = new FileLoader();
+        loader.setResponseType("arraybuffer");
+        loader.load(url, arrayBuffer => {
+            const data = this.deserialize(this.arrayBufferToBuffer(arrayBuffer as ArrayBuffer));
+            onLoad(data);
+        }, onProgress, onError);
     }
 
     private static arrayBufferToBuffer(arrayBuffer: ArrayBuffer): Buffer {
