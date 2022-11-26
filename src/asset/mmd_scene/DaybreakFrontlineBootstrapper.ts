@@ -136,6 +136,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
                 .make())
 
             .withChild(instantiater.buildGameObject("sun", sunVector.clone().multiplyScalar(30))
+                .active(false)
                 .withComponent(Object3DContainer<THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>>, c => {
                     const sunMaterial = new THREE.MeshBasicMaterial({
                         color: 0xffddaa,
@@ -216,7 +217,7 @@ export class DaybreakFrontlineBootstrapper extends BaseBootstrapper {
 
                         godRaysEffect;
 
-                        const effectPass = new EffectPass(camera, bloomEffect/*, depthOfFieldEffect, cocTextureEffect*/, smaaEffect, godRaysEffect, toneMappingEffect, contrastEffect);
+                        const effectPass = new EffectPass(camera, bloomEffect/*, depthOfFieldEffect, cocTextureEffect*/, smaaEffect, /*godRaysEffect,*/ toneMappingEffect, contrastEffect);
 
                         const godraysPass = new GodraysPass(
                             directionalLight.ref!.object3D!,
