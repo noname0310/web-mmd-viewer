@@ -1,5 +1,5 @@
 import { Pmx, Vmd } from "@noname0310/mmd-parser";
-import { serialize, deserialize } from "bson";
+import { deserialize, serialize } from "bson";
 
 export class MmdBsonLoader {
     private constructor() { /* */ }
@@ -7,7 +7,7 @@ export class MmdBsonLoader {
     public static serialize(data: Vmd | Pmx): Buffer {
         const buffer = serialize(data, {
             checkKeys: false,
-            serializeFunctions: false,
+            serializeFunctions: false
         });
 
         return buffer;
