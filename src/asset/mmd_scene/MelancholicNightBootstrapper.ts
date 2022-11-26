@@ -122,7 +122,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                 })
                 .getComponent(Camera, orbitCamera))
 
-            .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2))
+            .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 1.5))
 
                 .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                     .withAudioUrl(new PrefabRef("mmd_public/motion/melancholic_night/melancholic_night.mp3"))
@@ -187,11 +187,13 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                 mode: ToneMappingMode.REINHARD2,
                                 resolution: 256,
                                 whitePoint: 16.0,
-                                middleGrey: 0.13,
+                                middleGrey: 0.05,
                                 minLuminance: 0.01,
                                 averageLuminance: 0.01,
                                 adaptationRate: 1.0
                             });
+
+                            (globalThis as any).toneMappingEffect = toneMappingEffect;
 
                             const contrastEffect = new BrightnessContrastEffect({
                                 brightness: 0.0,
@@ -252,11 +254,13 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                 assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture,
                                 {
                                     height: 50,
-                                    radius: 300
+                                    radius: 500
                                 }
                             );
                             env.scale.setScalar(120);
                             env.frustumCulled = false;
+                            env.receiveShadow = true;
+                            env.material.side = THREE.BackSide;
 
                             const envContainer = this.gameObject.addComponent(Object3DContainer<GroundProjectedEnv>)!;
                             envContainer.setObject3D(env, object3D => {
@@ -340,14 +344,23 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                             }
 
                             const converted = materials as THREE.MeshStandardMaterial[];
+
+                            const envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
+
+                            for (let i = 0; i < converted.length; ++i) {
+                                const material = converted[i];
+                                material.envMap?.dispose();
+                                material.envMap = envMap;
+                                material.envMapIntensity = 0.1;
+                                material.needsUpdate = true;
+                            }
+
                             {
                                 const eyes = converted.find(m => m.name === "eyes")!;
                                 eyes.roughness = 0;
                                 eyes.metalness = 0.4;
                                 eyes.envMapIntensity = 0.5;
                                 eyes.lightMapIntensity = 0.5;
-                                eyes.envMap?.dispose();
-                                eyes.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                                 eyes.needsUpdate = true;
                             }
 
@@ -364,8 +377,6 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                     hair.metalness = 0.0;
                                     hair.envMapIntensity = 0.1;
                                     hair.lightMapIntensity = 0.9;
-                                    hair.envMap?.dispose();
-                                    hair.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                                     hair.needsUpdate = true;
                                 }
                             }
@@ -376,10 +387,8 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                     const cloth = converted.find(m => m.name === clearcoatCloths[i])!;
                                     cloth.roughness = 0.1;
                                     cloth.metalness = 0.0;
-                                    cloth.envMapIntensity = 0.5;
-                                    cloth.lightMapIntensity = 0.5;
-                                    cloth.envMap?.dispose();
-                                    cloth.envMap = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
+                                    cloth.envMapIntensity = 0.2;
+                                    cloth.lightMapIntensity = 0.8;
                                     cloth.needsUpdate = true;
                                 }
                             }
