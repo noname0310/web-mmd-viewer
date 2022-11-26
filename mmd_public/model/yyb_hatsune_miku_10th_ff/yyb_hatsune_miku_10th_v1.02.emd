@@ -1,0 +1,32 @@
+[Info]
+Version = 3
+
+[Effect]
+Obj = none
+Obj.show = true
+Obj[0] = none
+Obj[1] = none
+Obj[2] = none
+Obj[3] = none
+Obj[4] = none
+Obj[5] = none
+Obj[7] = none
+Obj[8] = none
+Obj[11] = fx\c.fx
+Obj[12] = fx\c.fx
+Obj[13] = fx\c.fx
+Obj[14] = fx\c.fx
+Obj[15] = none
+Obj[16] = fx\body.fx
+Obj[17] = fx\body.fx
+Obj[18] = fx\body.fx
+Obj[19] = none
+Obj[20] = none
+Obj[21] = none
+Obj[22] = none
+Obj[23] = fx\c.fx
+Obj[24] = fx\c.fx
+Obj[25] = fx\c.fx
+Obj[26] = fx\q2.fx
+Obj[27] = fx\q2.fx
+
