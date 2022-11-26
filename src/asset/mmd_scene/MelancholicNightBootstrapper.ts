@@ -165,9 +165,9 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
 
                             depthOfFieldEffect = new DepthOfFieldEffect(camera, {
                                 focusDistance: 0.0,
-                                focalLength: 0.0447,
-                                worldFocusRange: 70,
-                                bokehScale: 4.0,
+                                focalLength: 0.04,
+                                worldFocusRange: 1000,
+                                bokehScale: 100.0,
                                 height: 480
                             });
 
