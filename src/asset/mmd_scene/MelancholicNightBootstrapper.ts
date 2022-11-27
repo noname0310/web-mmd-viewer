@@ -27,8 +27,10 @@ import {
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 import { GroundProjectedEnv } from "three/examples/jsm/objects/GroundProjectedEnv";
 import * as THREE from "three/src/Three";
+import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
+import { MelancholicNightDofAnimation } from "../animation/MelancholicNightDofAnimation";
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "../script/GlobalAssetManager";
@@ -62,17 +64,17 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
         const camera = new PrefabRef<Camera>();
         const orbitCamera = new PrefabRef<Camera>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
+        const environment = new PrefabRef<GameObject>();
 
         const mmdModelLoader = new PrefabRef<MmdModel>();
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
+        const animationPlayer = new PrefabRef<AnimationSequencePlayer>();
 
-        let depthOfFieldEffect: DepthOfFieldEffect|null = null;
+        const depthOfFieldEffect = new PrefabRef<DepthOfFieldEffect>();
 
         const assetManager = new PrefabRef<GlobalAssetManager>();
-
-        const environment = new PrefabRef<GameObject>();
 
         return this.sceneBuilder
             .withChild(instantiater.buildPrefab("game-manager", GameManagerPrefab)
@@ -84,7 +86,22 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .withUsePhysics(new PrefabRef(true))
+                .getAnimationPlayer(animationPlayer)
                 .make())
+
+
+            .withChild(instantiater.buildGameObject("custom-animation-override")
+                .withComponent(class extends Component {
+                    public start(): void {
+                        const lightAnimationInstance = MelancholicNightDofAnimation.sequence.createInstance(
+                            MelancholicNightDofAnimation.createBindInfo(depthOfFieldEffect)
+                        );
+
+                        animationPlayer.ref!.onAnimationProcess.addListener((frameTime) => {
+                            lightAnimationInstance.process(frameTime);
+                        });
+                    }
+                }))
 
             .withChild(instantiater.buildGameObject("asset-manager")
                 .withComponent(GlobalAssetManager, c => {
@@ -121,6 +138,30 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                     c.enableDamping = false;
                 })
                 .getComponent(Camera, orbitCamera))
+
+            .withChild(instantiater.buildGameObject("environment")
+                .active(false)
+                .withComponent(class extends Component {
+                    public onEnable(): void {
+                        const env = new GroundProjectedEnv(
+                            assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture,
+                            {
+                                height: 50,
+                                radius: 500
+                            }
+                        );
+                        env.scale.setScalar(120);
+                        env.frustumCulled = false;
+                        env.material.side = THREE.BackSide;
+
+                        const envContainer = this.gameObject.addComponent(Object3DContainer<GroundProjectedEnv>)!;
+                        envContainer.setObject3D(env, object3D => {
+                            object3D.geometry.dispose();
+                            object3D.material.dispose();
+                        });
+                    }
+                })
+                .getGameObject(environment))
 
             .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 1.5))
 
@@ -163,7 +204,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                 kernelSize: KernelSize.MEDIUM
                             });
 
-                            depthOfFieldEffect = new DepthOfFieldEffect(camera, {
+                            const dofEffect = depthOfFieldEffect.ref = new DepthOfFieldEffect(camera, {
                                 focusDistance: 0.0,
                                 focalLength: 0.04,
                                 worldFocusRange: 1000,
@@ -171,9 +212,11 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                 height: 480
                             });
 
+                            (globalThis as any).depthOfFieldEffect = dofEffect;
+
                             const cocTextureEffect = new TextureEffect({
                                 blendFunction: BlendFunction.SKIP,
-                                texture: (depthOfFieldEffect as any).cocTexture
+                                texture: (dofEffect as any).cocTexture
                             });
 
                             const smaaEffect = new SMAAEffect({
@@ -202,7 +245,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
 
                             const effectPass = new EffectPass(camera,
                                 bloomEffect,
-                                depthOfFieldEffect,
+                                dofEffect,
                                 cocTextureEffect,
                                 smaaEffect,
                                 toneMappingEffect,
@@ -245,30 +288,6 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                         }());
                     })
                     .getComponent(Object3DContainer, directionalLight))
-
-                .withChild(instantiater.buildGameObject("environment")
-                    .active(false)
-                    .withComponent(class extends Component {
-                        public onEnable(): void {
-                            const env = new GroundProjectedEnv(
-                                assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture,
-                                {
-                                    height: 50,
-                                    radius: 500
-                                }
-                            );
-                            env.scale.setScalar(120);
-                            env.frustumCulled = false;
-                            env.material.side = THREE.BackSide;
-
-                            const envContainer = this.gameObject.addComponent(Object3DContainer<GroundProjectedEnv>)!;
-                            envContainer.setObject3D(env, object3D => {
-                                object3D.geometry.dispose();
-                                object3D.material.dispose();
-                            });
-                        }
-                    })
-                    .getGameObject(environment))
 
                 .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, 0))
                     .active(false)
@@ -459,9 +478,9 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                         const b = tempVector.copy(headPosition).sub(cameraPosition);
                                         const focusDistance = b.dot(a) / a.dot(a);
 
-                                        if (depthOfFieldEffect) {
+                                        if (depthOfFieldEffect.ref) {
                                             const ldistance = linearize(focusDistance, cameraUnwrap);
-                                            const cocMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
+                                            const cocMaterial = depthOfFieldEffect.ref.circleOfConfusionMaterial;
                                             cocMaterial.focusDistance = 1 + ldistance;
                                         }
                                         yield null;
