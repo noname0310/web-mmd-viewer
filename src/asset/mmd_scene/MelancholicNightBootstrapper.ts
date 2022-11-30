@@ -26,6 +26,7 @@ import {
 } from "the-world-engine";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 import { GroundProjectedEnv } from "three/examples/jsm/objects/GroundProjectedEnv";
+import { ShadowMesh } from "three/examples/jsm/objects/ShadowMesh";
 import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
@@ -330,7 +331,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                         });
                     }))
 
-                .withChild(instantiater.buildGameObject("mmd-model")
+                .withChild(instantiater.buildGameObject("mmd-model", new THREE.Vector3(0, 0, 0))
                     .active(true)
                     .withComponent(MmdModel, c => {
                         const loadingText = Ui.getOrCreateLoadingElement();
@@ -429,6 +430,23 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                     cloth.emissive = new THREE.Color().setRGB(0.3, 0.3, 0.3);
                                 }
                             }
+
+                            const shadowMesh = new (ShadowMesh as any)(mmdModelLoader.ref!.skinnedMesh!) as ShadowMesh;
+                            const shadowMeshComponent = c.gameObject.addComponent(Object3DContainer<ShadowMesh>)!;
+                            shadowMeshComponent.setObject3D(shadowMesh, object3D => {
+                                object3D.geometry.dispose();
+                                (object3D.material as THREE.Material).dispose();
+                            });
+                            shadowMeshComponent.enabled = false;
+
+                            c.gameObject.addComponent(class ShadowMeshUpdater extends Component {
+                                private readonly _plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.01);
+                                private readonly _lightPosition = new THREE.Vector4(-20, 30, 70, 0.9);
+
+                                public update(): void {
+                                    shadowMesh.update(this._plane, this._lightPosition);
+                                }
+                            });
                         });
 
                         c.onDisposeObject3D.addListener(mesh => {
