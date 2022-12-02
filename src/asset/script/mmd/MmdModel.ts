@@ -18,7 +18,7 @@ export class MmdModel extends Component {
     private readonly _onDisposeObject3DEvent = new EventContainer<(object3D: THREE.SkinnedMesh) => void>();
     private readonly _defaultPoseMap = new Map<THREE.Object3D, { position: THREE.Vector3, quaternion: THREE.Quaternion, scale: THREE.Vector3 }>();
 
-    private _animationLoadingCoroutines: Coroutine[] = [];
+    private readonly _animationLoadingCoroutines: Coroutine[] = [];
 
     private _isReadyToLoad = false;
     private _initLoadModelFunc: ((onComplete: () => void) => void) | null = null;
