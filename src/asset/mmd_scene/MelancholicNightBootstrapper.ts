@@ -289,6 +289,23 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                     })
                     .getComponent(Object3DContainer, directionalLight))
 
+                .withChild(instantiater.buildGameObject("transparent-plane", new THREE.Vector3(0, 0, 0), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2))
+                    .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
+                        const geometry = new THREE.PlaneGeometry(1000, 1000, 1, 1);
+                        const material = new THREE.MeshPhongMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0.3
+                        });
+                        const mesh = new THREE.Mesh(geometry, material);
+                        mesh.receiveShadow = true;
+                        mesh.castShadow = true;
+                        c.setObject3D(mesh, object3D => {
+                            object3D.geometry.dispose();
+                            (object3D.material as THREE.Material).dispose();
+                        });
+                    }))
+
                 .withChild(instantiater.buildGameObject("mmd-stage", new THREE.Vector3(0, 0, 0))
                     .active(false)
                     .withComponent(MmdModel, c => {
