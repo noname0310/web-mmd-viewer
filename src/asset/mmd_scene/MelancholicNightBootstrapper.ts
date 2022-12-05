@@ -1,3 +1,4 @@
+import { MMDParser, Vmd } from "@noname0310/mmd-parser";
 import {
     BlendFunction,
     BloomEffect,
@@ -34,6 +35,7 @@ import { MelancholicNightDofAnimation } from "../animation/MelancholicNightDofAn
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "../script/GlobalAssetManager";
+import { MmdBsonLoader } from "../script/mmd/loader/MmdBsonLoader";
 import { MmdCamera } from "../script/mmd/MmdCamera";
 import { MmdMaterialUtils, MMDToonMaterial } from "../script/mmd/MmdMaterialUtils";
 import { MmdModel } from "../script/mmd/MmdModel";
@@ -86,6 +88,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
                 .withUsePhysics(new PrefabRef(true))
+                .withForceWaitAnimation(new PrefabRef(true))
                 .getAnimationPlayer(animationPlayer)
                 .make())
 
@@ -175,16 +178,20 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                         const cameraLoadingText = document.createElement("div");
                         loadingText.appendChild(cameraLoadingText);
 
-                        c.onProgress.addListener((e) => {
-                            if (e.lengthComputable) {
-                                const percentComplete = e.loaded / e.total * 100;
-                                cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
+                        MmdBsonLoader.loadAndDeserialize(
+                            "mmd_public/motion/melancholic_night/camera.vmd.bson",
+                            vmd => {
+                                if (!c.exists) return;
+                                c.loadAnimation("animation1", vmd as Vmd);
+                                cameraLoadingText.innerText = "camera loaded";
+                            },
+                            e => {
+                                if (e.lengthComputable) {
+                                    const percentComplete = e.loaded / e.total * 100;
+                                    cameraLoadingText.innerText = "camera: " + Math.round(percentComplete) + "% loading";
+                                }
                             }
-                        });
-
-                        c.asyncLoadAnimation("animation1", "mmd/melancholic_night/camera.vmd", () => {
-                            cameraLoadingText.innerText = "camera loaded";
-                        });
+                        );
                     })
                     .getCamera(camera)
                     .getCameraLoader(mmdCameraLoader)
@@ -457,13 +464,35 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                             }
                         });
 
-                        c.asyncLoadAnimation("animation1", [
-                            "mmd/melancholic_night/motion.vmd",
-                            "mmd/melancholic_night/lip.vmd",
-                            "mmd/melancholic_night/facial.vmd"
-                        ], () => {
+                        async function loadMotion(): Promise<void> {
+                            const loadList = [
+                                "mmd_public/motion/melancholic_night/motion.vmd.bson",
+                                "mmd_public/motion/melancholic_night/lip.vmd.bson",
+                                "mmd_public/motion/melancholic_night/facial.vmd.bson"
+                            ];
+
+                            let mergedVmd: Vmd | null = null;
+
+                            for (let i = 0; i < loadList.length; ++i) {
+                                const url = loadList[i];
+                                const vmd = await new Promise<Vmd>(
+                                    (resolve, reject) => MmdBsonLoader.loadAndDeserialize(
+                                        url,
+                                        data => resolve(data as Vmd),
+                                        undefined,
+                                        reject
+                                    )
+                                );
+                                mergedVmd = (mergedVmd !== null) ? MMDParser.mergeVmds([mergedVmd, vmd as Vmd]) : vmd as Vmd;
+                            }
+
+                            if (!c.exists) return;
+
+                            c.loadAnimation("animation1", mergedVmd as Vmd);
                             modelAnimationLoadingText.innerText = "animation loaded";
-                        });
+                        }
+
+                        loadMotion();
 
                         if (!unsafeIsComponent(c)) return;
                         c.startCoroutine(function*(): CoroutineIterator {

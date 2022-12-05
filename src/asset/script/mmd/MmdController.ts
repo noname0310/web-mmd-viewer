@@ -40,10 +40,10 @@ export class MmdController extends Component {
         }
     }
 
-    public asyncPlay(modelAnimationName: string|string[], cameraAnimationName?: string): void {
+    public asyncPlay(modelAnimationName: string|string[], cameraAnimationName?: string, forceWaitAnimationLoad = false): void {
         if (!this._readyToPlay) {
             this._initializeFunction = (): void => {
-                this.asyncPlay(modelAnimationName, cameraAnimationName);
+                this.asyncPlay(modelAnimationName, cameraAnimationName, forceWaitAnimationLoad);
             };
             return;
         }
@@ -53,16 +53,17 @@ export class MmdController extends Component {
             if (this._cameraLoader === null) throw new Error("cameraLoader is null");
         }
 
-        this.startCoroutine(this.playInternal(modelAnimationName, cameraAnimationName));
+        this.startCoroutine(this.playInternal(modelAnimationName, cameraAnimationName, forceWaitAnimationLoad));
     }
 
-    private *playInternal(modelAnimationName: string|string[], cameraAnimationName?: string): CoroutineIterator {
+    private *playInternal(modelAnimationName: string|string[], cameraAnimationName?: string, forceWaitAnimationLoad?: boolean): CoroutineIterator {
         let camera: Camera|null = null;
         let cameraAnimation: MmdCameraAnimationClip|null = null;
 
         if (cameraAnimationName) {
             const cameraLoader = this._cameraLoader!;
             while (cameraLoader.isAnimationLoading(cameraAnimationName)) yield null;
+            while (forceWaitAnimationLoad && !cameraLoader.animations.has(cameraAnimationName)) yield null;
 
             camera = cameraLoader.camera;
             cameraAnimation = cameraLoader.animations.get(cameraAnimationName)!;
@@ -77,6 +78,7 @@ export class MmdController extends Component {
             const modelLoader = modelLoaders[i];
             const animationName = modelAnimationName instanceof Array ? modelAnimationName[i] : modelAnimationName;
             while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(animationName)) yield null;
+            while (forceWaitAnimationLoad && !modelLoader.animations.has(animationName)) yield null;
         }
 
         const mmdPlayers = this._mmdPlayers;
