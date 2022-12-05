@@ -101,7 +101,7 @@ export class Bootstrapper extends BaseBootstrapper {
 ```
 ## Preview
 
-### [build](https://noname0310.github.io/web-mmd-viewer/)
+### [viewer build](https://noname0310.github.io/web-mmd-viewer/viewer)
 
 ![ingame2](ingame2.png)
 
