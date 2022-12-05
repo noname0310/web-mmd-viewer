@@ -117,9 +117,26 @@ credit:
   https://bowlroll.net/file/230141
 
 ![ingame](ingame.png)
+
 credit:
 
 - model: YYB / とぁさん (The download seems to have disappeared)
 - motion: 卜逻desu
 - background: 卜逻desu
 https://www.bilibili.com/video/BV1r7411u7ST?spm_id_from=333.337.search-card.all.click&vd_source=b0c43e82eef9e53703c8aff044b7a6f6
+
+## MMD Demo: Melancholic Night
+
+### [demo build](https://noname0310.github.io/web-mmd-viewer/melancholic_night)
+
+![ingame3](ingame3.png)
+
+credit:
+
+- model: YYB
+  https://www.deviantart.com/sanmuyyb/art/YYB-Hatsune-Miku-10th-DL-702119716
+- motion: ほうき堂
+- camera: ほうき堂
+  https://www.nicovideo.jp/watch/sm41164308
+- background: Andreas Mischok
+  https://polyhaven.com/a/st_peters_square_night
