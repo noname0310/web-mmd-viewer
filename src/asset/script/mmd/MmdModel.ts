@@ -1,3 +1,4 @@
+import { Vmd } from "@noname0310/mmd-parser";
 import { Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, Object3DContainer, WaitUntil } from "the-world-engine";
 import * as THREE from "three/src/Three";
 
@@ -93,6 +94,27 @@ export class MmdModel extends Component {
             )
         );
         this._animationLoadingCoroutines.push(coroutine);
+    }
+
+    public loadAnimation(
+        animationName: string,
+        vmd: Vmd
+    ): void {
+        if (!this._isReadyToLoad) {
+            this._initLoadAnimationFunc.push(() => this.loadAnimation(animationName, vmd));
+            return;
+        }
+
+        if (this._object3DContainer!.object3D === null) {
+            throw new Error("Model is not loaded yet.");
+        }
+
+        const animation = this._animationLoader.loadAnimation(
+            vmd,
+            this._object3DContainer!.object3D,
+            this._loader.forceAllInterpolateToCubic
+        );
+        this._animations.set(animationName, animation);
     }
 
     public removeAnimation(animationName: string): void {

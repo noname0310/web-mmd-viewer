@@ -1,3 +1,4 @@
+import { Vmd } from "@noname0310/mmd-parser";
 import { Camera, Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, WaitUntil } from "the-world-engine";
 
 import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./loader/MmdCameraAnimationLoader";
@@ -59,6 +60,19 @@ export class MmdCamera extends Component {
             )
         );
         this._animationLoadingCoroutines.push(coroutine);
+    }
+
+    public loadAnimation(
+        animationName: string,
+        vmd: Vmd
+    ): void {
+        if (!this._isReadyToLoad) {
+            this._initLoadAnimationFunc.push(() => this.loadAnimation(animationName, vmd));
+            return;
+        }
+
+        const animation = this._loader.loadAnimationFromVmd(vmd);
+        this._animations.set(animationName, animation);
     }
 
     public removeAnimation(animationName: string): void {
