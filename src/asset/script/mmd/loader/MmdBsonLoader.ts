@@ -43,7 +43,6 @@ export class MmdBsonLoader {
         loader.setResponseType("arraybuffer");
         loader.load(url, arrayBuffer => {
             const data = this.deserialize(arrayBuffer as Buffer);
-            console.log(data);
             onLoad(data);
         }, onProgress, onError);
     }
