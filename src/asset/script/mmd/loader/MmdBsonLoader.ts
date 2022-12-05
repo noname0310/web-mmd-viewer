@@ -42,17 +42,9 @@ export class MmdBsonLoader {
         const loader = new FileLoader();
         loader.setResponseType("arraybuffer");
         loader.load(url, arrayBuffer => {
-            const data = this.deserialize(this.arrayBufferToBuffer(arrayBuffer as ArrayBuffer));
+            const data = this.deserialize(arrayBuffer as Buffer);
+            console.log(data);
             onLoad(data);
         }, onProgress, onError);
-    }
-
-    private static arrayBufferToBuffer(arrayBuffer: ArrayBuffer): Buffer {
-        const buffer = Buffer.alloc(arrayBuffer.byteLength);
-        const view = new Uint8Array(arrayBuffer);
-        for (let i = 0; i < buffer.length; i++) {
-            buffer[i] = view[i];
-        }
-        return buffer;
     }
 }
