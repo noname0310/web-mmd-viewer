@@ -125,7 +125,7 @@ credit:
 - background: 卜逻desu
 https://www.bilibili.com/video/BV1r7411u7ST?spm_id_from=333.337.search-card.all.click&vd_source=b0c43e82eef9e53703c8aff044b7a6f6
 
-## MMD Demo: Melancholic Night
+## MMD Demo: Melancholy Night
 
 ### [demo build](https://noname0310.github.io/web-mmd-viewer/melancholic_night)
 

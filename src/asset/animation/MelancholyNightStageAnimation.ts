@@ -9,7 +9,7 @@ type RemoveReadonly<T> = {
     -readonly [P in keyof T]: T[P];
 };
 
-export class MelancholicNightStageAnimation {
+export class MelancholyNightStageAnimation {
     private static readonly _focalLengthAnimationClip = new AnimationClip([
         {
             name: "focalLength" as const,

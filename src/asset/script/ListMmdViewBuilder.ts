@@ -5,7 +5,7 @@ import { AsYouLikeItBootstrapper } from "../mmd_scene/AsYouLikeItBootstrapper";
 import { ConquerorBootstrapper } from "../mmd_scene/ConquerorBootstrapper";
 import { DaybreakFrontlineBootstrapper } from "../mmd_scene/DaybreakFrontlineBootstrapper";
 import { FlosBootstrapper } from "../mmd_scene/FlosBootstrapper";
-import { MelancholicNightBootstrapper } from "../mmd_scene/MelancholicNightBootstrapper";
+import { MelancholyNightBootstrapper } from "../mmd_scene/MelancholyNightBootstrapper";
 //import { InterpolationTestBootstrapper } from "./InterpolationTestBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "../mmd_scene/MmdGenericBootstrapper";
 import { MusicMusicBootstrapper } from "../mmd_scene/MusicMusicBootstrapper";
@@ -161,8 +161,8 @@ export class ListMmdViewBuilder {
 
         const button14 = document.createElement("button");
         button14.className = "select_bootstrapper_button";
-        button14.innerText = "melancholic night";
-        button14.onclick = (): void => runGame(MelancholicNightBootstrapper);
+        button14.innerText = "melancholy night";
+        button14.onclick = (): void => runGame(MelancholyNightBootstrapper);
 
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);

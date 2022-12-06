@@ -34,7 +34,7 @@ import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { MelancholicNightStageAnimation } from "../animation/MelancholicNightStageAnimation";
+import { MelancholyNightStageAnimation } from "../animation/MelancholyNightStageAnimation";
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "../script/GlobalAssetManager";
@@ -48,7 +48,7 @@ import { Ui } from "../script/Ui";
 import FabricNormal from "../texture/fabric02.png";
 import { unsafeIsComponent } from "../unsafeIsComponent";
 
-export class MelancholicNightBootstrapper extends BaseBootstrapper {
+export class MelancholyNightBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
         this.setting.render.useCss3DRenderer(true);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);
@@ -100,8 +100,8 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("custom-animation-override")
                 .withComponent(class extends Component {
                     public start(): void {
-                        const stageAnimationInstance = MelancholicNightStageAnimation.sequence.createInstance(
-                            MelancholicNightStageAnimation.createBindInfo(depthOfFieldEffect, creditObject)
+                        const stageAnimationInstance = MelancholyNightStageAnimation.sequence.createInstance(
+                            MelancholyNightStageAnimation.createBindInfo(depthOfFieldEffect, creditObject)
                         );
 
                         animationPlayer.ref!.onAnimationProcess.addListener((frameTime) => {
@@ -173,7 +173,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("root", undefined, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 1.5))
 
                 .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
-                    .withAudioUrl(new PrefabRef("mmd_public/motion/melancholic_night/melancholic_night.mp3"))
+                    .withAudioUrl(new PrefabRef("mmd_public/motion/melancholy_night/melancholy_night.mp3"))
                     .withCameraInitializer(c => {
                         c.backgroundColor = assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture;
                     })
@@ -183,7 +183,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                         loadingText.appendChild(cameraLoadingText);
 
                         MmdBsonLoader.loadAndDeserialize(
-                            "mmd_public/motion/melancholic_night/camera.vmd.bson",
+                            "mmd_public/motion/melancholy_night/camera.vmd.bson",
                             vmd => {
                                 if (!c.exists) return;
                                 c.loadAnimation("animation1", vmd as Vmd);
@@ -470,9 +470,9 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
 
                         async function loadMotion(): Promise<void> {
                             const loadList = [
-                                "mmd_public/motion/melancholic_night/motion.vmd.bson",
-                                "mmd_public/motion/melancholic_night/lip.vmd.bson",
-                                "mmd_public/motion/melancholic_night/facial.vmd.bson"
+                                "mmd_public/motion/melancholy_night/motion.vmd.bson",
+                                "mmd_public/motion/melancholy_night/lip.vmd.bson",
+                                "mmd_public/motion/melancholy_night/facial.vmd.bson"
                             ];
 
                             let mergedVmd: Vmd | null = null;
