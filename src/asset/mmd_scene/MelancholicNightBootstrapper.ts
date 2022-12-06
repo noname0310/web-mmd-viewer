@@ -19,10 +19,13 @@ import {
     CameraType,
     Component,
     CoroutineIterator,
+    CssHtmlElementRenderer,
+    CssTextRenderer,
     GameObject,
     Object3DContainer,
     PrefabRef,
     SceneBuilder,
+    TextAlign,
     WebGLRendererLoader
 } from "the-world-engine";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
@@ -31,7 +34,7 @@ import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
 
-import { MelancholicNightDofAnimation } from "../animation/MelancholicNightDofAnimation";
+import { MelancholicNightStageAnimation } from "../animation/MelancholicNightStageAnimation";
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "../script/GlobalAssetManager";
@@ -47,7 +50,7 @@ import { unsafeIsComponent } from "../unsafeIsComponent";
 
 export class MelancholicNightBootstrapper extends BaseBootstrapper {
     public override run(): SceneBuilder {
-        this.setting.render.useCss3DRenderer(false);
+        this.setting.render.useCss3DRenderer(true);
         this.setting.render.webGLRendererLoader(WebGLRendererLoader);
         this.setting.render.webGLRenderer(() => {
             const renderer = new THREE.WebGLRenderer({
@@ -67,6 +70,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
         const orbitCamera = new PrefabRef<Camera>();
         const directionalLight = new PrefabRef<Object3DContainer<THREE.DirectionalLight>>();
         const environment = new PrefabRef<GameObject>();
+        const creditObject = new PrefabRef<GameObject>();
 
         const mmdModelLoader = new PrefabRef<MmdModel>();
         const mmdCameraLoader = new PrefabRef<MmdCamera>();
@@ -96,8 +100,8 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("custom-animation-override")
                 .withComponent(class extends Component {
                     public start(): void {
-                        const lightAnimationInstance = MelancholicNightDofAnimation.sequence.createInstance(
-                            MelancholicNightDofAnimation.createBindInfo(depthOfFieldEffect)
+                        const lightAnimationInstance = MelancholicNightStageAnimation.sequence.createInstance(
+                            MelancholicNightStageAnimation.createBindInfo(depthOfFieldEffect, creditObject)
                         );
 
                         animationPlayer.ref!.onAnimationProcess.addListener((frameTime) => {
@@ -482,7 +486,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                         e => {
                                             if (e.lengthComputable) {
                                                 const progress = Math.round(e.loaded / e.total * 100);
-                                                modelAnimationLoadingText.innerText = "motion: " + progress + "%";
+                                                modelAnimationLoadingText.innerText = "motion: " + progress + "% loading";
                                             }
                                         },
                                         reject
@@ -543,7 +547,110 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                             }
                         }());
                     })
-                    .getComponent(MmdModel, mmdModelLoader)))
+                    .getComponent(MmdModel, mmdModelLoader))
+
+                .withChild(instantiater.buildGameObject("credit")
+                    .active(false)
+                    .getGameObject(creditObject)
+
+                    .withChild(instantiater.buildGameObject("background")
+                        .withComponent(CssHtmlElementRenderer, c => {
+                            const div = document.createElement("div");
+                            div.style.backgroundColor = "rgba(1, 1, 1, 0.7)";
+                            c.element = div;
+                            c.pointerEvents = false;
+                            c.elementWidth = 400;
+                            c.elementHeight = 200;
+                        }))
+
+                    .withChild(instantiater.buildGameObject("title", new THREE.Vector3(0, 20, 1))
+                        .withComponent(CssTextRenderer, c => {
+                            c.text = "melancholy night";
+                            c.fontSize = 90;
+                            c.viewScale = 0.02;
+                            c.autoSize = false;
+                            c.textAlign = TextAlign.Left;
+                            c.textWidth = 9.5;
+                            c.textHeight = 2;
+                        }))
+
+                    .withChild(instantiater.buildGameObject("subtitle1", new THREE.Vector3(0, 15.8, 1))
+                        .withComponent(CssTextRenderer, c => {
+                            c.text = "Music & Lyrics by higma";
+                            c.fontSize = 30;
+                            c.viewScale = 0.02;
+                            c.autoSize = false;
+                            c.textAlign = TextAlign.Left;
+                            c.textWidth = 9.3;
+                            c.textHeight = 1;
+                        }))
+
+                    .withChild(instantiater.buildGameObject("subtitle2", new THREE.Vector3(0, 15, 1))
+                        .withComponent(CssTextRenderer, c => {
+                            c.text = "Motion by ほうき堂";
+                            c.fontSize = 30;
+                            c.viewScale = 0.02;
+                            c.autoSize = false;
+                            c.textAlign = TextAlign.Left;
+                            c.textWidth = 9.3;
+                            c.textHeight = 1;
+                        }))
+
+                    .withChild(instantiater.buildGameObject("credit1", new THREE.Vector3(0, 13, 1))
+                        .withComponent(CssTextRenderer, c => {
+                            c.text = "Model: YYB Hatsune Miku 10th by YYB";
+                            c.fontSize = 26;
+                            c.viewScale = 0.02;
+                            c.autoSize = false;
+                            c.textAlign = TextAlign.Left;
+                            c.textWidth = 9.3;
+                            c.textHeight = 1;
+                        }))
+
+                    .withChild(instantiater.buildGameObject("credit2", new THREE.Vector3(0, 12.2, 1))
+                        .withComponent(CssTextRenderer, c => {
+                            c.text = "HDRI: St. Peters Square Night by Andreas Mischok";
+                            c.fontSize = 26;
+                            c.viewScale = 0.02;
+                            c.autoSize = false;
+                            c.textAlign = TextAlign.Left;
+                            c.textWidth = 9.3;
+                            c.textHeight = 1;
+                        }))
+
+                    .withChild(instantiater.buildGameObject("credit3", new THREE.Vector3(0, 10, 1))
+                        .withComponent(CssTextRenderer, c => {
+                            c.text = "Rendered by Three.js";
+                            c.fontSize = 26;
+                            c.viewScale = 0.02;
+                            c.autoSize = false;
+                            c.textAlign = TextAlign.Left;
+                            c.textWidth = 9.3;
+                            c.textHeight = 1;
+                        }))
+
+                    .withChild(instantiater.buildGameObject("href", new THREE.Vector3(-0.2, 10, 1))
+                        .withComponent(CssHtmlElementRenderer, c => {
+                            const div = document.createElement("div");
+
+                            const a = document.createElement("a");
+                            a.href = "https://github.com/noname0310/web-mmd-viewer";
+                            a.target = "_blank";
+                            a.innerText = "view source";
+                            a.style.fontSize = "26px";
+                            a.style.color = "white";
+                            a.style.fontFamily = "Arial";
+                            a.style.float = "right";
+
+                            div.appendChild(a);
+
+                            c.element = div;
+                            c.viewScale = 0.02;
+                            c.elementWidth = 9.3;
+                            c.elementHeight = 1;
+                        }))
+                ))
+
         ;
     }
 }

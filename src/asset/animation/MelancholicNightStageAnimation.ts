@@ -1,13 +1,15 @@
 import { DepthOfFieldEffect } from "postprocessing";
-import { PrefabRef } from "the-world-engine";
+import { GameObject, PrefabRef } from "the-world-engine";
 import { IUniform } from "three";
 import { AnimationClip, AnimationClipBindInfo, AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
+
+import { EmptyBooleanInterpolator } from "../script/mmd/interpolation/EmptyInterpolator";
 
 type RemoveReadonly<T> = {
     -readonly [P in keyof T]: T[P];
 };
 
-export class MelancholicNightDofAnimation {
+export class MelancholicNightStageAnimation {
     private static readonly _focalLengthAnimationClip = new AnimationClip([
         {
             name: "focalLength" as const,
@@ -25,13 +27,25 @@ export class MelancholicNightDofAnimation {
         }
     ]);
 
+    private static readonly _creditTogglingAnimationClip = new AnimationClip([
+        {
+            name: "creditToggling" as const,
+            track: AnimationTrack.createTrack([
+                new AnimationKey(0.000, false, InterpolationKind.Step),
+                new AnimationKey(12114, true, InterpolationKind.Step)
+            ], EmptyBooleanInterpolator)
+        }
+    ]);
+
     public static readonly sequence = new AnimationSequence([
-        new RangedAnimation(this._focalLengthAnimationClip)
+        new RangedAnimation(this._focalLengthAnimationClip),
+        new RangedAnimation(this._creditTogglingAnimationClip)
     ]);
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     public static createBindInfo(
-        depthOfFieldEffect: PrefabRef<DepthOfFieldEffect>
+        depthOfFieldEffect: PrefabRef<DepthOfFieldEffect>,
+        creditObject: PrefabRef<GameObject>
     ) {
         let cachedDepthOfFieldEffect: DepthOfFieldEffect | null = null;
         let uniform: IUniform<number> | null = null;
@@ -49,8 +63,18 @@ export class MelancholicNightDofAnimation {
             }
         ]);
 
+        const creditTogglingClipBindInfo = new AnimationClipBindInfo([
+            {
+                trackName: "creditToggling" as const,
+                target: (value: boolean): void => {
+                    if (creditObject.ref) creditObject.ref.activeSelf = value;
+                }
+            }
+        ]);
+
         const bindInfo = [
-            ambientLightClipBindInfo
+            ambientLightClipBindInfo,
+            creditTogglingClipBindInfo
         ] as const;
         return bindInfo as RemoveReadonly<typeof bindInfo>;
     }
