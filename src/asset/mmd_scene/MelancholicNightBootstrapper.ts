@@ -100,12 +100,12 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
             .withChild(instantiater.buildGameObject("custom-animation-override")
                 .withComponent(class extends Component {
                     public start(): void {
-                        const lightAnimationInstance = MelancholicNightStageAnimation.sequence.createInstance(
+                        const stageAnimationInstance = MelancholicNightStageAnimation.sequence.createInstance(
                             MelancholicNightStageAnimation.createBindInfo(depthOfFieldEffect, creditObject)
                         );
 
                         animationPlayer.ref!.onAnimationProcess.addListener((frameTime) => {
-                            lightAnimationInstance.process(frameTime);
+                            stageAnimationInstance.process(frameTime);
                         });
                     }
                 }))
@@ -549,7 +549,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                     })
                     .getComponent(MmdModel, mmdModelLoader))
 
-                .withChild(instantiater.buildGameObject("credit")
+                .withChild(instantiater.buildGameObject("credit", new THREE.Vector3(0.3, 0, 0))
                     .active(false)
                     .getGameObject(creditObject)
 
@@ -566,7 +566,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                     .withChild(instantiater.buildGameObject("title", new THREE.Vector3(0, 20, 1))
                         .withComponent(CssTextRenderer, c => {
                             c.text = "melancholy night";
-                            c.fontSize = 90;
+                            c.fontSize = 94;
                             c.viewScale = 0.02;
                             c.autoSize = false;
                             c.textAlign = TextAlign.Left;
@@ -629,7 +629,7 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                             c.textHeight = 1;
                         }))
 
-                    .withChild(instantiater.buildGameObject("href", new THREE.Vector3(-0.2, 10, 1))
+                    .withChild(instantiater.buildGameObject("href", new THREE.Vector3(0, 10, 1))
                         .withComponent(CssHtmlElementRenderer, c => {
                             const div = document.createElement("div");
 
