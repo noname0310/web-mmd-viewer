@@ -479,7 +479,12 @@ export class MelancholicNightBootstrapper extends BaseBootstrapper {
                                     (resolve, reject) => MmdBsonLoader.loadAndDeserialize(
                                         url,
                                         data => resolve(data as Vmd),
-                                        undefined,
+                                        e => {
+                                            if (e.lengthComputable) {
+                                                const progress = Math.round(e.loaded / e.total * 100);
+                                                modelAnimationLoadingText.innerText = "motion: " + progress + "%";
+                                            }
+                                        },
                                         reject
                                     )
                                 );
