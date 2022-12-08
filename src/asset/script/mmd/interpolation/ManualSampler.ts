@@ -2,7 +2,7 @@ import { Component, CssHtmlElementRenderer, GameObject, ReadonlyVector3 } from "
 import { Vector2, Vector3 } from "three/src/Three";
 
 export class ManualSampler extends Component {
-    private _samples: Vector2[] = [];
+    private readonly _samples: Vector2[] = [];
     public unitScale = 10;
     public sampleColor = "red";
     private _readyToSpawn = false;

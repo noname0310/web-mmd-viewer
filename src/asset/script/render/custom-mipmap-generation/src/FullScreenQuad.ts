@@ -1,7 +1,7 @@
 import { Mesh, OrthographicCamera, PlaneGeometry } from "three/src/Three";
 
 export class FullScreenQuad {
-    private _mesh: THREE.Mesh;
+    private readonly _mesh: THREE.Mesh;
     private readonly _camera: THREE.Camera;
 
     public get camera(): THREE.Camera {
