@@ -5,8 +5,8 @@ import { AsYouLikeItBootstrapper } from "../mmd_scene/AsYouLikeItBootstrapper";
 import { ConquerorBootstrapper } from "../mmd_scene/ConquerorBootstrapper";
 import { DaybreakFrontlineBootstrapper } from "../mmd_scene/DaybreakFrontlineBootstrapper";
 import { FlosBootstrapper } from "../mmd_scene/FlosBootstrapper";
+import { LemonBootstrapper } from "../mmd_scene/LemonBootstrapper";
 import { MelancholyNightBootstrapper } from "../mmd_scene/MelancholyNightBootstrapper";
-//import { InterpolationTestBootstrapper } from "./InterpolationTestBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "../mmd_scene/MmdGenericBootstrapper";
 import { MusicMusicBootstrapper } from "../mmd_scene/MusicMusicBootstrapper";
 import { NotitleBootstrapper } from "../mmd_scene/NotitleBootstrapper";
@@ -164,6 +164,11 @@ export class ListMmdViewBuilder {
         button14.innerText = "melancholy night";
         button14.onclick = (): void => runGame(MelancholyNightBootstrapper);
 
+        const button15 = document.createElement("button");
+        button15.className = "select_bootstrapper_button";
+        button15.innerText = "lemon";
+        button15.onclick = (): void => runGame(LemonBootstrapper);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -178,24 +183,10 @@ export class ListMmdViewBuilder {
         bootstrapperSelectPanel.appendChild(button12);
         bootstrapperSelectPanel.appendChild(button13);
         bootstrapperSelectPanel.appendChild(button14);
+        bootstrapperSelectPanel.appendChild(button15);
 
         //document.body.appendChild(bootstrapperSelectPanel);
 
-        button14.onclick(new MouseEvent("click"));
-
-        // runGame(MmdGenericBootstrapper, {
-        //     models: [
-        //         {
-        //             modelUrl: "mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx",
-        //             modelMotionUrl: "mmd/rotation test/rotation test.vmd"
-        //         }
-        //     ],
-        //     cameraMotionUrl: "mmd/rotation test/camera.vmd",
-        //     audioUrl: "mmd/the_truth_of_planetariums/the truth of planetariums.mp3",
-        //     settings: {
-        //         usePhysics: false,
-        //         forceAllInterpolateToCubic: true
-        //     }
-        // });
+        button15.onclick(new MouseEvent("click"));
     }
 }
