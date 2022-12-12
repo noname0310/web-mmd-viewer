@@ -43,6 +43,9 @@ export class LemonBootstrapper extends Bootstrapper {
         const mmdModelLoader2 = new PrefabRef<MmdModel>();
         const mmdModelLoader3 = new PrefabRef<MmdModel>();
         const mmdModelLoader4 = new PrefabRef<MmdModel>();
+        const mmdModelLoader5 = new PrefabRef<MmdModel>();
+        const mmdModelLoader6 = new PrefabRef<MmdModel>();
+        const mmdModelLoader7 = new PrefabRef<MmdModel>();
 
         const audioPlayer = new PrefabRef<AudioPlayer>();
 
@@ -54,6 +57,9 @@ export class LemonBootstrapper extends Bootstrapper {
                 .withModelLoader(mmdModelLoader2)
                 .withModelLoader(mmdModelLoader3)
                 .withModelLoader(mmdModelLoader4)
+                .withModelLoader(mmdModelLoader5)
+                .withModelLoader(mmdModelLoader6)
+                .withModelLoader(mmdModelLoader7)
                 .withCameraLoader(mmdCameraLoader)
                 .withAudioPlayer(audioPlayer)
                 .withCameraAnimationName(new PrefabRef("animation1"))
@@ -194,7 +200,7 @@ export class LemonBootstrapper extends Bootstrapper {
                                 .innerText = "fukase " + type + ": " + Math.round(percentComplete) + "% loading";
                         }
                     });
-                    c.asyncLoadModel("mmd/YYB 元气少女/Miku.pmx", model => {
+                    c.asyncLoadModel("mmd/YYB_black__white_dress_v1.31_edited/edit2.pmx", model => {
                         modelLoadingText.innerText = "fukase model loaded";
                         model.castShadow = true;
                         model.frustumCulled = false;
@@ -253,7 +259,7 @@ export class LemonBootstrapper extends Bootstrapper {
                     });
                     c.asyncLoadModel("mmd/lemon/The subtitle pmx/1.pmx", model => {
                         modelLoadingText.innerText = "subtitle model loaded";
-                        model.castShadow = true;
+                        model.castShadow = false;
                         model.frustumCulled = false;
                     });
                     c.asyncLoadAnimation(
@@ -263,6 +269,90 @@ export class LemonBootstrapper extends Bootstrapper {
                     );
                 })
                 .getComponent(MmdModel, mmdModelLoader4))
+
+            .withChild(instantiater.buildGameObject("mmd-model-subtitle-credit1")
+                .withComponent(MmdModel, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const modelLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelLoadingText);
+                    const modelAnimationLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelAnimationLoadingText);
+
+                    c.onProgress.addListener((type, e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            (type === "model" ? modelLoadingText : modelAnimationLoadingText)
+                                .innerText = "subtitle-credit1 " + type + ": " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
+                    c.asyncLoadModel("mmd/lemon/cradit Model1/TextModel.pmx", model => {
+                        modelLoadingText.innerText = "subtitle-credit1 model loaded";
+                        model.castShadow = false;
+                        model.frustumCulled = false;
+                    });
+                    c.asyncLoadAnimation(
+                        "animation1",
+                        [ "mmd/lemon/subtitles credit1.vmd" ],
+                        () => modelAnimationLoadingText.innerText = "subtitle-credit1 animation loaded"
+                    );
+                })
+                .getComponent(MmdModel, mmdModelLoader5))
+
+            .withChild(instantiater.buildGameObject("mmd-model-subtitle-credit2")
+                .withComponent(MmdModel, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const modelLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelLoadingText);
+                    const modelAnimationLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelAnimationLoadingText);
+
+                    c.onProgress.addListener((type, e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            (type === "model" ? modelLoadingText : modelAnimationLoadingText)
+                                .innerText = "subtitle-credit2 " + type + ": " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
+                    c.asyncLoadModel("mmd/lemon/cradit Model2/TextModel.pmx", model => {
+                        modelLoadingText.innerText = "subtitle-credit2 model loaded";
+                        model.castShadow = false;
+                        model.frustumCulled = false;
+                    });
+                    c.asyncLoadAnimation(
+                        "animation1",
+                        [ "mmd/lemon/subtitles credit2.vmd" ],
+                        () => modelAnimationLoadingText.innerText = "subtitle-credit2 animation loaded"
+                    );
+                })
+                .getComponent(MmdModel, mmdModelLoader6))
+
+            .withChild(instantiater.buildGameObject("mmd-model-subtitle-credit3")
+                .withComponent(MmdModel, c => {
+                    const loadingText = Ui.getOrCreateLoadingElement();
+                    const modelLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelLoadingText);
+                    const modelAnimationLoadingText = document.createElement("div");
+                    loadingText.appendChild(modelAnimationLoadingText);
+
+                    c.onProgress.addListener((type, e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = e.loaded / e.total * 100;
+                            (type === "model" ? modelLoadingText : modelAnimationLoadingText)
+                                .innerText = "subtitle-credit3 " + type + ": " + Math.round(percentComplete) + "% loading";
+                        }
+                    });
+                    c.asyncLoadModel("mmd/lemon/cradit Model3/TextModel.pmx", model => {
+                        modelLoadingText.innerText = "subtitle-credit3 model loaded";
+                        model.castShadow = false;
+                        model.frustumCulled = false;
+                    });
+                    c.asyncLoadAnimation(
+                        "animation1",
+                        [ "mmd/lemon/subtitles credit3.vmd" ],
+                        () => modelAnimationLoadingText.innerText = "subtitle-credit3 animation loaded"
+                    );
+                })
+                .getComponent(MmdModel, mmdModelLoader7))
         ;
     }
 }
