@@ -172,7 +172,7 @@ export class LemonBootstrapper extends Bootstrapper {
                                 .innerText = "luo_tian_yi " + type + ": " + Math.round(percentComplete) + "% loading";
                         }
                     });
-                    c.asyncLoadModel("mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx", model => {
+                    c.asyncLoadModel("mmd/YYB Hatsune Miku_10th - faceforward/YYB Hatsune Miku_10th_v1.02 - faceforward.pmx", model => {
                         modelLoadingText.innerText = "luo_tian_yi model loaded";
                         model.castShadow = true;
                         model.frustumCulled = false;
@@ -200,7 +200,7 @@ export class LemonBootstrapper extends Bootstrapper {
                                 .innerText = "fukase " + type + ": " + Math.round(percentComplete) + "% loading";
                         }
                     });
-                    c.asyncLoadModel("mmd/YYB_black__white_dress_v1.31_edited/edit2.pmx", model => {
+                    c.asyncLoadModel("mmd/YYB Hatsune Miku Default fanmade by HB-Squiddy - phys edit/Miku phys edit for skirt - faceforward.pmx", model => {
                         modelLoadingText.innerText = "fukase model loaded";
                         model.castShadow = true;
                         model.frustumCulled = false;
