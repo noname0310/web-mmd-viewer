@@ -239,7 +239,7 @@ export class LemonBootstrapper extends Bootstrapper {
                     });
                     c.asyncLoadAnimation(
                         "animation1",
-                        [ "mmd/lemon/lemon_prop.vmd" ],
+                        [ "mmd/lemon/lemon_prop_low.vmd" ],
                         () => modelAnimationLoadingText.innerText = "lemon animation loaded"
                     );
                 })
