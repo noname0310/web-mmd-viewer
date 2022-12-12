@@ -166,7 +166,7 @@ export class LemonBootstrapper extends Bootstrapper {
                                 .innerText = "luo_tian_yi " + type + ": " + Math.round(percentComplete) + "% loading";
                         }
                     });
-                    c.asyncLoadModel("mmd/YYB 元气少女/Miku.pmx", model => {
+                    c.asyncLoadModel("mmd/yyb_deep_canyons_miku/yyb_deep_canyons_miku_face_forward_bakebone.pmx", model => {
                         modelLoadingText.innerText = "luo_tian_yi model loaded";
                         model.castShadow = true;
                         model.frustumCulled = false;
