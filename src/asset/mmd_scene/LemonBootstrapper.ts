@@ -85,6 +85,9 @@ export class LemonBootstrapper extends Bootstrapper {
                 .getComponent(Camera, orbitCamera))
 
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
+                .withCameraInitializer(c => {
+                    c.backgroundColor = new Color(0.5, 0.5, 0.5, 1);
+                })
                 .withAudioUrl(new PrefabRef("mmd/lemon/lemon.mp3"))
                 .withCameraLoaderInitializer(c => {
                     const loadingText = Ui.getOrCreateLoadingElement();
@@ -144,7 +147,7 @@ export class LemonBootstrapper extends Bootstrapper {
                 undefined,
                 new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
             )
-                .active(true)
+                .active(false)
                 .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
