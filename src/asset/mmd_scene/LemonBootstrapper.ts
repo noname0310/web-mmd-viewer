@@ -15,6 +15,7 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
 import { MmdCamera } from "../script/mmd/MmdCamera";
+import { MMDToonMaterial } from "../script/mmd/MmdMaterialUtils";
 import { MmdModel } from "../script/mmd/MmdModel";
 import { OrbitControls } from "../script/OrbitControls";
 import { Ui } from "../script/Ui";
@@ -264,6 +265,16 @@ export class LemonBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "subtitle model loaded";
                         model.castShadow = false;
                         model.frustumCulled = false;
+
+                        const materials = model.material as THREE.Material[];
+
+                        for (let i = 0; i < materials.length; i++) {
+                            const material = materials[i] as MMDToonMaterial;
+                            material.depthWrite = false;
+                            if (material.map != null) {
+                                material.opacity = 1.0;
+                            }
+                        }
                     });
                     c.asyncLoadAnimation(
                         "animation1",
