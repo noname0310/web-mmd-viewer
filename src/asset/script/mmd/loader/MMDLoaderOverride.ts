@@ -1,4 +1,4 @@
-import { MMDParser, ModelFormat, Pmd, Pmx, Vmd } from "@noname0310/mmd-parser";
+import { GroupMorph, MMDParser, ModelFormat, Pmd, Pmx, PmxBoneInfo, VertexMorph, Vmd } from "@noname0310/mmd-parser";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
 import { AnimationClip, AnimationClipInstance, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
@@ -194,7 +194,7 @@ class GeometryBuilder {
 
             const bone = {
                 index: i,
-                transformationClass: (boneData as any).transformationClass as number|undefined,
+                transformationClass: data.metadata.format === "pmx" ? (boneData as PmxBoneInfo).transformationClass : undefined,
                 parent: boneData.parentIndex,
                 name: boneData.name,
                 pos: boneData.position.slice(0, 3),
@@ -386,20 +386,18 @@ class GeometryBuilder {
         // morph
 
         function updateAttributes(attribute: THREE.Float32BufferAttribute, morph: Pmd["morphs"][0]|Pmx["morphs"][0], ratio: number|undefined): void {
+            if (morph.type !== 1) throw new Error("updateAttributes: morph type must be 1(vertex morph).");
+
             for (let i = 0; i < morph.elementCount; i++) {
                 const element = morph.elements[i];
 
-                let index;
+                const index = data.metadata.format === "pmd"
+                    ? data.morphs[0].elements[element.index].index
+                    : element.index;
 
-                if (data.metadata.format === "pmd") {
-                    index = data.morphs[0].elements[element.index].index;
-                } else {
-                    index = element.index;
-                }
-
-                (attribute.array as number[])[index * 3 + 0] += (element as any).position[0] * ratio!;
-                (attribute.array as number[])[index * 3 + 1] += (element as any).position[1] * ratio!;
-                (attribute.array as number[])[index * 3 + 2] += (element as any).position[2] * ratio!;
+                (attribute.array as number[])[index * 3 + 0] += (element as VertexMorph).position[0] * ratio!;
+                (attribute.array as number[])[index * 3 + 1] += (element as VertexMorph).position[1] * ratio!;
+                (attribute.array as number[])[index * 3 + 2] += (element as VertexMorph).position[2] * ratio!;
             }
         }
 
@@ -431,7 +429,7 @@ class GeometryBuilder {
                     for (let j = 0; j < morph.elementCount; j++) {
 
                         const morph2 = data.morphs[morph.elements[j].index];
-                        const ratio = ((morph as Pmx["morphs"][0]).elements[j] as any).ratio as number|undefined;
+                        const ratio = ((morph as Pmx["morphs"][0]).elements[j] as GroupMorph).ratio as number|undefined;
 
                         if (morph2.type === 1) {
                             updateAttributes(attribute, morph2, ratio);
@@ -900,8 +898,9 @@ export class AnimationBuilder {
 
         const track = new typedKeyframeTrack(node, times, values);
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        (track as any).createInterpolant = function InterpolantFactoryMethodCubicBezier(result: any): CubicBezierStepInterpolation | CubicBezierInterpolation {
+        (track as any).createInterpolant = function interpolantFactoryMethodCubicBezier(
+            result: Float32Array | null
+        ): CubicBezierStepInterpolation | CubicBezierInterpolation {
             const interpolationCtor = useStepInterpolation ? CubicBezierStepInterpolation : CubicBezierInterpolation;
             return new interpolationCtor(this.times, this.values, this.getValueSize(), result, new Float32Array(interpolations));
         };
@@ -913,7 +912,13 @@ export class AnimationBuilder {
 class CubicBezierInterpolation extends THREE.Interpolant {
     public interpolationParams: Float32Array;
 
-    public constructor(parameterPositions: any, sampleValues: any, sampleSize: number, resultBuffer: any, params: Float32Array) {
+    public constructor(
+        parameterPositions: Float32Array | null,
+        sampleValues: Float32Array | null,
+        sampleSize: number,
+        resultBuffer: Float32Array | null,
+        params: Float32Array
+    ) {
         super(parameterPositions, sampleValues, sampleSize, resultBuffer);
 
         this.interpolationParams = params;
@@ -997,7 +1002,13 @@ class CubicBezierInterpolation extends THREE.Interpolant {
 class CubicBezierStepInterpolation extends THREE.Interpolant {
     public interpolationParams: Float32Array;
 
-    public constructor(parameterPositions: any, sampleValues: any, sampleSize: number, resultBuffer: any, params: Float32Array) {
+    public constructor(
+        parameterPositions: Float32Array | null,
+        sampleValues: Float32Array | null,
+        sampleSize: number,
+        resultBuffer: Float32Array | null,
+        params: Float32Array
+    ) {
         super(parameterPositions, sampleValues, sampleSize, resultBuffer);
 
         this.interpolationParams = params;
