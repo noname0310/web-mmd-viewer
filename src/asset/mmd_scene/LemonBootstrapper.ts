@@ -14,8 +14,8 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
-import { MMDToonMaterial } from "../script/mmd/material/MmdMaterial";
 import { MmdCamera } from "../script/mmd/MmdCamera";
+import { MMDToonMaterial } from "../script/mmd/MmdMaterial";
 import { MmdModel } from "../script/mmd/MmdModel";
 import { OrbitControls } from "../script/OrbitControls";
 import { Ui } from "../script/Ui";

@@ -32,9 +32,9 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
 import { GlobalAssetManager } from "../script/GlobalAssetManager";
-import { MMDToonMaterial } from "../script/mmd/material/MmdMaterial";
-import { MmdMaterialUtils } from "../script/mmd/material/MmdMaterialUtils";
 import { MmdCamera } from "../script/mmd/MmdCamera";
+import { MMDToonMaterial } from "../script/mmd/MmdMaterial";
+import { MmdMaterialUtils } from "../script/mmd/MmdMaterialUtils";
 import { MmdModel } from "../script/mmd/MmdModel";
 import { OrbitControls } from "../script/OrbitControls";
 import { WebGLGlobalPostProcessVolume } from "../script/render/WebGLGlobalPostProcessVolume";
