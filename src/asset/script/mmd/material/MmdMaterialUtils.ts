@@ -6,14 +6,19 @@ export class MmdMaterialUtils {
     public static convert(mmdMaterial: MMDToonMaterial): THREE.MeshStandardMaterial {
         const material = new THREE.MeshStandardMaterial();
         material.copy(mmdMaterial);
+        material.color = mmdMaterial.diffuse;
+        material.opacity = mmdMaterial.opacity;
+        material.emissive.copy(mmdMaterial.emissive);
+        material.transparent = mmdMaterial.transparent;
+        material.fog = mmdMaterial.fog;
         material.map = mmdMaterial.map;
         material.envMap = mmdMaterial.envMap;
         material.envMapIntensity = 0;
         material.normalMap?.dispose();
         material.normalMap = null;
-        material.roughness = mmdMaterial.shininess / 100;
+        material.roughness = 1;
         material.metalness = 0;
-        material.emissive = new THREE.Color(0x000000);
+        material.emissive.copy(mmdMaterial.emissive);
         material.side = mmdMaterial.side;
         material.needsUpdate = true;
 
