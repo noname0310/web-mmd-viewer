@@ -12,7 +12,6 @@ export class MmdMorphController {
     private readonly _materialMmdMorphDependencyMap: Map<number, MmdMorph<MorphType.Material>[]>;
 
     private readonly _computeSet: Set<MmdMorph<MorphType.Bone | MorphType.Material>>;
-    private readonly _computeBuffer: MmdMorph<MorphType.Bone | MorphType.Material>[];
 
     public constructor(data: Pmd | Pmx) {
         const mmdMorphNameMap = new Map<string, number>();
@@ -93,7 +92,6 @@ export class MmdMorphController {
         this._materialMmdMorphDependencyMap = materialMmdMorphDependencyMap;
 
         this._computeSet = computeList;
-        this._computeBuffer = [];
     }
 
     private addComputeMorphs(mmdMorph: MmdMorph<MorphType>): void {
@@ -150,11 +148,13 @@ export class MmdMorphController {
         return this._mmdMorphs[index].weight;
     }
 
+    private readonly _computeBuffer: MmdMorph<MorphType.Bone | MorphType.Material>[] = [];
+    private readonly _updateMorphControllers = new Set<MmdMaterialMorphController>();
+
     public apply(
         materialControllers: MmdMaterialMorphController[]
     ): void {
         const computeBuffer = this._computeBuffer;
-        computeBuffer.length = 0;
         for (const morph of this._computeSet) {
             computeBuffer.push(morph);
         }
@@ -164,11 +164,27 @@ export class MmdMorphController {
             return morphNameMap.get(a.name)! - morphNameMap.get(b.name)!;
         });
 
+        const updateMorphControllers = this._updateMorphControllers;
+
         for (let i = 0; i < computeBuffer.length; ++i) {
             const morph = computeBuffer[i];
-            // if (morph.type === MorphType.Bone) {
-            //     // not implemented
-            // }
+            if (morph.type === MorphType.Material) {
+                const materialMmdMorph = morph as MmdMorph<MorphType.Material>;
+                const materialMorphs = materialMmdMorph.elements;
+                for (let i = 0; i < materialMorphs.length; ++i) {
+                    const materialMorph = materialMorphs[i];
+                    const materialController = materialControllers[materialMorph.index];
+                    updateMorphControllers.add(materialController);
+                }
+            }
+        }
+
+        for (const controller of updateMorphControllers) {
+            controller.reset();
+        }
+
+        for (let i = 0; i < computeBuffer.length; ++i) {
+            const morph = computeBuffer[i];
             if (morph.type === MorphType.Material) {
                 const materialMmdMorph = morph as MmdMorph<MorphType.Material>;
                 const materialMorphs = materialMmdMorph.elements;
@@ -183,5 +199,12 @@ export class MmdMorphController {
                 }
             }
         }
+
+        for (const controller of updateMorphControllers) {
+            controller.apply();
+        }
+
+        updateMorphControllers.clear();
+        computeBuffer.length = 0;
     }
 }
