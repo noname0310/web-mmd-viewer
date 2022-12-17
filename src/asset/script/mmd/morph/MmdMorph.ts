@@ -28,10 +28,12 @@ export class MmdMorph<T extends MorphType = MorphType> {
     public readonly name: string;
     public readonly type: T;
     public readonly elements: InferedMorphType<T>[];
+    public weight: number;
 
     public constructor(name: string, type: T, elements: InferedMorphType<T>[]) {
         this.name = name;
         this.type = type;
         this.elements = elements;
+        this.weight = 0;
     }
 }
