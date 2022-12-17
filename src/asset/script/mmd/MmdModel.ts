@@ -4,7 +4,8 @@ import * as THREE from "three/src/Three";
 
 import { MMDLoaderOverride } from "./loader/MMDLoaderOverride";
 import { MmdModelAnimationClip, MmdModelAnimationLoader } from "./loader/MmdModelAnimationLoader";
-import { MmdMaterialUtils, MMDToonMaterial } from "./MmdMaterialUtils";
+import { MMDToonMaterial } from "./material/MmdMaterial";
+import { MmdMaterialUtils } from "./material/MmdMaterialUtils";
 
 export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>>;
 

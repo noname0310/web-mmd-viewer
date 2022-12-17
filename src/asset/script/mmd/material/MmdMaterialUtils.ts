@@ -1,13 +1,6 @@
 import * as THREE from "three/src/Three";
 
-export type MMDToonMaterial = THREE.Material & {
-    isMMDToonMaterial: boolean;
-    map: THREE.Texture | null;
-    envMap: THREE.Texture | null;
-    gradientMap: THREE.Texture | null;
-    matcap: THREE.Texture | null;
-    emissive?: THREE.ColorRepresentation;
-};
+import { MMDToonMaterial } from "./MmdMaterial";
 
 export class MmdMaterialUtils {
     public static convert(mmdMaterial: MMDToonMaterial): THREE.MeshStandardMaterial {
@@ -18,7 +11,7 @@ export class MmdMaterialUtils {
         material.envMapIntensity = 0;
         material.normalMap?.dispose();
         material.normalMap = null;
-        material.roughness = 1;
+        material.roughness = mmdMaterial.shininess / 100;
         material.metalness = 0;
         material.emissive = new THREE.Color(0x000000);
         material.side = mmdMaterial.side;

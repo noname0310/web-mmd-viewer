@@ -14,8 +14,8 @@ import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPla
 
 import { GameManagerPrefab } from "../prefab/GameManagerPrefab";
 import { MmdCameraPrefab } from "../prefab/MmdCameraPrefab";
+import { MMDToonMaterial } from "../script/mmd/material/MmdMaterial";
 import { MmdCamera } from "../script/mmd/MmdCamera";
-import { MMDToonMaterial } from "../script/mmd/MmdMaterialUtils";
 import { MmdModel } from "../script/mmd/MmdModel";
 import { OrbitControls } from "../script/OrbitControls";
 import { Ui } from "../script/Ui";
@@ -271,9 +271,7 @@ export class LemonBootstrapper extends Bootstrapper {
                         for (let i = 0; i < materials.length; i++) {
                             const material = materials[i] as MMDToonMaterial;
                             material.depthWrite = false;
-                            if (material.map != null) {
-                                material.opacity = 1.0;
-                            }
+                            material.opacity = 1.0;
                         }
                     });
                     c.asyncLoadAnimation(
@@ -331,6 +329,7 @@ export class LemonBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "subtitle-credit2 model loaded";
                         model.castShadow = false;
                         model.frustumCulled = false;
+                        console.log(model.material);
                     });
                     c.asyncLoadAnimation(
                         "animation1",
