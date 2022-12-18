@@ -82,58 +82,58 @@ export class MmdMaterialMorphController {
             material.userData.outlineParameters !== undefined;
     }
 
-    public addWeightFromMorphData(morph: MaterialMorph): void {
+    public addWeightFromMorphData(morph: MaterialMorph, weight: number): void {
         const weightedDiffuse = this.weightedDiffuse;
-        weightedDiffuse.r += morph.diffuse[0];
-        weightedDiffuse.g += morph.diffuse[1];
-        weightedDiffuse.b += morph.diffuse[2];
-        this.weightedOpacity += morph.diffuse[3];
+        weightedDiffuse.r += morph.diffuse[0] * weight;
+        weightedDiffuse.g += morph.diffuse[1] * weight;
+        weightedDiffuse.b += morph.diffuse[2] * weight;
+        this.weightedOpacity += morph.diffuse[3] * weight;
 
         const weightedSpecular = this.weightedSpecular;
-        weightedSpecular.r += morph.specular[0];
-        weightedSpecular.g += morph.specular[1];
-        weightedSpecular.b += morph.specular[2];
+        weightedSpecular.r += morph.specular[0] * weight;
+        weightedSpecular.g += morph.specular[1] * weight;
+        weightedSpecular.b += morph.specular[2] * weight;
 
-        this.weightedShininess += morph.shininess;
+        this.weightedShininess += morph.shininess * weight;
 
         const weightedEmissive = this.weightedEmissive;
-        weightedEmissive.r += morph.ambient[0];
-        weightedEmissive.g += morph.ambient[1];
-        weightedEmissive.b += morph.ambient[2];
+        weightedEmissive.r += morph.ambient[0] * weight;
+        weightedEmissive.g += morph.ambient[1] * weight;
+        weightedEmissive.b += morph.ambient[2] * weight;
 
         const weightedEdgeColor = this.weightedEdgeColor;
-        weightedEdgeColor[0] += morph.edgeColor[0];
-        weightedEdgeColor[1] += morph.edgeColor[1];
-        weightedEdgeColor[2] += morph.edgeColor[2];
+        weightedEdgeColor[0] += morph.edgeColor[0] * weight;
+        weightedEdgeColor[1] += morph.edgeColor[1] * weight;
+        weightedEdgeColor[2] += morph.edgeColor[2] * weight;
 
-        this.weightedEdgeSize += morph.edgeSize / 300;
+        this.weightedEdgeSize += morph.edgeSize / 300 * weight;
     }
 
-    public multiplyWeightFromMorphData(morph: MaterialMorph): void {
+    public multiplyWeightFromMorphData(morph: MaterialMorph, weight: number): void {
         const weightedDiffuse = this.weightedDiffuse;
-        weightedDiffuse.r *= morph.diffuse[0];
-        weightedDiffuse.g *= morph.diffuse[1];
-        weightedDiffuse.b *= morph.diffuse[2];
-        this.weightedOpacity *= morph.diffuse[3];
+        weightedDiffuse.r *= morph.diffuse[0] * weight;
+        weightedDiffuse.g *= morph.diffuse[1] * weight;
+        weightedDiffuse.b *= morph.diffuse[2] * weight;
+        this.weightedOpacity *= morph.diffuse[3] * weight;
 
         const weightedSpecular = this.weightedSpecular;
-        weightedSpecular.r *= morph.specular[0];
-        weightedSpecular.g *= morph.specular[1];
-        weightedSpecular.b *= morph.specular[2];
+        weightedSpecular.r *= morph.specular[0] * weight;
+        weightedSpecular.g *= morph.specular[1] * weight;
+        weightedSpecular.b *= morph.specular[2] * weight;
 
-        this.weightedShininess *= morph.shininess;
+        this.weightedShininess *= morph.shininess * weight;
 
         const weightedEmissive = this.weightedEmissive;
-        weightedEmissive.r *= morph.ambient[0];
-        weightedEmissive.g *= morph.ambient[1];
-        weightedEmissive.b *= morph.ambient[2];
+        weightedEmissive.r *= morph.ambient[0] * weight;
+        weightedEmissive.g *= morph.ambient[1] * weight;
+        weightedEmissive.b *= morph.ambient[2] * weight;
 
         const weightedEdgeColor = this.weightedEdgeColor;
-        weightedEdgeColor[0] *= morph.edgeColor[0];
-        weightedEdgeColor[1] *= morph.edgeColor[1];
-        weightedEdgeColor[2] *= morph.edgeColor[2];
+        weightedEdgeColor[0] *= morph.edgeColor[0] * weight;
+        weightedEdgeColor[1] *= morph.edgeColor[1] * weight;
+        weightedEdgeColor[2] *= morph.edgeColor[2] * weight;
 
-        this.weightedEdgeSize *= morph.edgeSize;
+        this.weightedEdgeSize *= morph.edgeSize * weight;
     }
 
     public reset(): void {

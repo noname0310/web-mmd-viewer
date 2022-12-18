@@ -29,7 +29,10 @@ export class MmdMorph<T extends MorphType = MorphType> {
     public readonly type: T;
     public readonly elements: InferedMorphType<T>[];
     public weight: number;
-    public readonly connectedGroupMmdMorphs: MmdMorph<MorphType.Group>[] = [];
+    public readonly connectedGroupMmdMorphs: { 
+        readonly mmdMorph: MmdMorph<MorphType.Group>,
+        readonly morph: GroupMorph
+    }[] = [];
 
     public constructor(name: string, type: T, elements: InferedMorphType<T>[]) {
         this.name = name;

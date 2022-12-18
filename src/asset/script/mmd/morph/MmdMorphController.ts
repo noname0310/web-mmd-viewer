@@ -81,7 +81,10 @@ export class MmdMorphController {
             for (let j = 0; j < groupMorphs.length; ++j) {
                 const groupMorph = groupMorphs[j];
                 const memberMmdMorph = mmdMorphs[groupMorph.index];
-                memberMmdMorph.connectedGroupMmdMorphs.push(groupMmdMorph);
+                memberMmdMorph.connectedGroupMmdMorphs.push({
+                    mmdMorph: groupMmdMorph,
+                    morph: groupMorph
+                });
             }
         }
 
@@ -187,14 +190,21 @@ export class MmdMorphController {
             const morph = computeBuffer[i];
             if (morph.type === MorphType.Material) {
                 const materialMmdMorph = morph as MmdMorph<MorphType.Material>;
+
+                let weight = materialMmdMorph.weight;
+                for (let j = 0; j < materialMmdMorph.connectedGroupMmdMorphs.length; ++j) {
+                    const groupMorphData = materialMmdMorph.connectedGroupMmdMorphs[j];
+                    weight *= groupMorphData.mmdMorph.weight * groupMorphData.morph.ratio;
+                }
+
                 const materialMorphs = materialMmdMorph.elements;
                 for (let i = 0; i < materialMorphs.length; ++i) {
                     const materialMorph = materialMorphs[i];
                     const materialController = materialControllers[materialMorph.index];
                     if (materialMorph.type === 0) { // multiply
-                        materialController.multiplyWeightFromMorphData(materialMorph);
+                        materialController.multiplyWeightFromMorphData(materialMorph, weight);
                     } else if (materialMorph.type === 1) { // add
-                        materialController.addWeightFromMorphData(materialMorph);
+                        materialController.addWeightFromMorphData(materialMorph, weight);
                     }
                 }
             }
