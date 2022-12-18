@@ -5,6 +5,13 @@ import * as THREE from "three/src/Three";
 import { GeometryBone, MmdUserData } from "./MMDLoaderOverride";
 import { MMdPhysicsOverride } from "./MMDPhysicsOverride";
 
+type MMDAnimationHelperMixerOverride = MMDAnimationHelperMixer & {
+    sortedBonesData?: GeometryBone[];
+
+    ikEnables: boolean[];
+    boneIkMapper: Map<string, number>;
+};
+
 export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _createMMDPhysics(mesh: THREE.SkinnedMesh, params: any): MMdPhysicsOverride {
@@ -25,7 +32,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     public _createCCDIKSolver(mesh: THREE.SkinnedMesh): CCDIKSolver {
         const iks = (mesh.geometry.userData.MMD as MmdUserData).iks;
         const bones = (mesh.geometry.userData.MMD as MmdUserData).bones;
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables?: boolean[], boneIkMapper?: Map<string, number> };
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixerOverride;
         objects.ikEnables = [];
         objects.boneIkMapper = new Map();
         for (let i = 0, il = iks.length; i < il; i++) {
@@ -43,7 +50,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _animateMesh(mesh: THREE.SkinnedMesh, delta: number): void {
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { sortedBonesData?: GeometryBone[], ikEnables?: boolean[], boneIkMapper?: Map<string, number> };
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixerOverride;
 
         const mixer = objects.mixer;
         const ikSolver = objects.ikSolver;
@@ -77,7 +84,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
                 if (ikSolver && this.enabled.ik) {
                     mesh.updateMatrixWorld(true);
 
-                    const ikEnables = objects.ikEnables!;
+                    const ikEnables = objects.ikEnables;
                     const iks = (mesh.geometry.userData.MMD as MmdUserData).iks;
                     for (let i = 0, il = iks.length; i < il; i++) {
                         if (ikEnables[i] === true) {
@@ -115,7 +122,7 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
         _quaternionIndex = 0;
         _grantResultMap.clear();
 
-        const mixer = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> };
+        const mixer = this.objects.get(mesh)! as MMDAnimationHelperMixerOverride;
         for (let i = 0, il = sortedBonesData.length; i < il; i++) {
             updateOne(mesh, sortedBonesData[i].index, ikSolver, grantSolver, mixer);
         }
@@ -129,19 +136,19 @@ export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     }
 
     public isIkEnabled(mesh: THREE.SkinnedMesh, name: string): boolean {
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> };
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixerOverride;
         const index = objects.boneIkMapper.get(name);
         return index !== undefined ? objects.ikEnables[index] : false;
     }
 
     public setIkEnabled(mesh: THREE.SkinnedMesh, name: string, enabled: boolean): void {
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> };
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixerOverride;
         const index = objects.boneIkMapper.get(name);
         if (index !== undefined) objects.ikEnables[index] = enabled;
     }
 
     public isIkExists(mesh: THREE.SkinnedMesh, name: string): boolean {
-        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixer & { boneIkMapper: Map<string, number> };
+        const objects = this.objects.get(mesh)! as MMDAnimationHelperMixerOverride;
         return objects.boneIkMapper.has(name);
     }
 }
@@ -170,7 +177,7 @@ function updateOne(
     boneIndex: number,
     ikSolver: CCDIKSolver|null,
     grantSolver: GrantSolver|null,
-    mixer: MMDAnimationHelperMixer & { ikEnables: boolean[], boneIkMapper: Map<string, number> }
+    mixer: MMDAnimationHelperMixerOverride
 ): void {
     const bones = mesh.skeleton.bones;
     const bonesData = (mesh.geometry.userData.MMD as MmdUserData).bones;
