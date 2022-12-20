@@ -95,7 +95,7 @@ type MmdBufferGeomatry = THREE.BufferGeometry & {
     morphTargets: GeometryMorphTarget[];
 };
 
-class GeometryBuilder {
+export class GeometryBuilder {
 
     /**
      * @param {Object} data - parsed PMD/PMX data
