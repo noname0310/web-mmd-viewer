@@ -39,7 +39,7 @@ export class MmdMaterialMorphController {
         this._material = material;
 
         const isExactMMdMaterial = this._isExactMmdMaterial = MmdMaterialMorphController.isExactMmdMaterial(material);
-        
+
         this._opacity = material.opacity;
         this.weightedOpacity = this._opacity;
 
@@ -84,7 +84,7 @@ export class MmdMaterialMorphController {
 
     public rebind(material: MmdMaterialLike): void {
         const lastIsExactMmdMaterial = this._isExactMmdMaterial;
-        
+
         this._material = material;
         this._isExactMmdMaterial = MmdMaterialMorphController.isExactMmdMaterial(material);
 
@@ -120,7 +120,7 @@ export class MmdMaterialMorphController {
             edgeColor[2] = outlineParameters.color[2];
             edgeColor[3] = outlineParameters.alpha;
             this._edgeSize = outlineParameters.thickness;
-            
+
             this.weightedDiffuse!.copy(this._diffuse!);
 
             this.weightedSpecular!.copy(this._specular!);
@@ -225,7 +225,7 @@ export class MmdMaterialMorphController {
             material.specular!.copy(this.weightedSpecular!);
             material.shininess = this.weightedShininess;
             material.emissive!.copy(this.weightedEmissive!);
-            
+
             const outlineParameters = material.userData!.outlineParameters!;
             outlineParameters.thickness = this.weightedEdgeSize!;
             const outlineParametersColor = outlineParameters.color;
