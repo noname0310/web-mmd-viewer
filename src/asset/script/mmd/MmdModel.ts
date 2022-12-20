@@ -2,22 +2,25 @@ import { Vmd } from "@noname0310/mmd-parser";
 import { Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, Object3DContainer, WaitUntil } from "the-world-engine";
 import * as THREE from "three/src/Three";
 
-import { MMDLoaderOverride } from "./loader/MMDLoaderOverride";
 import { MmdModelAnimationClip, MmdModelAnimationLoader } from "./loader/MmdModelAnimationLoader";
+import { MmdModelLoader } from "./loader/MmdModelLoader";
 import { MMDToonMaterial } from "./MmdMaterial";
 import { MmdMaterialUtils } from "./MmdMaterialUtils";
+import { MmdParameterController } from "./runtime/MmdParameterController";
 
-export type SkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>>;
+export type MmdSkinnedMeshContainer = Object3DContainer<THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>>;
 
 export class MmdModel extends Component {
     private readonly _loadingManager = new THREE.LoadingManager();
-    private readonly _loader = new MMDLoaderOverride(this._loadingManager);
+    private readonly _modelLoader = new MmdModelLoader(this._loadingManager);
     private readonly _animationLoader = new MmdModelAnimationLoader();
-    private _object3DContainer: SkinnedMeshContainer | null = null;
+    private _object3DContainer: MmdSkinnedMeshContainer | null = null;
+    private _parameterController: MmdParameterController | null = null;
     private readonly _animations: Map<string, MmdModelAnimationClip> = new Map();
     private readonly _loadingAnimations = new Set<string>();
     private readonly _onProgressEvent = new EventContainer<(objectType: "model" | "animation", event: ProgressEvent<EventTarget>) => void>();
     private readonly _onDisposeObject3DEvent = new EventContainer<(object3D: THREE.SkinnedMesh) => void>();
+
     private readonly _defaultPoseMap = new Map<THREE.Object3D, { position: THREE.Vector3, quaternion: THREE.Quaternion, scale: THREE.Vector3 }>();
 
     private readonly _animationLoadingCoroutines: Coroutine[] = [];
@@ -28,7 +31,7 @@ export class MmdModel extends Component {
 
     public awake(): void {
         this._isReadyToLoad = true;
-        this._object3DContainer = this.gameObject.addComponent<SkinnedMeshContainer>(Object3DContainer);
+        this._object3DContainer = this.gameObject.addComponent<MmdSkinnedMeshContainer>(Object3DContainer);
 
         this._initLoadModelFunc?.(() => {
             const initLoadAnimationFunc = this._initLoadAnimationFunc;
@@ -36,6 +39,7 @@ export class MmdModel extends Component {
                 initLoadAnimationFunc[i]();
             }
         });
+        this._initLoadModelFunc = null;
     }
 
     public onDisable(): void {
@@ -43,6 +47,15 @@ export class MmdModel extends Component {
             this._animationLoadingCoroutines.length = 0;
             this._loadingAnimations.clear();
         }
+    }
+
+    public onDestroy(): void {
+        this._object3DContainer = null;
+        this._parameterController = null;
+        this._animations.clear();
+        this._onProgressEvent.removeAllListeners();
+        this._onDisposeObject3DEvent.removeAllListeners();
+        this._defaultPoseMap.clear();
     }
 
     public asyncLoadModel(
@@ -113,7 +126,7 @@ export class MmdModel extends Component {
         const animation = this._animationLoader.loadAnimation(
             vmd,
             this._object3DContainer!.object3D,
-            this._loader.forceAllInterpolateToCubic
+            this._modelLoader.forceAllInterpolateToCubic
         );
         this._animations.set(animationName, animation);
     }
@@ -127,34 +140,19 @@ export class MmdModel extends Component {
         onProgress?: (event: ProgressEvent<EventTarget>) => void,
         onComplete?: (object: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>) => void
     ): CoroutineIterator {
-        let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]> | null = null;
-        this._loader.load(url, object => {
-            model = object;
-            if (!this.exists || !this.gameObject.activeInHierarchy) {
-                model.geometry.dispose();
-                if (model.material instanceof Array) {
-                    const materials = model.material;
-                    for (let i = 0; i < materials.length; ++i) {
-                        MmdMaterialUtils.disposeTexture(materials[i] as MMDToonMaterial);
-                        materials[i].dispose();
-                    }
-                } else {
-                    MmdMaterialUtils.disposeTexture(model.material as MMDToonMaterial);
-                    model.material.dispose();
-                }
-            }
+        let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]> | null = null;
+        this._modelLoader.loadDataFromUrl(url, data => {
+            if (!this.exists || !this.gameObject.activeInHierarchy) return;
+
+            model = this._modelLoader.loadModelFromData(data, onProgress) as THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
+            this._parameterController = new MmdParameterController(data, model);
         }, onProgress);
         yield new WaitUntil(() => model !== null);
         this._object3DContainer!.setObject3D(model!, object3D => {
             object3D.geometry.dispose();
-            if (object3D.material instanceof Array) {
-                for (let i = 0; i < object3D.material.length; ++i) {
-                    MmdMaterialUtils.disposeTexture(object3D.material[i] as MMDToonMaterial);
-                    object3D.material[i].dispose();
-                }
-            } else {
-                MmdMaterialUtils.disposeTexture(object3D.material as MMDToonMaterial);
-                object3D.material.dispose();
+            for (let i = 0; i < object3D.material.length; ++i) {
+                MmdMaterialUtils.disposeTexture(object3D.material[i] as MMDToonMaterial);
+                object3D.material[i].dispose();
             }
             this._onDisposeObject3DEvent.invoke(object3D);
         });
@@ -188,7 +186,7 @@ export class MmdModel extends Component {
         this._animationLoader.loadAnimationFromUrl(
             url,
             this._object3DContainer!.object3D,
-            this._loader.forceAllInterpolateToCubic,
+            this._modelLoader.forceAllInterpolateToCubic,
             object => animation = object,
             onProgress
         );
@@ -226,11 +224,11 @@ export class MmdModel extends Component {
         this._loadingManager.setURLModifier(urlModifier);
     }
 
-    public get skinnedMesh(): THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]> | null {
+    public get skinnedMesh(): THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]> | null {
         return this._object3DContainer?.object3D ?? null;
     }
 
-    public get object3DContainer(): SkinnedMeshContainer | null {
+    public get object3DContainer(): MmdSkinnedMeshContainer | null {
         return this._object3DContainer;
     }
 
@@ -247,13 +245,17 @@ export class MmdModel extends Component {
     }
 
     public get forceAllInterpolateToCubic(): boolean {
-        return this._loader.forceAllInterpolateToCubic;
+        return this._modelLoader.forceAllInterpolateToCubic;
     }
 
     public set forceAllInterpolateToCubic(value: boolean) {
         if (this._isReadyToLoad) {
             throw new Error("Cannot set forceAllInterpolateToCubic after awake.");
         }
-        this._loader.forceAllInterpolateToCubic = value;
+        this._modelLoader.forceAllInterpolateToCubic = value;
+    }
+
+    public get parameterController(): MmdParameterController | null {
+        return this._parameterController;
     }
 }

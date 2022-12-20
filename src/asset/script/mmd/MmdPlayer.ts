@@ -3,7 +3,7 @@ import { MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/e
 
 import { MMDAnimationHelperOverride } from "./loader/MMDAnimationHelperOverride";
 import { MMdPhysicsOverride } from "./loader/MMDPhysicsOverride";
-import { SkinnedMeshContainer } from "./MmdModel";
+import { MmdSkinnedMeshContainer } from "./MmdModel";
 
 export interface MMDAnimationModelParameter extends Omit<MMDAnimationHelperAddParameter, "gravity"> {
     animation: THREE.AnimationClip | THREE.AnimationClip[];
@@ -20,7 +20,7 @@ export class MmdPlayer extends Component {
 
     private _isPlaying = false;
     private _elapsedTime = 0;
-    private _model: SkinnedMeshContainer|null = null;
+    private _model: MmdSkinnedMeshContainer|null = null;
     private _manualUpdate = false;
     private _manualUpdateFps = 60;
     private _animationEndFrame = 0;
@@ -71,7 +71,7 @@ export class MmdPlayer extends Component {
     }
 
     public play(
-        model: SkinnedMeshContainer,
+        model: MmdSkinnedMeshContainer,
         modelParams: MMDAnimationModelParameter,
         camera?: THREE.Camera,
         cameraParams?: MMDAnimationCameraParameter,

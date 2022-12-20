@@ -30,6 +30,7 @@ export class MmdCamera extends Component {
         for (let i = 0; i < initLoadAnimationFunc.length; ++i) {
             initLoadAnimationFunc[i]();
         }
+        this._initLoadAnimationFunc.length = 0;
     }
 
     public onDisable(): void {
@@ -37,6 +38,13 @@ export class MmdCamera extends Component {
             this._animationLoadingCoroutines.length = 0;
             this._loadingAnimations.clear();
         }
+    }
+
+    public onDestroy(): void {
+        this._camera = null;
+        this._animations.clear();
+        this._onProgressEvent.removeAllListeners();
+        this._initLoadAnimationFunc.length = 0;
     }
 
     public asyncLoadAnimation(
