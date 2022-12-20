@@ -329,7 +329,6 @@ export class LemonBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "subtitle-credit2 model loaded";
                         model.castShadow = false;
                         model.frustumCulled = false;
-                        console.log(model.material);
                     });
                     c.asyncLoadAnimation(
                         "animation1",

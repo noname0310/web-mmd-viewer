@@ -144,7 +144,7 @@ export class MmdModel extends Component {
         this._modelLoader.loadDataFromUrl(url, data => {
             if (!this.exists || !this.gameObject.activeInHierarchy) return;
 
-            model = this._modelLoader.loadModelFromData(data, onProgress) as THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
+            model = this._modelLoader.loadModelFromData(data, url, onProgress) as THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
             this._parameterController = new MmdParameterController(data, model);
         }, onProgress);
         yield new WaitUntil(() => model !== null);

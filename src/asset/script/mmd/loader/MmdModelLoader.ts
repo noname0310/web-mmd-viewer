@@ -55,6 +55,7 @@ export class MmdModelLoader {
 
     public loadModelFromData(
         data: Pmd | Pmx,
+        url?: string,
         onProgress?: (event: ProgressEvent<EventTarget>) => void,
         onError?: (event: ErrorEvent | Error) => void
     ): THREE.SkinnedMesh {
@@ -67,15 +68,14 @@ export class MmdModelLoader {
             resourcePath = loader.resourcePath;
         } else if (loader.path !== "") {
             resourcePath = loader.path;
+        } else if (url !== undefined) {
+            resourcePath = THREE.LoaderUtils.extractUrlBase(url);
         } else {
+            console.warn("THREE.MMDLoader: Using relative URLs as resourcePath.");
             resourcePath = "";
         }
 
-        if (data.metadata.format === "pmd") {
-            return builder.build(data, resourcePath, onProgress, onError);
-        } else {
-            return builder.build(data, resourcePath, onProgress, onError);
-        }
+        return builder.build(data, resourcePath, onProgress, onError);
     }
 
     public loadModelFromUrl(
@@ -85,7 +85,7 @@ export class MmdModelLoader {
         onError?: (event: ErrorEvent | Error) => void
     ): void {
         this.loadDataFromUrl(url, (data) => {
-            onLoad(this.loadModelFromData(data, onProgress, onError));
+            onLoad(this.loadModelFromData(data, url, onProgress, onError));
         }, onProgress, onError);
     }
 
