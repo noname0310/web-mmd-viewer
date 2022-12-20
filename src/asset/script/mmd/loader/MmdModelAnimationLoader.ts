@@ -35,11 +35,12 @@ export class MmdModelAnimationClipInstance {
 export class MmdModelAnimationLoader {
     private readonly _mmdLoader: MMDLoaderOverride;
     private readonly _animationBuilder: AnimationBuilder;
-    private readonly _fileLoader = new THREE.FileLoader();
+    private readonly _fileLoader: THREE.FileLoader;
 
     public constructor() {
         this._mmdLoader = new MMDLoaderOverride();
         this._animationBuilder = new AnimationBuilder(this._mmdLoader);
+        this._fileLoader = new THREE.FileLoader();
     }
 
     public loadVmdFromUrl(
