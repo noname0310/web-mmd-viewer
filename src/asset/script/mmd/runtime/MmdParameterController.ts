@@ -27,4 +27,8 @@ export class MmdParameterController {
             this.materialMorphs[i].rebind(materials[i]);
         }
     }
+
+    public apply(): void {
+        this.morph.apply(this.materialMorphs);
+    }
 }
