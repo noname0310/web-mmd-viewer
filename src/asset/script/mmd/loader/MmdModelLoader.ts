@@ -1,5 +1,6 @@
 import { Pmd, Pmx } from "@noname0310/mmd-parser";
 import * as THREE from "three/src/Three";
+
 import { GeometryBuilder, MMDLoaderOverride } from "./MMDLoaderOverride";
 
 export interface MeshBuilder {
@@ -32,16 +33,16 @@ export class MmdModelLoader {
         onError?: (event: ErrorEvent | Error) => void
     ): void {
         const loader = this._mmdLoader;
-        
+
         const modelExtension = (loader as any)._extractExtension(url).toLowerCase() as string;
 
         // Should I detect by seeing header?
-        if (modelExtension !== 'pmd' && modelExtension !== 'pmx') {
-            if (onError) onError(new Error('THREE.MMDLoader: Unknown model file extension .' + modelExtension + '.'));
+        if (modelExtension !== "pmd" && modelExtension !== "pmx") {
+            if (onError) onError(new Error("THREE.MMDLoader: Unknown model file extension ." + modelExtension + "."));
             return;
         }
 
-        if (modelExtension === 'pmd') {
+        if (modelExtension === "pmd") {
             loader.loadPMD(url, (data) => {
                 onLoad(data as Pmd);
             }, onProgress, onError);
@@ -62,21 +63,21 @@ export class MmdModelLoader {
 
         // resource path
         let resourcePath: string;
-        if (loader.resourcePath !== '') {
+        if (loader.resourcePath !== "") {
             resourcePath = loader.resourcePath;
-        } else if (loader.path !== '') {
+        } else if (loader.path !== "") {
             resourcePath = loader.path;
         } else {
-            resourcePath = '';
+            resourcePath = "";
         }
 
-        if (data.metadata.format === 'pmd') {
+        if (data.metadata.format === "pmd") {
             return builder.build(data, resourcePath, onProgress, onError);
         } else {
             return builder.build(data, resourcePath, onProgress, onError);
         }
     }
-    
+
     public loadModelFromUrl(
         url: string,
         onLoad: (mesh: THREE.SkinnedMesh) => void,
