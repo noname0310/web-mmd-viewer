@@ -19,7 +19,7 @@ export class MMDLoaderOverride extends MMDLoader {
 }
 
 type GrantEntryItem = {
-    parent: GrantEntryItem|null;
+    parent: GrantEntryItem | null;
     children: GrantEntryItem[];
     param: {
         index: number;
@@ -29,7 +29,7 @@ type GrantEntryItem = {
         affectRotation: boolean;
         affectPosition: boolean;
         transformationClass: number;
-    }|null;
+    } | null;
     visited: boolean;
 };
 
@@ -385,7 +385,7 @@ export class GeometryBuilder {
 
         // morph
 
-        function updateAttributes(attribute: THREE.Float32BufferAttribute, morph: Pmd["morphs"][0]|Pmx["morphs"][0], ratio: number|undefined): void {
+        function updateAttributes(attribute: THREE.Float32BufferAttribute, morph: Pmd["morphs"][0] | Pmx["morphs"][0], ratio: number | undefined): void {
             if (morph.type !== 1) throw new Error("updateAttributes: morph type must be 1(vertex morph).");
 
             for (let i = 0; i < morph.elementCount; i++) {
@@ -429,7 +429,7 @@ export class GeometryBuilder {
                     for (let j = 0; j < morph.elementCount; j++) {
 
                         const morph2 = data.morphs[morph.elements[j].index];
-                        const ratio = ((morph as Pmx["morphs"][0]).elements[j] as GroupMorph).ratio as number|undefined;
+                        const ratio = ((morph as Pmx["morphs"][0]).elements[j] as GroupMorph).ratio as number | undefined;
 
                         if (morph2.type === 1) {
                             updateAttributes(attribute, morph2, ratio);
