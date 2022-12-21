@@ -19,6 +19,9 @@ export class MmdMaterialMorphController {
     private _material: MmdMaterialLike;
 
     private _isExactMmdMaterial: boolean;
+
+    private readonly _transparent?: boolean;
+
     private _diffuse?: THREE.Color;
     private _opacity: number;
     private _specular?: THREE.Color;
@@ -35,10 +38,14 @@ export class MmdMaterialMorphController {
     public weightedEdgeColor?: [number, number, number, number];
     public weightedEdgeSize?: number;
 
-    public constructor(material: MmdMaterialLike) {
+    public constructor(material: MmdMaterialLike, readTransparency: boolean) {
         this._material = material;
 
         const isExactMMdMaterial = this._isExactMmdMaterial = MmdMaterialMorphController.isExactMmdMaterial(material);
+
+        if (readTransparency) {
+            this._transparent = material.transparent;
+        }
 
         this._opacity = material.opacity;
         this.weightedOpacity = this._opacity;
@@ -227,7 +234,7 @@ export class MmdMaterialMorphController {
     public apply(): void {
         const material = this._material;
         material.opacity = this.weightedOpacity;
-        material.transparent = material.opacity < 1;
+        material.transparent = this._transparent || material.opacity < 1;
         if (this._isExactMmdMaterial) {
             material.diffuse!.copy(this.weightedDiffuse!);
             material.specular!.copy(this.weightedSpecular!);
