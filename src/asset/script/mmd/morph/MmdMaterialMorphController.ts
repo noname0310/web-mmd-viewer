@@ -20,7 +20,7 @@ export class MmdMaterialMorphController {
 
     private _isExactMmdMaterial: boolean;
 
-    private readonly _transparent?: boolean;
+    public texTransparent: boolean | null;
 
     private _diffuse?: THREE.Color;
     private _opacity: number;
@@ -38,16 +38,14 @@ export class MmdMaterialMorphController {
     public weightedEdgeColor?: [number, number, number, number];
     public weightedEdgeSize?: number;
 
-    public constructor(material: MmdMaterialLike, readTransparency: boolean) {
+    public constructor(material: MmdMaterialLike, opacityOverride?: number) {
         this._material = material;
 
         const isExactMMdMaterial = this._isExactMmdMaterial = MmdMaterialMorphController.isExactMmdMaterial(material);
 
-        if (readTransparency) {
-            this._transparent = material.transparent;
-        }
+        this.texTransparent = null;
 
-        this._opacity = material.opacity;
+        this._opacity = opacityOverride ?? material.opacity;
         this.weightedOpacity = this._opacity;
 
         if (isExactMMdMaterial) {
@@ -89,7 +87,7 @@ export class MmdMaterialMorphController {
             material.userData.outlineParameters !== undefined;
     }
 
-    public rebind(material: MmdMaterialLike): void {
+    public rebind(material: MmdMaterialLike, opacityOverride?: number): void {
         const lastIsExactMmdMaterial = this._isExactMmdMaterial;
 
         this._material = material;
@@ -111,7 +109,7 @@ export class MmdMaterialMorphController {
             this.weightedEdgeSize = 0;
         }
 
-        this._opacity = material.opacity;
+        this._opacity = opacityOverride ?? material.opacity;
         this.weightedOpacity = this._opacity;
 
         if (this._isExactMmdMaterial) {
@@ -234,7 +232,7 @@ export class MmdMaterialMorphController {
     public apply(): void {
         const material = this._material;
         material.opacity = this.weightedOpacity;
-        material.transparent = this._transparent || material.opacity < 1;
+        material.transparent = this.texTransparent || material.opacity < 1;
         if (this._isExactMmdMaterial) {
             material.diffuse!.copy(this.weightedDiffuse!);
             material.specular!.copy(this.weightedSpecular!);

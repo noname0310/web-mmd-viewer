@@ -144,8 +144,21 @@ export class MmdModel extends Component {
         this._modelLoader.loadDataFromUrl(url, data => {
             if (!this.exists || !this.gameObject.activeInHierarchy) return;
 
+            // set opacity to 1 temporarily
+            const materialOpacities: number[] = [];
+            for (let i = 0; i < data.materials.length; ++i) {
+                materialOpacities.push(data.materials[i].diffuse[3]);
+                data.materials[i].diffuse[3] = 1;
+            }
             model = this._modelLoader.loadModelFromData(data, url, onProgress) as THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
-            this._parameterController = new MmdParameterController(data, model);
+
+            // restore opacity
+            for (let i = 0; i < data.materials.length; ++i) {
+                data.materials[i].diffuse[3] = materialOpacities[i];
+            }
+
+            const parameterController = this._parameterController = new MmdParameterController(data, model);
+            parameterController.asyncTransparentInitialize(() => parameterController.apply());
         }, onProgress);
         yield new WaitUntil(() => model !== null);
         this._object3DContainer!.setObject3D(model!, object3D => {
