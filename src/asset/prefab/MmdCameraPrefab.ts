@@ -68,6 +68,7 @@ export class MmdCameraPrefab extends Prefab {
             })
             .withComponent(AudioPlayer, c => {
                 if (this._audioUrl.ref) c.asyncSetAudioFromUrl(this._audioUrl.ref);
+                c.gain = -0.6;
             })
             .getComponent(Camera, this._camera)
             .getComponent(MmdCamera, this._cameraLoader)
