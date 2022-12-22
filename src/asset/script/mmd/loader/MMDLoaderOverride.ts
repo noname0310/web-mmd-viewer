@@ -1,7 +1,7 @@
 import { GroupMorph, MMDParser, ModelFormat, Pmd, Pmx, PmxBoneInfo, VertexMorph, Vmd } from "@noname0310/mmd-parser";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader";
 import * as THREE from "three/src/Three";
-import { AnimationClip, AnimationClipInstance, AnimationKey, AnimationTrack, InterpolationKind } from "tw-engine-498tokio";
+import { AnimationClip, AnimationClipInstance, AnimationKey, AnimationSequence, AnimationSequenceInstance, AnimationTrack, InterpolationKind, RangedAnimation } from "tw-engine-498tokio";
 
 import { EmptyBooleanInterpolator } from "../interpolation/EmptyInterpolator";
 import { QuaternionUtils } from "../QuaternionUtils";
@@ -555,10 +555,19 @@ export class GeometryBuilder {
 }
 
 export type MmdPropertyAnimationClipTrackData = { name: string; track: AnimationTrack<boolean>; }[];
-
 export type MmdPropertyAnimationClip = AnimationClip<MmdPropertyAnimationClipTrackData>;
-
 export type MmdPropertyAnimationClipInstance = AnimationClipInstance<MmdPropertyAnimationClipTrackData>;
+
+export type MmdMorphAnimationClipTrackData = { name: string; track: AnimationTrack<number>; }[];
+export type MmdMorphAnimationClip = AnimationClip<MmdMorphAnimationClipTrackData>;
+export type MmdMorphAnimationClipInstance = AnimationClipInstance<MmdMorphAnimationClipTrackData>;
+
+export type MmdAnimationSequenceContainerData = [
+    RangedAnimation<MmdPropertyAnimationClip>,
+    RangedAnimation<MmdMorphAnimationClip>
+];
+export type MmdAnimationSequence = AnimationSequence<MmdAnimationSequenceContainerData>;
+export type MmdAnimationSequenceInstance = AnimationSequenceInstance<MmdAnimationSequenceContainerData>;
 
 export class AnimationBuilder {
     private readonly _mmdLoader: MMDLoaderOverride;
@@ -735,6 +744,40 @@ export class AnimationBuilder {
             tracks.push({
                 name: ikName,
                 track: AnimationTrack.createTrack(ikTrack, EmptyBooleanInterpolator, 30)
+            });
+        }
+
+        return new AnimationClip(tracks, undefined, undefined, 30);
+    }
+
+    public buildMorphAnimation2(vmd: Vmd): MmdMorphAnimationClip {
+        const morphs = vmd.morphs;
+
+        const morphTracks = new Map<string, AnimationKey<number>[]>();
+
+        morphs.sort((a, b) => a.frameNum - b.frameNum);
+
+        for (let i = 0; i < morphs.length; i++) {
+            const morphFrame = morphs[i];
+            const frameNum = morphFrame.frameNum;
+
+            const morphName = morphFrame.morphName;
+
+            let morphTrack = morphTracks.get(morphName);
+            if (morphTrack === undefined) {
+                morphTrack = [];
+                morphTracks.set(morphName, morphTrack);
+            }
+
+            morphTrack.push(new AnimationKey(frameNum, morphFrame.weight, InterpolationKind.Linear));
+        }
+
+        const tracks: MmdMorphAnimationClipTrackData = [];
+
+        for (const [morphName, morphTrack] of morphTracks) {
+            tracks.push({
+                name: morphName,
+                track: AnimationTrack.createScalarTrack(morphTrack, 30)
             });
         }
 

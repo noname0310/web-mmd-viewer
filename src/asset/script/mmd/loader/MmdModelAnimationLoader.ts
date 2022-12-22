@@ -1,34 +1,35 @@
 import { MMDParser, Vmd } from "@noname0310/mmd-parser";
 import * as THREE from "three/src/Three";
-import { AnimationClipBindInfo } from "tw-engine-498tokio";
+import { AnimationClipBindInfo, AnimationClipBindResult, AnimationSequence, RangedAnimation } from "tw-engine-498tokio";
 import { AnimationClipBindItem } from "tw-engine-498tokio/dist/asset/script/animation/bind/AnimationClipBindInfo";
 
+import { MmdModel } from "../MmdModel";
 import { MmdPlayer } from "../MmdPlayer";
-import { AnimationBuilder, MMDLoaderOverride, MmdPropertyAnimationClip, MmdPropertyAnimationClipInstance } from "./MMDLoaderOverride";
+import { AnimationBuilder, MmdAnimationSequence, MmdAnimationSequenceInstance, MMDLoaderOverride } from "./MMDLoaderOverride";
 
 export class MmdModelAnimationClip {
     public readonly modelAnimationClip: THREE.AnimationClip;
-    public readonly propertyAnimationClip: MmdPropertyAnimationClip;
+    public readonly mmdAnimationSequence: MmdAnimationSequence;
 
     public constructor(
         modelAnimationClip: THREE.AnimationClip,
-        propertyAnimationClip: MmdPropertyAnimationClip
+        mmdAnimationSequence: MmdAnimationSequence
     ) {
         this.modelAnimationClip = modelAnimationClip;
-        this.propertyAnimationClip = propertyAnimationClip;
+        this.mmdAnimationSequence = mmdAnimationSequence;
     }
 }
 
 export class MmdModelAnimationClipInstance {
     public readonly modelAnimationClip: THREE.AnimationClip;
-    public readonly propertyAnimationClipInstance: MmdPropertyAnimationClipInstance;
+    public readonly mmdAnimationSequenceInstance: MmdAnimationSequenceInstance;
 
     public constructor(
         modelAnimationClip: THREE.AnimationClip,
-        propertyAnimationClipInstance: MmdPropertyAnimationClipInstance
+        mmddAnimationSequenceInstance: MmdAnimationSequenceInstance
     ) {
         this.modelAnimationClip = modelAnimationClip;
-        this.propertyAnimationClipInstance = propertyAnimationClipInstance;
+        this.mmdAnimationSequenceInstance = mmddAnimationSequenceInstance;
     }
 }
 
@@ -86,24 +87,37 @@ export class MmdModelAnimationLoader {
 
         const modelAnimationClip = this._animationBuilder.build(vmd, mesh);
         const propertyAnimationClip = this._animationBuilder.buildPropertyAnimation(vmd);
+        const morphAnimationClip = this._animationBuilder.buildMorphAnimation2(vmd);
+        const animationSequence = new AnimationSequence([
+            new RangedAnimation(propertyAnimationClip),
+            new RangedAnimation(morphAnimationClip)
+        ], 30);
 
-        return new MmdModelAnimationClip(modelAnimationClip, propertyAnimationClip);
+        return new MmdModelAnimationClip(modelAnimationClip, animationSequence);
     }
 
-    public static createInstance(mesh: THREE.SkinnedMesh, player: MmdPlayer, animation: MmdModelAnimationClip): MmdModelAnimationClipInstance {
-        const bindInfo: AnimationClipBindItem<string, (value: boolean) => void>[] = [
+    public static createInstance(model: MmdModel, player: MmdPlayer, animation: MmdModelAnimationClip): MmdModelAnimationClipInstance {
+        const mesh = model.skinnedMesh;
+        if (mesh === null) throw new Error("Mesh is not loaded.");
+        const parameterController = model.parameterController;
+        if (parameterController === null) throw new Error("Material is not loaded.");
+
+        const propertyAnimationBindInfo: AnimationClipBindItem<string, (value: boolean) => void>[] = [
             {
                 trackName: "visible",
                 target: (value: boolean) => mesh.visible = value
             }
         ];
 
-        const trackMap = animation.propertyAnimationClip.trackMap;
-        for (const [key ] of trackMap) {
+        const animationContainers = animation.mmdAnimationSequence.animationContainers;
+
+        const propertyAnimation = animationContainers[0].animation;
+        const propertyAnimationTrackMap = propertyAnimation.trackMap;
+        for (const [key ] of propertyAnimationTrackMap) {
             if (key === "visible") continue;
 
             if (player.isIkExists(key)) {
-                bindInfo.push({
+                propertyAnimationBindInfo.push({
                     trackName: key,
                     target: (value: boolean) => player.setIkEnabled(key, value)
                 });
@@ -112,20 +126,46 @@ export class MmdModelAnimationLoader {
             }
         }
 
-        const [propertyAnimationClipInstance, bindResult] = animation.propertyAnimationClip.tryCreateInstance(new AnimationClipBindInfo(bindInfo));
+        const morphAnimationBindInfo: AnimationClipBindItem<string, (value: number) => void>[] = [];
+
+        const morphAnimation = animationContainers[1].animation;
+        const morphAnimationTrackMap = morphAnimation.trackMap;
+        const morphController = parameterController.morph;
+        const morphNamemap = morphController.mmdMorphNameMap;
+        for (const [key ] of morphAnimationTrackMap) {
+            if (morphNamemap.has(key)) {
+                morphAnimationBindInfo.push({
+                    trackName: key,
+                    target: (value: number) => morphController.setWeight(key, value)
+                });
+            } else {
+                console.warn(`Morph ${key} is not found.`);
+            }
+        }
+
+        const [animationSequenceInstance, bindResult] = animation.mmdAnimationSequence.tryCreateInstance([
+            new AnimationClipBindInfo(propertyAnimationBindInfo),
+            new AnimationClipBindInfo(morphAnimationBindInfo)
+        ]);
 
         if (!bindResult.isBindSuccess) {
             console.warn("Failed to bind animation clip.");
 
-            const bindFailTrackNames = bindResult.bindFailTrackNames;
-            for (let i = 0, il = bindFailTrackNames.length; i < il; i++) {
-                console.warn(`Failed to bind track: ${bindFailTrackNames[i]}`);
+            const bindResults = bindResult.bindResults;
+
+            for (let i = 0, il = bindResults.length; i < il; i++) {
+                const bindResult = bindResults[i] as AnimationClipBindResult;
+
+                const bindFailTrackNames = bindResult.bindFailTrackNames;
+                for (let i = 0, il = bindFailTrackNames.length; i < il; i++) {
+                    console.warn(`Failed to bind track: ${bindFailTrackNames[i]}`);
+                }
             }
         }
 
         return new MmdModelAnimationClipInstance(
             animation.modelAnimationClip,
-            propertyAnimationClipInstance
+            animationSequenceInstance
         );
     }
 }
