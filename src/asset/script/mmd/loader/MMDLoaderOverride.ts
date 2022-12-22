@@ -577,16 +577,7 @@ export class AnimationBuilder {
     }
 
     public build(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
-        // combine skeletal and morph animations
-
-        const tracks = this.buildSkeletalAnimation(vmd, mesh).tracks;
-        const tracks2 = this.buildMorphAnimation(vmd, mesh).tracks;
-
-        for (let i = 0, il = tracks2.length; i < il; ++i) {
-            tracks.push(tracks2[i]);
-        }
-
-        return new THREE.AnimationClip("", -1, tracks);
+        return this.buildSkeletalAnimation(vmd, mesh);
     }
 
     public buildSkeletalAnimation(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
@@ -667,43 +658,6 @@ export class AnimationBuilder {
         return new THREE.AnimationClip("", -1, tracks);
     }
 
-    public buildMorphAnimation(vmd: Vmd, mesh: THREE.SkinnedMesh): THREE.AnimationClip {
-        const tracks: THREE.NumberKeyframeTrack[] = [];
-
-        const morphs: { [key: string]: Vmd["morphs"] } = {};
-        const morphTargetDictionary = mesh.morphTargetDictionary!;
-
-        for (let i = 0; i < vmd.metadata.morphCount; ++i) {
-            const morph = vmd.morphs[i];
-            const morphName = morph.morphName;
-
-            if (morphTargetDictionary[morphName] === undefined) continue;
-
-            morphs[morphName] = morphs[morphName] || [];
-            morphs[morphName].push(morph);
-        }
-
-        for (const key in morphs) {
-            const array = morphs[key];
-
-            array.sort(function(a, b) {
-                return a.frameNum - b.frameNum;
-            });
-
-            const times = [];
-            const values = [];
-
-            for (let i = 0, il = array.length; i < il; ++i) {
-                times.push(array[i].frameNum / 30);
-                values.push(array[i].weight);
-            }
-
-            tracks.push(new THREE.NumberKeyframeTrack(".morphTargetInfluences[" + morphTargetDictionary[key] + "]", times, values));
-        }
-
-        return new THREE.AnimationClip("", -1, tracks);
-    }
-
     public buildPropertyAnimation(vmd: Vmd): MmdPropertyAnimationClip {
         const properites = vmd.properties;
 
@@ -750,7 +704,7 @@ export class AnimationBuilder {
         return new AnimationClip(tracks, undefined, undefined, 30);
     }
 
-    public buildMorphAnimation2(vmd: Vmd): MmdMorphAnimationClip {
+    public buildMorphAnimation(vmd: Vmd): MmdMorphAnimationClip {
         const morphs = vmd.morphs;
 
         const morphTracks = new Map<string, AnimationKey<number>[]>();

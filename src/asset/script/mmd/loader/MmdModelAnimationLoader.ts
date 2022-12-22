@@ -87,7 +87,7 @@ export class MmdModelAnimationLoader {
 
         const modelAnimationClip = this._animationBuilder.build(vmd, mesh);
         const propertyAnimationClip = this._animationBuilder.buildPropertyAnimation(vmd);
-        const morphAnimationClip = this._animationBuilder.buildMorphAnimation2(vmd);
+        const morphAnimationClip = this._animationBuilder.buildMorphAnimation(vmd);
         const animationSequence = new AnimationSequence([
             new RangedAnimation(propertyAnimationClip),
             new RangedAnimation(morphAnimationClip)
@@ -131,12 +131,17 @@ export class MmdModelAnimationLoader {
         const morphAnimation = animationContainers[1].animation;
         const morphAnimationTrackMap = morphAnimation.trackMap;
         const morphController = parameterController.morph;
-        const morphNamemap = morphController.mmdMorphNameMap;
+        const morphNameMap = morphController.mmdMorphNameMap;
         for (const [key ] of morphAnimationTrackMap) {
-            if (morphNamemap.has(key)) {
+            if (morphNameMap.has(key)) {
+                const morphTargetIndex = mesh.morphTargetDictionary![key];
+
                 morphAnimationBindInfo.push({
                     trackName: key,
-                    target: (value: number) => morphController.setWeight(key, value)
+                    target: (value: number) => {
+                        morphController.setWeight(key, value);
+                        mesh.morphTargetInfluences![morphTargetIndex] = value;
+                    }
                 });
             } else {
                 console.warn(`Morph ${key} is not found.`);
