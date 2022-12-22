@@ -65,6 +65,7 @@ export class LemonBootstrapper extends Bootstrapper {
                 .withAudioPlayer(audioPlayer)
                 .withCameraAnimationName(new PrefabRef("animation1"))
                 .withModelAnimationName(new PrefabRef("animation1"))
+                .withSpecificUsePhysics(mmdModelLoader2, false)
                 .make())
 
             .withChild(instantiater.buildGameObject("orbit-camera", new THREE.Vector3(0, 0, 40))
@@ -210,7 +211,7 @@ export class LemonBootstrapper extends Bootstrapper {
                     });
                     c.asyncLoadAnimation(
                         "animation1",
-                        [ "mmd/lemon/fukase.vmd" ],
+                        [ "mmd/lemon/fukase.vmd", "mmd/lemon/fukase phys.vmd" ],
                         () => modelAnimationLoadingText.innerText = "fukase animation loaded"
                     );
                 })

@@ -23,6 +23,8 @@ export class GameManagerPrefab extends Prefab {
     private _cameraAnimationName = new PrefabRef<string>();
     private _useIk = new PrefabRef<boolean>(true);
     private _usePhysics = new PrefabRef<boolean>(true);
+    private readonly _useIkMap: { model: PrefabRef<MmdModel>; useIk: boolean }[] = [];
+    private readonly _usePhysicsMap: { model: PrefabRef<MmdModel>; usePhysics: boolean }[] = [];
     private _physicsMaximumStepCount = new PrefabRef<number>(1);
     private _forceWaitAnimation = new PrefabRef<boolean>(false);
 
@@ -70,6 +72,16 @@ export class GameManagerPrefab extends Prefab {
 
     public withUsePhysics(usePhysics: PrefabRef<boolean>): this {
         this._usePhysics = usePhysics;
+        return this;
+    }
+
+    public withSpecificUseIk(model: PrefabRef<MmdModel>, useIk: boolean): this {
+        this._useIkMap.push({ model, useIk });
+        return this;
+    }
+
+    public withSpecificUsePhysics(model: PrefabRef<MmdModel>, usePhysics: boolean): this {
+        this._usePhysicsMap.push({ model, usePhysics });
         return this;
     }
 
@@ -122,14 +134,33 @@ export class GameManagerPrefab extends Prefab {
 
                     const modelLoaders = this._modelLoaders;
                     for (let i = 0; i < modelLoaders.length; ++i) {
-                        if (modelLoaders[i].ref) {
-                            c.addModelLoader(modelLoaders[i].ref!);
+                        const modelLoader = modelLoaders[i].ref;
+                        if (modelLoader) {
+                            c.addModelLoader(modelLoader);
 
                             if (!unsafeIsComponent(c)) return;
                             const mmdPlayer = c.gameObject.addComponent(MmdPlayer)!;
                             c.addMmdPlayer(mmdPlayer);
                             mmdPlayer.usePhysics = this._usePhysics.ref!;
                             mmdPlayer.useIk = this._useIk.ref!;
+
+                            const usePhysicsMap = this._usePhysicsMap;
+                            for (let j = 0; j < usePhysicsMap.length; ++j) {
+                                const { model, usePhysics } = usePhysicsMap[j];
+                                if (model.ref === modelLoader) {
+                                    mmdPlayer.usePhysics = usePhysics;
+                                    break;
+                                }
+                            }
+
+                            const useIkMap = this._useIkMap;
+                            for (let j = 0; j < useIkMap.length; ++j) {
+                                const { model, useIk } = useIkMap[j];
+                                if (model.ref === modelLoader) {
+                                    mmdPlayer.useIk = useIk;
+                                    break;
+                                }
+                            }
                         }
                     }
 
