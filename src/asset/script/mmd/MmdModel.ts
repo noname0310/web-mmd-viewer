@@ -152,9 +152,10 @@ export class MmdModel extends Component {
             }
             model = this._modelLoader.loadModelFromData(data, url, onProgress) as THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
 
-            // restore opacity
+            // restore opacity, set opacity to material
             for (let i = 0; i < data.materials.length; ++i) {
                 data.materials[i].diffuse[3] = materialOpacities[i];
+                model.material[i].opacity = materialOpacities[i];
             }
 
             const parameterController = this._parameterController = new MmdParameterController(data, model);
