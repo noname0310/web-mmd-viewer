@@ -179,35 +179,35 @@ export class MmdMaterialMorphController {
 
     public multiplyWeightFromMorphData(morph: MaterialMorph, weight: number): void {
         const lerp = THREE.MathUtils.lerp;
-        this.weightedOpacity = lerp(this.weightedOpacity, morph.diffuse[3], weight);
+        this.weightedOpacity = lerp(this.weightedOpacity, this.weightedOpacity * morph.diffuse[3], weight);
 
         if (this._isExactMmdMaterial) {
             const weightedDiffuse = this.weightedDiffuse!;
             const morphDiffuse = morph.diffuse;
-            weightedDiffuse.r = lerp(weightedDiffuse.r, morphDiffuse[0], weight);
-            weightedDiffuse.g = lerp(weightedDiffuse.g, morphDiffuse[1], weight);
-            weightedDiffuse.b = lerp(weightedDiffuse.b, morphDiffuse[2], weight);
+            weightedDiffuse.r = lerp(weightedDiffuse.r, weightedDiffuse.r * morphDiffuse[0], weight);
+            weightedDiffuse.g = lerp(weightedDiffuse.g, weightedDiffuse.g * morphDiffuse[1], weight);
+            weightedDiffuse.b = lerp(weightedDiffuse.b, weightedDiffuse.b * morphDiffuse[2], weight);
 
             const weightedSpecular = this.weightedSpecular!;
             const morphSpecular = morph.specular;
-            weightedSpecular.r = lerp(weightedSpecular.r, morphSpecular[0], weight);
-            weightedSpecular.g = lerp(weightedSpecular.g, morphSpecular[1], weight);
-            weightedSpecular.b = lerp(weightedSpecular.b, morphSpecular[2], weight);
-            this.weightedShininess! = lerp(this.weightedShininess!, morph.shininess, weight);
+            weightedSpecular.r = lerp(weightedSpecular.r, weightedSpecular.r * morphSpecular[0], weight);
+            weightedSpecular.g = lerp(weightedSpecular.g, weightedSpecular.g * morphSpecular[1], weight);
+            weightedSpecular.b = lerp(weightedSpecular.b, weightedSpecular.b * morphSpecular[2], weight);
+            this.weightedShininess! = lerp(this.weightedShininess!, this.weightedShininess! * morph.shininess, weight);
 
             const weightedEmissive = this.weightedEmissive!;
             const morphAmbient = morph.ambient;
-            weightedEmissive.r = lerp(weightedEmissive.r, morphAmbient[0], weight);
-            weightedEmissive.g = lerp(weightedEmissive.g, morphAmbient[1], weight);
-            weightedEmissive.b = lerp(weightedEmissive.b, morphAmbient[2], weight);
+            weightedEmissive.r = lerp(weightedEmissive.r, weightedEmissive.r * morphAmbient[0], weight);
+            weightedEmissive.g = lerp(weightedEmissive.g, weightedEmissive.g * morphAmbient[1], weight);
+            weightedEmissive.b = lerp(weightedEmissive.b, weightedEmissive.b * morphAmbient[2], weight);
 
             const weightedEdgeColor = this.weightedEdgeColor!;
             const morphEdgeColor = morph.edgeColor;
-            weightedEdgeColor[0] = lerp(weightedEdgeColor[0], morphEdgeColor[0], weight);
-            weightedEdgeColor[1] = lerp(weightedEdgeColor[1], morphEdgeColor[1], weight);
-            weightedEdgeColor[2] = lerp(weightedEdgeColor[2], morphEdgeColor[2], weight);
+            weightedEdgeColor[0] = lerp(weightedEdgeColor[0], weightedEdgeColor[0] * morphEdgeColor[0], weight);
+            weightedEdgeColor[1] = lerp(weightedEdgeColor[1], weightedEdgeColor[1] * morphEdgeColor[1], weight);
+            weightedEdgeColor[2] = lerp(weightedEdgeColor[2], weightedEdgeColor[2] * morphEdgeColor[2], weight);
 
-            this.weightedEdgeSize! = lerp(this.weightedEdgeSize!, morph.edgeSize / 300, weight);
+            this.weightedEdgeSize! = lerp(this.weightedEdgeSize!, this.weightedEdgeSize! * morph.edgeSize, weight);
         }
     }
 
