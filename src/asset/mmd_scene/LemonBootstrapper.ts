@@ -266,9 +266,9 @@ export class LemonBootstrapper extends Bootstrapper {
                         model.frustumCulled = false;
                         model.renderOrder = 1;
 
-                        const materials = model.material as THREE.Material[];
+                        const materials = model.material;
 
-                        for (let i = 0; i < materials.length; i++) {
+                        for (let i = 0; i < materials.length; ++i) {
                             const material = materials[i] as MMDToonMaterial;
                             material.depthWrite = false;
                         }
@@ -300,6 +300,9 @@ export class LemonBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "subtitle-credit1 model loaded";
                         model.castShadow = false;
                         model.frustumCulled = false;
+                        for (let i = 0; i < model.material.length; ++i) {
+                            model.material[i].depthWrite = false;
+                        }
                     });
                     c.asyncLoadAnimation(
                         "animation1",
@@ -328,6 +331,9 @@ export class LemonBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "subtitle-credit2 model loaded";
                         model.castShadow = false;
                         model.frustumCulled = false;
+                        for (let i = 0; i < model.material.length; ++i) {
+                            model.material[i].depthWrite = false;
+                        }
                     });
                     c.asyncLoadAnimation(
                         "animation1",
@@ -356,6 +362,9 @@ export class LemonBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "subtitle-credit3 model loaded";
                         model.castShadow = false;
                         model.frustumCulled = false;
+                        for (let i = 0; i < model.material.length; ++i) {
+                            model.material[i].depthWrite = false;
+                        }
                     });
                     c.asyncLoadAnimation(
                         "animation1",

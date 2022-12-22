@@ -60,7 +60,7 @@ export class MmdModel extends Component {
 
     public asyncLoadModel(
         url: string,
-        onComplete?: (object: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>) => void
+        onComplete?: (object: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>) => void
     ): void {
         if (!this._isReadyToLoad) {
             this._initLoadModelFunc = (initOnComplete: () => void): void => this.asyncLoadModel(url, (): void => {
@@ -138,7 +138,7 @@ export class MmdModel extends Component {
     private *loadModelInternal(
         url: string,
         onProgress?: (event: ProgressEvent<EventTarget>) => void,
-        onComplete?: (object: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>) => void
+        onComplete?: (object: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>) => void
     ): CoroutineIterator {
         let model: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]> | null = null;
         this._modelLoader.loadDataFromUrl(url, data => {

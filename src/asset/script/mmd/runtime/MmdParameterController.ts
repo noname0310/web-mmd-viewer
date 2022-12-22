@@ -11,10 +11,10 @@ type LoadingTexture = THREE.Texture & {
 export class MmdParameterController {
     public readonly materialMorphs: readonly MmdMaterialMorphController[];
     public readonly morph: MmdMorphController;
-    private readonly _skinnedMesh: THREE.SkinnedMesh;
+    private readonly _skinnedMesh: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
 
-    public constructor(data: Pmd | Pmx, skinnedMesh: THREE.SkinnedMesh) {
-        const materials = skinnedMesh.material as THREE.Material[];
+    public constructor(data: Pmd | Pmx, skinnedMesh: THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>) {
+        const materials = skinnedMesh.material;
 
         const materialMorphController = [];
         for (let i = 0; i < materials.length; ++i) {
@@ -27,7 +27,7 @@ export class MmdParameterController {
     }
 
     public asyncTransparentInitialize(onComplete?: () => void): void {
-        const materials = this._skinnedMesh.material as THREE.Material[];
+        const materials = this._skinnedMesh.material;
 
         let leftTextureCount = 0;
         for (let i = 0; i < materials.length; ++i) {
@@ -49,7 +49,7 @@ export class MmdParameterController {
     }
 
     public rebindMeterials(): void {
-        const materials = this._skinnedMesh.material as THREE.Material[];
+        const materials = this._skinnedMesh.material;
         for (let i = 0; i < materials.length; ++i) {
             this.materialMorphs[i].rebind(materials[i]);
         }
