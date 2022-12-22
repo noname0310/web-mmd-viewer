@@ -18,8 +18,7 @@ export class MmdParameterController {
 
         const materialMorphController = [];
         for (let i = 0; i < materials.length; ++i) {
-            const materialData = data.materials[i];
-            materialMorphController.push(new MmdMaterialMorphController(materials[i], materialData.diffuse[3]));
+            materialMorphController.push(new MmdMaterialMorphController(materials[i]));
         }
 
         this.materialMorphs = materialMorphController;

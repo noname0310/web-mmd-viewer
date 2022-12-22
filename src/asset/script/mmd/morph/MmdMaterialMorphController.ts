@@ -38,14 +38,14 @@ export class MmdMaterialMorphController {
     public weightedEdgeColor?: [number, number, number, number];
     public weightedEdgeSize?: number;
 
-    public constructor(material: MmdMaterialLike, opacityOverride?: number) {
+    public constructor(material: MmdMaterialLike) {
         this._material = material;
 
         const isExactMMdMaterial = this._isExactMmdMaterial = MmdMaterialMorphController.isExactMmdMaterial(material);
 
         this.texTransparent = null;
 
-        this._opacity = opacityOverride ?? material.opacity;
+        this._opacity = material.opacity;
         this.weightedOpacity = this._opacity;
 
         if (isExactMMdMaterial) {
@@ -87,7 +87,7 @@ export class MmdMaterialMorphController {
             material.userData.outlineParameters !== undefined;
     }
 
-    public rebind(material: MmdMaterialLike, opacityOverride?: number): void {
+    public rebind(material: MmdMaterialLike): void {
         const lastIsExactMmdMaterial = this._isExactMmdMaterial;
 
         this._material = material;
@@ -109,7 +109,7 @@ export class MmdMaterialMorphController {
             this.weightedEdgeSize = 0;
         }
 
-        this._opacity = opacityOverride ?? material.opacity;
+        this._opacity = material.opacity;
         this.weightedOpacity = this._opacity;
 
         if (this._isExactMmdMaterial) {
