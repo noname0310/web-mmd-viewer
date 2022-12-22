@@ -271,6 +271,10 @@ export class LemonBootstrapper extends Bootstrapper {
                         for (let i = 0; i < materials.length; ++i) {
                             const material = materials[i] as MMDToonMaterial;
                             material.depthWrite = false;
+
+                            if (material.name === "21") {
+                                material.depthWrite = true;
+                            }
                         }
                     });
                     c.asyncLoadAnimation(
