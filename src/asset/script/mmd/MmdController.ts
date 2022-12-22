@@ -108,6 +108,9 @@ export class MmdController extends Component {
 
             endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
         }
+        if (cameraAnimation !== null) {
+            endFrame = Math.max(endFrame, cameraAnimation.endFrame * (60 / cameraAnimation.frameRate));
+        }
 
         const firstMmdPlayer = mmdPlayers[0];
         const firstPropertyAnimationInstance = animationSequenceInstances[0];

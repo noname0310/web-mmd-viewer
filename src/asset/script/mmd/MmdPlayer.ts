@@ -106,10 +106,28 @@ export class MmdPlayer extends Component {
         if (modelParams.animation instanceof Array) {
             const animations = modelParams.animation as THREE.AnimationClip[];
             for (let i = 0; i < animations.length; ++i) {
-                duration = Math.max(duration, animations[i].duration);
+                if (animations[i].duration === -1) {
+                    const tracks = animations[i].tracks;
+                    for (let j = 0; j < tracks.length; ++j) {
+                        const track = tracks[j];
+                        if (track.times.length === 0) continue;
+                        duration = Math.max(duration, track.times[track.times.length - 1]);
+                    }
+                } else {
+                    duration = Math.max(duration, animations[i].duration);
+                }
             }
         } else {
-            duration = modelParams.animation.duration;
+            if (modelParams.animation.duration === -1) {
+                const tracks = modelParams.animation.tracks;
+                for (let j = 0; j < tracks.length; ++j) {
+                    const track = tracks[j];
+                    if (track.times.length === 0) continue;
+                    duration = Math.max(duration, track.times[track.times.length - 1]);
+                }
+            } else {
+                duration = Math.max(duration, modelParams.animation.duration);
+            }
         }
 
         if (camera && cameraParams) {
