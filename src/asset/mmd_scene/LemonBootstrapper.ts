@@ -148,7 +148,6 @@ export class LemonBootstrapper extends Bootstrapper {
                 undefined,
                 new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
             )
-                .active(false)
                 .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
