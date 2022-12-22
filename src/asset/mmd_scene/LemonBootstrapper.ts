@@ -87,7 +87,7 @@ export class LemonBootstrapper extends Bootstrapper {
 
             .withChild(instantiater.buildPrefab("mmd-camera", MmdCameraPrefab)
                 .withCameraInitializer(c => {
-                    c.backgroundColor = new Color(0.5, 0.5, 0.5, 1);
+                    c.backgroundColor = new Color(1, 1, 1, 1);
                 })
                 .withAudioUrl(new PrefabRef("mmd/lemon/lemon.mp3"))
                 .withCameraLoaderInitializer(c => {
