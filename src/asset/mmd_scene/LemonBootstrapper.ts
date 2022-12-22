@@ -265,6 +265,7 @@ export class LemonBootstrapper extends Bootstrapper {
                         modelLoadingText.innerText = "subtitle model loaded";
                         model.castShadow = false;
                         model.frustumCulled = false;
+                        model.renderOrder = 1;
 
                         const materials = model.material as THREE.Material[];
 
