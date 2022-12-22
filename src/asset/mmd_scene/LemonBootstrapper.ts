@@ -151,7 +151,7 @@ export class LemonBootstrapper extends Bootstrapper {
                 .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
-                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(140, 140, 140)" })
+                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(150, 150, 150)" })
                     );
                     mesh.receiveShadow = true;
                     c.setObject3D(mesh, object3D => {
