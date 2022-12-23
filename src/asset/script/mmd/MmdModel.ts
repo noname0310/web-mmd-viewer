@@ -154,8 +154,10 @@ export class MmdModel extends Component {
 
             // restore opacity, set opacity to material
             for (let i = 0; i < data.materials.length; ++i) {
-                data.materials[i].diffuse[3] = materialOpacities[i];
-                model.material[i].opacity = materialOpacities[i];
+                const materialOpacity = materialOpacities[i];
+                data.materials[i].diffuse[3] = materialOpacity;
+                model.material[i].opacity = materialOpacity;
+                model.material[i].side = materialOpacity === 1.0 ? THREE.FrontSide : THREE.DoubleSide;
             }
 
             const parameterController = this._parameterController = new MmdParameterController(data, model);

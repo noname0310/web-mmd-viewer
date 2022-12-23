@@ -233,6 +233,7 @@ export class MmdMaterialMorphController {
         const material = this._material;
         material.opacity = this.weightedOpacity;
         material.transparent = this.texTransparent || material.opacity < 1;
+        material.side = material.opacity === 1.0 ? THREE.FrontSide : THREE.DoubleSide;
         if (this._isExactMmdMaterial) {
             material.diffuse!.copy(this.weightedDiffuse!);
             material.specular!.copy(this.weightedSpecular!);

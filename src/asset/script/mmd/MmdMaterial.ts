@@ -51,4 +51,5 @@ export interface MmdMaterialLike {
             visible: boolean;
         };
     };
+    side: THREE.Side;
 }
