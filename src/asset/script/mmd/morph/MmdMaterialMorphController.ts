@@ -247,7 +247,7 @@ export class MmdMaterialMorphController {
             outlineParametersColor[1] = weightedEdgeColor[1];
             outlineParametersColor[2] = weightedEdgeColor[2];
             outlineParameters.alpha = weightedEdgeColor[3];
-            outlineParameters.visible = this.weightedEdgeSize! > 0;
+            //outlineParameters.visible is controlled by edge flag
         }
     }
 
