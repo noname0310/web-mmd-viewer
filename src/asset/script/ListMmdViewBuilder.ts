@@ -5,6 +5,7 @@ import { AsYouLikeItBootstrapper } from "../mmd_scene/AsYouLikeItBootstrapper";
 import { ConquerorBootstrapper } from "../mmd_scene/ConquerorBootstrapper";
 import { DaybreakFrontlineBootstrapper } from "../mmd_scene/DaybreakFrontlineBootstrapper";
 import { FlosBootstrapper } from "../mmd_scene/FlosBootstrapper";
+import { FlosWithSubtitleBootstrapper } from "../mmd_scene/FlowWithSubtitleBootatrapper";
 import { LemonBootstrapper } from "../mmd_scene/LemonBootstrapper";
 import { MelancholyNightBootstrapper } from "../mmd_scene/MelancholyNightBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "../mmd_scene/MmdGenericBootstrapper";
@@ -169,6 +170,11 @@ export class ListMmdViewBuilder {
         button15.innerText = "lemon";
         button15.onclick = (): void => runGame(LemonBootstrapper);
 
+        const button16 = document.createElement("button");
+        button16.className = "select_bootstrapper_button";
+        button16.innerText = "flos(with subtitles)";
+        button16.onclick = (): void => runGame(FlosWithSubtitleBootstrapper);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -184,9 +190,10 @@ export class ListMmdViewBuilder {
         bootstrapperSelectPanel.appendChild(button13);
         bootstrapperSelectPanel.appendChild(button14);
         bootstrapperSelectPanel.appendChild(button15);
+        bootstrapperSelectPanel.appendChild(button16);
 
         //document.body.appendChild(bootstrapperSelectPanel);
 
-        button14.onclick(new MouseEvent("click"));
+        button16.onclick(new MouseEvent("click"));
     }
 }
