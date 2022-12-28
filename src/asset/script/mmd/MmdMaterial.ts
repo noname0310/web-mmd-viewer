@@ -14,7 +14,7 @@ export type MMDToonMaterial = THREE.Material & {
     blendDst: THREE.BlendingDstFactor;
     blendSrcAlpha: THREE.BlendingDstFactor;
     blendDstAlpha: THREE.BlendingDstFactor;
-    side: THREE.Side; // depends on opacity < 1.0
+    side: THREE.Side;
     map: THREE.Texture | null;
     envMap: THREE.Texture | null;
     combine: THREE.Combine;

@@ -1,4 +1,4 @@
-import { Vmd } from "@noname0310/mmd-parser";
+import { PmxMaterialInfo, Vmd } from "@noname0310/mmd-parser";
 import { Component, Coroutine, CoroutineIterator, EventContainer, IEventContainer, Object3DContainer, WaitUntil } from "the-world-engine";
 import * as THREE from "three/src/Three";
 
@@ -155,12 +155,26 @@ export class MmdModel extends Component {
             // restore opacity, set opacity to material
             for (let i = 0; i < data.materials.length; ++i) {
                 const materialOpacity = materialOpacities[i];
-                data.materials[i].diffuse[3] = materialOpacity;
+                const materialData = data.materials[i];
+                materialData.diffuse[3] = materialOpacity;
                 model.material[i].opacity = materialOpacity;
-                model.material[i].side = materialOpacity === 1.0 ? THREE.FrontSide : THREE.DoubleSide;
+
+                if (data.metadata.format === "pmx" && ((materialData as PmxMaterialInfo).flag & 0x1) === 1) {
+                    model.material[i].side = THREE.DoubleSide;
+                } else {
+                    model.material[i].side = materialOpacity === 1.0 ? THREE.FrontSide : THREE.DoubleSide;
+                }
             }
 
             const parameterController = this._parameterController = new MmdParameterController(data, model);
+            const materialControllers = parameterController.materialMorphs;
+            for (let i = 0; i < materialControllers.length; ++i) {
+                const materialController = materialControllers[i];
+                const materialData = data.materials[i];
+                if (data.metadata.format === "pmx" && ((materialData as PmxMaterialInfo).flag & 0x1) === 1) {
+                    materialController.renderSide = THREE.DoubleSide;
+                }
+            }
             parameterController.asyncTransparentInitialize(() => parameterController.apply());
         }, onProgress);
         yield new WaitUntil(() => model !== null);

@@ -21,6 +21,7 @@ export class MmdMaterialMorphController {
     private _isExactMmdMaterial: boolean;
 
     public texTransparent: boolean | null;
+    public renderSide: THREE.Side | null;
 
     private _diffuse?: THREE.Color;
     private _opacity: number;
@@ -44,6 +45,7 @@ export class MmdMaterialMorphController {
         const isExactMMdMaterial = this._isExactMmdMaterial = MmdMaterialMorphController.isExactMmdMaterial(material);
 
         this.texTransparent = null;
+        this.renderSide = null;
 
         this._opacity = material.opacity;
         this.weightedOpacity = this._opacity;
@@ -233,7 +235,11 @@ export class MmdMaterialMorphController {
         const material = this._material;
         material.opacity = this.weightedOpacity;
         material.transparent = this.texTransparent || material.opacity < 1;
-        material.side = material.opacity === 1.0 && !material.transparent ? THREE.FrontSide : THREE.DoubleSide;
+        if (this.renderSide === null) {
+            material.side = material.opacity === 1.0 && !material.transparent ? THREE.FrontSide : THREE.DoubleSide;
+        } else {
+            material.side = this.renderSide;
+        }
         if (this._isExactMmdMaterial) {
             material.diffuse!.copy(this.weightedDiffuse!);
             material.specular!.copy(this.weightedSpecular!);
