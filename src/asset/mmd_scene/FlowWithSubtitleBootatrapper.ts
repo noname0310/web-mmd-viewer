@@ -407,6 +407,7 @@ export class FlosWithSubtitleBootstrapper extends BaseBootstrapper {
                         model.castShadow = true;
                         model.receiveShadow = true;
                         model.frustumCulled = false;
+                        model.renderOrder = 1;
 
                         const materials = (model.material instanceof Array ? model.material : [model.material]);
                         for (let i = 0; i < materials.length; ++i) {

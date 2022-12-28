@@ -54,7 +54,7 @@ export class SubtitlePrefab extends Prefab {
                     modelLoadingText.innerText = "subtitle model loaded";
                     model.castShadow = false;
                     model.frustumCulled = false;
-                    model.renderOrder = 1;
+                    model.renderOrder = 2;
 
                     const materials = model.material;
 
