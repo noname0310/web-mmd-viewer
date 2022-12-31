@@ -5,8 +5,8 @@ import { MmdEditorBootstrapper } from "./asset/MmdEditorBootstrapper";
 import { AudioPermissionSolver } from "./asset/script/AudioPermissionSolver";
 import { ListMmdViewBuilder } from "./asset/script/ListMmdViewBuilder";
 
-const listMmdViewBuilder: typeof ListMmdViewBuilder|null = ListMmdViewBuilder;
-const mmdEditorBootstrapper: typeof MmdEditorBootstrapper|null = null;
+const listMmdViewBuilder: typeof ListMmdViewBuilder | null = ListMmdViewBuilder;
+const mmdEditorBootstrapper: typeof MmdEditorBootstrapper | null = null;
 
 async function startGame(): Promise<void> {
     await AudioPermissionSolver.invoke();
