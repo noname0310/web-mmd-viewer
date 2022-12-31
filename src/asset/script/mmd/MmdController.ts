@@ -135,8 +135,8 @@ export class MmdController extends Component {
                             mmdPlayers[i].process(frame);
                             animationSequenceInstances[i].process(frame / 2);
                             modelLoaders[i].parameterController?.apply();
-                            cameraAnimationInstance?.process(frame);
                         }
+                        cameraAnimationInstance?.process(frame);
                     }
             ]
         );
