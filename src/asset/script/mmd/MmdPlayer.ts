@@ -11,7 +11,7 @@ export interface MMDAnimationModelParameter extends Omit<MMDAnimationHelperAddPa
 }
 
 export interface MMDAnimationCameraParameter extends
-    Omit<MMDAnimationHelperAddParameter, "physics"|"warmup"|"unitStep"|"maxStepNum"|"gravity"> {
+    Omit<MMDAnimationHelperAddParameter, "physics" | "warmup" | "unitStep" | "maxStepNum" | "gravity"> {
     animation: THREE.AnimationClip | THREE.AnimationClip[];
 }
 
@@ -20,7 +20,7 @@ export class MmdPlayer extends Component {
 
     private _isPlaying = false;
     private _elapsedTime = 0;
-    private _model: MmdSkinnedMeshContainer|null = null;
+    private _model: MmdSkinnedMeshContainer | null = null;
     private _manualUpdate = false;
     private _manualUpdateFps = 60;
     private _animationEndFrame = 0;
@@ -29,9 +29,9 @@ export class MmdPlayer extends Component {
     private _useGrant = true;
     private _usePhysics = true;
 
-    private _currentMesh: THREE.SkinnedMesh|null = null;
-    private _currentCamera: THREE.Camera|null = null;
-    private _currentAudio: THREE.Audio|null = null;
+    private _currentMesh: THREE.SkinnedMesh | null = null;
+    private _currentCamera: THREE.Camera | null = null;
+    private _currentAudio: THREE.Audio | null = null;
 
     public awake(): void {
         this._helper
@@ -206,7 +206,7 @@ export class MmdPlayer extends Component {
         this._helper.enable("physics", value);
     }
 
-    public get mixer(): Omit<MMDAnimationHelperMixer, "duration">|null {
+    public get mixer(): Omit<MMDAnimationHelperMixer, "duration"> | null {
         if (!this._model || !this._model.object3D) return null;
         return this._helper.objects.get(this._model.object3D) as Omit<MMDAnimationHelperMixer, "duration">;
     }
