@@ -342,13 +342,13 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
 
         animationPlayer.stop();
         mmdController.removeAllMmdPlayers();
-        mmdController.removeAllModelLoaders();
+        mmdController.removeAllModel();
 
         if ((soundFileName !== null || audioPlayerisReady) && animationPlayer.animationClock === null) {
             animationPlayer.animationClock = new ClockCalibrator(audioPlayer);
         }
 
-        mmdController.cameraLoader = camera;
+        mmdController.mmdCamera = camera;
 
         for (let i = 0; i < models.length; ++i) {
             const model = models[i];
@@ -367,7 +367,7 @@ function InspectorInternal(props: InspectorProps): JSX.Element {
             modelPlayer.useIk = useIk;
 
             mmdController.addMmdPlayer(modelPlayer);
-            mmdController.addModelLoader(model);
+            mmdController.addModel(model);
         }
 
         const animationNames: string[] = [];

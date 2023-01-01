@@ -14,10 +14,10 @@ export class MmdController extends Component {
     public static readonly requiredComponents = [AnimationSequencePlayer];
 
     private readonly _mmdPlayers: MmdPlayer[] = [];
-    private _animationSequencePlayer: AnimationSequencePlayer|null = null;
+    private _animationSequencePlayer: AnimationSequencePlayer | null = null;
 
-    private readonly _modelLoaders: MmdModel[] = [];
-    private _cameraLoader: MmdCamera|null = null;
+    private readonly _models: MmdModel[] = [];
+    private _mmdCamera: MmdCamera | null = null;
 
     private _physicsUnitStep = 1 / 65;
     private _physicsMaximumStepCount = 3;
@@ -25,7 +25,7 @@ export class MmdController extends Component {
 
     private readonly _onLoadCompleteEvent = new EventContainer<() => void>();
 
-    private _initializeFunction: (() => void)|null = null;
+    private _initializeFunction: (() => void) | null = null;
     private _readyToPlay = false;
 
     public awake(): void {
@@ -40,7 +40,7 @@ export class MmdController extends Component {
         }
     }
 
-    public asyncPlay(modelAnimationName: string|string[], cameraAnimationName?: string, forceWaitAnimationLoad = false): void {
+    public asyncPlay(modelAnimationName: string | string[], cameraAnimationName?: string, forceWaitAnimationLoad = false): void {
         if (!this._readyToPlay) {
             this._initializeFunction = (): void => {
                 this.asyncPlay(modelAnimationName, cameraAnimationName, forceWaitAnimationLoad);
@@ -48,43 +48,43 @@ export class MmdController extends Component {
             return;
         }
 
-        if (this._modelLoaders.length === 0) throw new Error("modelLoader is empty");
+        if (this._models.length === 0) throw new Error("model is empty");
         if (cameraAnimationName) {
-            if (this._cameraLoader === null) throw new Error("cameraLoader is null");
+            if (this._mmdCamera === null) throw new Error("camera is null");
         }
 
         this.startCoroutine(this.playInternal(modelAnimationName, cameraAnimationName, forceWaitAnimationLoad));
     }
 
-    private *playInternal(modelAnimationName: string|string[], cameraAnimationName?: string, forceWaitAnimationLoad?: boolean): CoroutineIterator {
-        let camera: Camera|null = null;
-        let cameraAnimation: MmdCameraAnimationClip|null = null;
+    private *playInternal(modelAnimationName: string | string[], cameraAnimationName?: string, forceWaitAnimationLoad?: boolean): CoroutineIterator {
+        let camera: Camera | null = null;
+        let cameraAnimation: MmdCameraAnimationClip | null = null;
 
         if (cameraAnimationName) {
-            const cameraLoader = this._cameraLoader!;
-            while (cameraLoader.isAnimationLoading(cameraAnimationName)) yield null;
-            while (forceWaitAnimationLoad && !cameraLoader.animations.has(cameraAnimationName)) yield null;
+            const mmdCamera = this._mmdCamera!;
+            while (mmdCamera.isAnimationLoading(cameraAnimationName)) yield null;
+            while (forceWaitAnimationLoad && !mmdCamera.animations.has(cameraAnimationName)) yield null;
 
-            camera = cameraLoader.camera;
-            cameraAnimation = cameraLoader.animations.get(cameraAnimationName)!;
+            camera = mmdCamera.camera;
+            cameraAnimation = mmdCamera.animations.get(cameraAnimationName)!;
         }
 
         const cameraAnimationInstance = camera !== null && cameraAnimation !== null
             ? MmdCameraAnimationLoader.createInstance(camera, cameraAnimation)
             : null;
 
-        const modelLoaders = this._modelLoaders!;
-        for (let i = 0; i < modelLoaders.length; ++i) {
-            const modelLoader = modelLoaders[i];
+        const models = this._models!;
+        for (let i = 0; i < models.length; ++i) {
+            const model = models[i];
             const animationName = modelAnimationName instanceof Array ? modelAnimationName[i] : modelAnimationName;
-            while (modelLoader.skinnedMesh === null || modelLoader.isAnimationLoading(animationName)) yield null;
-            while (forceWaitAnimationLoad && !modelLoader.animations.has(animationName)) yield null;
+            while (model.skinnedMesh === null || model.isAnimationLoading(animationName)) yield null;
+            while (forceWaitAnimationLoad && !model.animations.has(animationName)) yield null;
         }
 
         const mmdPlayers = this._mmdPlayers;
         const mmdPlayerCount = mmdPlayers.length;
-        if (mmdPlayerCount !== modelLoaders.length) {
-            throw new Error("mmdPlayer count must be equal to modelLoader count");
+        if (mmdPlayerCount !== models.length) {
+            throw new Error("mmdPlayer count must be equal to model count");
         }
 
         const animationSequenceInstances: MmdAnimationSequenceInstance[] = [];
@@ -92,10 +92,10 @@ export class MmdController extends Component {
         let endFrame = 0;
         for (let i = 0; i < mmdPlayerCount; ++i) {
             const mmdPlayer = mmdPlayers[i];
-            const modelLoader = modelLoaders[i];
-            const skinnedMeshContainer = modelLoader.object3DContainer!;
+            const model = models[i];
+            const skinnedMeshContainer = model.object3DContainer!;
             const animationName = modelAnimationName instanceof Array ? modelAnimationName[i] : modelAnimationName;
-            const modelAnimation = modelLoader.animations.get(animationName)!;
+            const modelAnimation = model.animations.get(animationName)!;
 
             mmdPlayer.manualUpdate = true;
             mmdPlayer.play(
@@ -103,7 +103,7 @@ export class MmdController extends Component {
                 { animation: modelAnimation.modelAnimationClip, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
             );
 
-            const animationClipInstance = MmdModelAnimationLoader.createInstance(modelLoader, mmdPlayer, modelAnimation);
+            const animationClipInstance = MmdModelAnimationLoader.createInstance(model, mmdPlayer, modelAnimation);
             animationSequenceInstances.push(animationClipInstance.mmdAnimationSequenceInstance);
 
             endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
@@ -114,7 +114,7 @@ export class MmdController extends Component {
 
         const firstMmdPlayer = mmdPlayers[0];
         const firstPropertyAnimationInstance = animationSequenceInstances[0];
-        const firstModelLoader = modelLoaders[0];
+        const firstModel = models[0];
 
         this._animationSequencePlayer!.setAnimationAndBind(
             new AnimationSequence([
@@ -123,22 +123,22 @@ export class MmdController extends Component {
                     new AnimationKey(endFrame, endFrame, InterpolationKind.Linear)
                 ]))
             ]), [
-                modelLoaders.length === 1
-                    ? (frame: number): void => {
-                        firstMmdPlayer.process(frame);
-                        firstPropertyAnimationInstance.process(frame / 2);
-                        firstModelLoader.parameterController?.apply();
-                        cameraAnimationInstance?.process(frame);
+            models.length === 1
+                ? (frame: number): void => {
+                    firstMmdPlayer.process(frame);
+                    firstPropertyAnimationInstance.process(frame / 2);
+                    firstModel.parameterController?.apply();
+                    cameraAnimationInstance?.process(frame);
+                }
+                : (frame: number): void => {
+                    for (let i = 0; i < mmdPlayerCount; ++i) {
+                        mmdPlayers[i].process(frame);
+                        animationSequenceInstances[i].process(frame / 2);
+                        models[i].parameterController?.apply();
                     }
-                    : (frame: number): void => {
-                        for (let i = 0; i < mmdPlayerCount; ++i) {
-                            mmdPlayers[i].process(frame);
-                            animationSequenceInstances[i].process(frame / 2);
-                            modelLoaders[i].parameterController?.apply();
-                        }
-                        cameraAnimationInstance?.process(frame);
-                    }
-            ]
+                    cameraAnimationInstance?.process(frame);
+                }
+        ]
         );
 
         this._onLoadCompleteEvent.invoke();
@@ -161,31 +161,31 @@ export class MmdController extends Component {
         this._mmdPlayers.length = 0;
     }
 
-    public get modelLoaders(): readonly MmdModel[] {
-        return this._modelLoaders;
+    public get models(): readonly MmdModel[] {
+        return this._models;
     }
 
-    public addModelLoader(modelLoader: MmdModel): void {
-        this._modelLoaders.push(modelLoader);
+    public addModel(model: MmdModel): void {
+        this._models.push(model);
     }
 
-    public removeModelLoader(modelLoader: MmdModel): void {
-        const index = this._modelLoaders.indexOf(modelLoader);
+    public removeModel(model: MmdModel): void {
+        const index = this._models.indexOf(model);
         if (index >= 0) {
-            this._modelLoaders.splice(index, 1);
+            this._models.splice(index, 1);
         }
     }
 
-    public removeAllModelLoaders(): void {
-        this._modelLoaders.length = 0;
+    public removeAllModel(): void {
+        this._models.length = 0;
     }
 
-    public get cameraLoader(): MmdCamera|null {
-        return this._cameraLoader;
+    public get mmdCamera(): MmdCamera | null {
+        return this._mmdCamera;
     }
 
-    public set cameraLoader(value: MmdCamera|null) {
-        this._cameraLoader = value;
+    public set mmdCamera(value: MmdCamera | null) {
+        this._mmdCamera = value;
     }
 
     public get physicsUnitStep(): number {

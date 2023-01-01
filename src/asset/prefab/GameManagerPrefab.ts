@@ -17,8 +17,8 @@ export class GameManagerPrefab extends Prefab {
     private _orbitCamera = new PrefabRef<Camera>();
     private _camera = new PrefabRef<Camera>();
     private _audioPlayer = new PrefabRef<AudioPlayer>();
-    private readonly _modelLoaders: PrefabRef<MmdModel>[] = [];
-    private _cameraLoader = new PrefabRef<MmdCamera>();
+    private readonly _mmdModels: PrefabRef<MmdModel>[] = [];
+    private _mmdCamera = new PrefabRef<MmdCamera>();
     private _modelAnimationName = new PrefabRef<string>();
     private _cameraAnimationName = new PrefabRef<string>();
     private _useIk = new PrefabRef<boolean>(true);
@@ -45,13 +45,13 @@ export class GameManagerPrefab extends Prefab {
         return this;
     }
 
-    public withModelLoader(modelLoader: PrefabRef<MmdModel>): this {
-        this._modelLoaders.push(modelLoader);
+    public withModelLoader(model: PrefabRef<MmdModel>): this {
+        this._mmdModels.push(model);
         return this;
     }
 
-    public withCameraLoader(cameraLoader: PrefabRef<MmdCamera>): this {
-        this._cameraLoader = cameraLoader;
+    public withCameraLoader(camera: PrefabRef<MmdCamera>): this {
+        this._mmdCamera = camera;
         return this;
     }
 
@@ -132,11 +132,11 @@ export class GameManagerPrefab extends Prefab {
                         if (this._camera.ref) this._camera.ref.priority = 0;
                     });
 
-                    const modelLoaders = this._modelLoaders;
-                    for (let i = 0; i < modelLoaders.length; ++i) {
-                        const modelLoader = modelLoaders[i].ref;
-                        if (modelLoader) {
-                            c.addModelLoader(modelLoader);
+                    const models = this._mmdModels;
+                    for (let i = 0; i < models.length; ++i) {
+                        const mmdModel = models[i].ref;
+                        if (mmdModel) {
+                            c.addModel(mmdModel);
 
                             if (!unsafeIsComponent(c)) return;
                             const mmdPlayer = c.gameObject.addComponent(MmdPlayer)!;
@@ -147,7 +147,7 @@ export class GameManagerPrefab extends Prefab {
                             const usePhysicsMap = this._usePhysicsMap;
                             for (let j = 0; j < usePhysicsMap.length; ++j) {
                                 const { model, usePhysics } = usePhysicsMap[j];
-                                if (model.ref === modelLoader) {
+                                if (model.ref === mmdModel) {
                                     mmdPlayer.usePhysics = usePhysics;
                                     break;
                                 }
@@ -156,7 +156,7 @@ export class GameManagerPrefab extends Prefab {
                             const useIkMap = this._useIkMap;
                             for (let j = 0; j < useIkMap.length; ++j) {
                                 const { model, useIk } = useIkMap[j];
-                                if (model.ref === modelLoader) {
+                                if (model.ref === mmdModel) {
                                     mmdPlayer.useIk = useIk;
                                     break;
                                 }
@@ -164,7 +164,7 @@ export class GameManagerPrefab extends Prefab {
                         }
                     }
 
-                    c.cameraLoader = this._cameraLoader.ref;
+                    c.mmdCamera = this._mmdCamera.ref;
                     c.physicsMaximumStepCount = this._physicsMaximumStepCount.ref ?? 1;
 
                     if (this._modelAnimationName.ref) {
