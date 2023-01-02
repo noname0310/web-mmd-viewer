@@ -2,8 +2,10 @@ import { Component } from "the-world-engine";
 import { MMDAnimationHelperAddParameter, MMDAnimationHelperMixer } from "three/examples/jsm/animation/MMDAnimationHelper";
 
 import { MMDAnimationHelperOverride } from "./loader/MMDAnimationHelperOverride";
+import { MmdAnimationSequenceInstance } from "./loader/MMDLoaderOverride";
+import { MmdModelAnimationClip, MmdModelAnimationLoader } from "./loader/MmdModelAnimationLoader";
 import { MMdPhysicsOverride } from "./loader/MMDPhysicsOverride";
-import { MmdSkinnedMeshContainer } from "./MmdModel";
+import { MmdModel, MmdSkinnedMeshContainer } from "./MmdModel";
 
 export interface MMDAnimationModelParameter extends Omit<MMDAnimationHelperAddParameter, "gravity"> {
     animation: THREE.AnimationClip | THREE.AnimationClip[];
@@ -20,7 +22,6 @@ export class MmdPlayer extends Component {
 
     private _isPlaying = false;
     private _elapsedTime = 0;
-    private _model: MmdSkinnedMeshContainer | null = null;
     private _manualUpdate = false;
     private _manualUpdateFps = 60;
     private _animationEndFrame = 0;
@@ -30,8 +31,11 @@ export class MmdPlayer extends Component {
     private _usePhysics = true;
 
     private _currentMesh: THREE.SkinnedMesh | null = null;
+    private _currentMeshContainer: MmdSkinnedMeshContainer | null = null;
+    private readonly _currentModel: MmdModel | null = null;
     private _currentCamera: THREE.Camera | null = null;
     private _currentAudio: THREE.Audio | null = null;
+    private _currentAnimationSequenceInstance: MmdAnimationSequenceInstance | null = null;
 
     public awake(): void {
         this._helper
@@ -53,7 +57,10 @@ export class MmdPlayer extends Component {
         const deltaTime = this.engine.time.deltaTime;
         this._elapsedTime = this._elapsedTime += deltaTime;
         this._helper.update(deltaTime);
-        this._model!.updateWorldMatrix();
+        this._currentMeshContainer!.updateWorldMatrix();
+
+        this._currentAnimationSequenceInstance!.process((this._elapsedTime * this._manualUpdateFps) / 2);
+        this._currentModel?.parameterController?.apply();
     }
 
     public onDestroy(): void {
@@ -68,23 +75,31 @@ export class MmdPlayer extends Component {
         this._currentMesh = null;
         this._currentCamera = null;
         this._currentAudio = null;
+        this._currentAnimationSequenceInstance = null;
     }
 
     public play(
-        model: MmdSkinnedMeshContainer,
-        modelParams: MMDAnimationModelParameter,
+        model: MmdModel,
+        modelAnimation: MmdModelAnimationClip,
+        modelParams?: Omit<MMDAnimationModelParameter, "animation">,
         camera?: THREE.Camera,
         cameraParams?: MMDAnimationCameraParameter,
         audio?: THREE.Audio,
         audioDelay = 0
     ): void {
-        if (model.object3D === null) {
-            throw new Error("model is null");
+        const skinnedMesh = model.skinnedMesh;
+        if (skinnedMesh === null) {
+            throw new Error("MmdPlayer: model is not loaded");
         }
 
         this.onDestroy();
 
-        this._helper.add(model.object3D, modelParams as MMDAnimationHelperAddParameter);
+        const fullModelParams = {
+            ...modelParams,
+            animation: modelAnimation.modelAnimationClip
+        };
+
+        this._helper.add(skinnedMesh, fullModelParams as MMDAnimationHelperAddParameter);
 
         if (camera && cameraParams) {
             this._helper.add(camera, cameraParams);
@@ -92,19 +107,20 @@ export class MmdPlayer extends Component {
 
         if (audio) this._helper.add(audio, { delayTime: audioDelay });
 
-        this._currentMesh = model.object3D;
+        this._currentMesh = skinnedMesh;
+        this._currentMeshContainer = model.object3DContainer;
         this._currentCamera = camera ?? null;
         this._currentAudio = audio ?? null;
+        this._currentAnimationSequenceInstance =
+            MmdModelAnimationLoader.createInstance(model, this, modelAnimation).mmdAnimationSequenceInstance;
 
         this._isPlaying = true;
         this._elapsedTime = 0;
-        this._model = model;
-
 
         let duration = 0;
 
-        if (modelParams.animation instanceof Array) {
-            const animations = modelParams.animation as THREE.AnimationClip[];
+        if (fullModelParams.animation instanceof Array) {
+            const animations = fullModelParams.animation as THREE.AnimationClip[];
             for (let i = 0; i < animations.length; ++i) {
                 if (animations[i].duration === -1) {
                     const tracks = animations[i].tracks;
@@ -118,15 +134,15 @@ export class MmdPlayer extends Component {
                 }
             }
         } else {
-            if (modelParams.animation.duration === -1) {
-                const tracks = modelParams.animation.tracks;
+            if (fullModelParams.animation.duration === -1) {
+                const tracks = fullModelParams.animation.tracks;
                 for (let j = 0; j < tracks.length; ++j) {
                     const track = tracks[j];
                     if (track.times.length === 0) continue;
                     duration = Math.max(duration, track.times[track.times.length - 1]);
                 }
             } else {
-                duration = Math.max(duration, modelParams.animation.duration);
+                duration = Math.max(duration, fullModelParams.animation.duration);
             }
         }
 
@@ -207,23 +223,23 @@ export class MmdPlayer extends Component {
     }
 
     public get mixer(): Omit<MMDAnimationHelperMixer, "duration"> | null {
-        if (!this._model || !this._model.object3D) return null;
-        return this._helper.objects.get(this._model.object3D) as Omit<MMDAnimationHelperMixer, "duration">;
+        if (!this._currentMeshContainer || !this._currentMeshContainer.object3D) return null;
+        return this._helper.objects.get(this._currentMeshContainer.object3D) as Omit<MMDAnimationHelperMixer, "duration">;
     }
 
     public isIkEnabled(ikBoneName: string): boolean {
-        if (!this._model || !this._model.object3D) return false;
-        return this._helper.isIkEnabled(this._model.object3D, ikBoneName);
+        if (!this._currentMeshContainer || !this._currentMeshContainer.object3D) return false;
+        return this._helper.isIkEnabled(this._currentMeshContainer.object3D, ikBoneName);
     }
 
     public setIkEnabled(ikBoneName: string, enabled: boolean): void {
-        if (!this._model || !this._model.object3D) return;
-        this._helper.setIkEnabled(this._model.object3D, ikBoneName, enabled);
+        if (!this._currentMeshContainer || !this._currentMeshContainer.object3D) return;
+        this._helper.setIkEnabled(this._currentMeshContainer.object3D, ikBoneName, enabled);
     }
 
     public isIkExists(ikBoneName: string): boolean {
-        if (!this._model || !this._model.object3D) return false;
-        return this._helper.isIkExists(this._model.object3D, ikBoneName);
+        if (!this._currentMeshContainer || !this._currentMeshContainer.object3D) return false;
+        return this._helper.isIkExists(this._currentMeshContainer.object3D, ikBoneName);
     }
 
     public process(frameTime: number): void {
@@ -231,7 +247,10 @@ export class MmdPlayer extends Component {
 
         const time = frameTime / this._manualUpdateFps;
         this._helper.update(time - this._elapsedTime);
-        this._model!.updateWorldMatrix();
+        this._currentMeshContainer!.updateWorldMatrix();
+
+        this._currentAnimationSequenceInstance!.process(frameTime / 2);
+        this._currentModel?.parameterController?.apply();
 
         this._elapsedTime = time;
     }

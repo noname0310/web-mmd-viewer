@@ -4,8 +4,6 @@ import { AnimationKey, AnimationSequence, AnimationTrack, InterpolationKind, Ran
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 
 import { MmdCameraAnimationClip, MmdCameraAnimationLoader } from "./loader/MmdCameraAnimationLoader";
-import { MmdAnimationSequenceInstance } from "./loader/MMDLoaderOverride";
-import { MmdModelAnimationLoader } from "./loader/MmdModelAnimationLoader";
 import { MmdCamera } from "./MmdCamera";
 import { MmdModel } from "./MmdModel";
 import { MmdPlayer } from "./MmdPlayer";
@@ -87,24 +85,19 @@ export class MmdController extends Component {
             throw new Error("mmdPlayer count must be equal to model count");
         }
 
-        const animationSequenceInstances: MmdAnimationSequenceInstance[] = [];
-
         let endFrame = 0;
         for (let i = 0; i < mmdPlayerCount; ++i) {
             const mmdPlayer = mmdPlayers[i];
             const model = models[i];
-            const skinnedMeshContainer = model.object3DContainer!;
             const animationName = modelAnimationName instanceof Array ? modelAnimationName[i] : modelAnimationName;
             const modelAnimation = model.animations.get(animationName)!;
 
             mmdPlayer.manualUpdate = true;
             mmdPlayer.play(
-                skinnedMeshContainer,
-                { animation: modelAnimation.modelAnimationClip, unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
+                model,
+                modelAnimation,
+                { unitStep: this._physicsUnitStep, maxStepNum: this._physicsMaximumStepCount }
             );
-
-            const animationClipInstance = MmdModelAnimationLoader.createInstance(model, mmdPlayer, modelAnimation);
-            animationSequenceInstances.push(animationClipInstance.mmdAnimationSequenceInstance);
 
             endFrame = Math.max(endFrame, mmdPlayer.animationEndFrame);
         }
@@ -113,8 +106,6 @@ export class MmdController extends Component {
         }
 
         const firstMmdPlayer = mmdPlayers[0];
-        const firstPropertyAnimationInstance = animationSequenceInstances[0];
-        const firstModel = models[0];
 
         this._animationSequencePlayer!.setAnimationAndBind(
             new AnimationSequence([
@@ -123,22 +114,18 @@ export class MmdController extends Component {
                     new AnimationKey(endFrame, endFrame, InterpolationKind.Linear)
                 ]))
             ]), [
-            models.length === 1
-                ? (frame: number): void => {
-                    firstMmdPlayer.process(frame);
-                    firstPropertyAnimationInstance.process(frame / 2);
-                    firstModel.parameterController?.apply();
-                    cameraAnimationInstance?.process(frame);
-                }
-                : (frame: number): void => {
-                    for (let i = 0; i < mmdPlayerCount; ++i) {
-                        mmdPlayers[i].process(frame);
-                        animationSequenceInstances[i].process(frame / 2);
-                        models[i].parameterController?.apply();
+                models.length === 1
+                    ? (frame: number): void => {
+                        firstMmdPlayer.process(frame);
+                        cameraAnimationInstance?.process(frame);
                     }
-                    cameraAnimationInstance?.process(frame);
-                }
-        ]
+                    : (frame: number): void => {
+                        for (let i = 0; i < mmdPlayerCount; ++i) {
+                            mmdPlayers[i].process(frame);
+                        }
+                        cameraAnimationInstance?.process(frame);
+                    }
+            ]
         );
 
         this._onLoadCompleteEvent.invoke();
