@@ -32,7 +32,7 @@ export class MmdPlayer extends Component {
 
     private _currentMesh: THREE.SkinnedMesh | null = null;
     private _currentMeshContainer: MmdSkinnedMeshContainer | null = null;
-    private readonly _currentModel: MmdModel | null = null;
+    private _currentModel: MmdModel | null = null;
     private _currentCamera: THREE.Camera | null = null;
     private _currentAudio: THREE.Audio | null = null;
     private _currentAnimationSequenceInstance: MmdAnimationSequenceInstance | null = null;
@@ -109,6 +109,7 @@ export class MmdPlayer extends Component {
 
         this._currentMesh = skinnedMesh;
         this._currentMeshContainer = model.object3DContainer;
+        this._currentModel = model;
         this._currentCamera = camera ?? null;
         this._currentAudio = audio ?? null;
         this._currentAnimationSequenceInstance =
