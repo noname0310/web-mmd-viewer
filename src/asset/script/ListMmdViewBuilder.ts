@@ -5,7 +5,7 @@ import { AsYouLikeItBootstrapper } from "../mmd_scene/AsYouLikeItBootstrapper";
 import { ConquerorBootstrapper } from "../mmd_scene/ConquerorBootstrapper";
 import { DaybreakFrontlineBootstrapper } from "../mmd_scene/DaybreakFrontlineBootstrapper";
 import { FlosBootstrapper } from "../mmd_scene/FlosBootstrapper";
-import { FlosWithSubtitleBootstrapper } from "../mmd_scene/FlowWithSubtitleBootatrapper";
+import { FlosWithSubtitleBootstrapper } from "../mmd_scene/FlosWithSubtitleBootatrapper";
 import { LemonBootstrapper } from "../mmd_scene/LemonBootstrapper";
 import { MelancholyNightBootstrapper } from "../mmd_scene/MelancholyNightBootstrapper";
 import { MmdGenericBootstrapper, MmdLoadParams } from "../mmd_scene/MmdGenericBootstrapper";
