@@ -60,7 +60,7 @@ export class MmdPlayer extends Component {
         this._currentMeshContainer!.updateWorldMatrix();
 
         this._currentAnimationSequenceInstance!.process((this._elapsedTime * this._manualUpdateFps) / 2);
-        this._currentModel?.parameterController?.apply();
+        this._currentModel!.parameterController?.apply();
     }
 
     public onDestroy(): void {
@@ -244,14 +244,14 @@ export class MmdPlayer extends Component {
     }
 
     public process(frameTime: number): void {
-        frameTime = Math.min(frameTime, this._animationEndFrame);
+        const trimedFrameTime = Math.min(frameTime, this._animationEndFrame);
 
-        const time = frameTime / this._manualUpdateFps;
+        const time = trimedFrameTime / this._manualUpdateFps;
         this._helper.update(time - this._elapsedTime);
         this._currentMeshContainer!.updateWorldMatrix();
 
         this._currentAnimationSequenceInstance!.process(frameTime / 2);
-        this._currentModel?.parameterController?.apply();
+        this._currentModel!.parameterController?.apply();
 
         this._elapsedTime = time;
     }
