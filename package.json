@@ -14,7 +14,7 @@
         "@types/react": "^18.0.26",
         "@types/react-dom": "^18.0.10",
         "@types/styled-components": "^5.1.26",
-        "@types/three": "^0.148.0",
+        "@types/three": "^0.149.0",
         "@typescript-eslint/eslint-plugin": "^5.48.0",
         "@typescript-eslint/parser": "^5.48.0",
         "copy-webpack-plugin": "^11.0.0",
@@ -35,14 +35,14 @@
         "@noname0310/mmd-parser": "^0.1.4",
         "ammojs-typed": "^1.0.6",
         "bson": "^4.7.0",
-        "postprocessing": "^6.29.3",
+        "postprocessing": "^6.30.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-is": "^18.2.0",
         "styled-components": "^5.3.6",
-        "the-world-engine": "^0.4.46",
-        "three": "^0.148.0",
+        "the-world-engine": "^0.4.47",
+        "three": "^0.149.0",
         "three-good-godrays": "^0.4.1",
-        "tw-engine-498tokio": "^0.1.30"
+        "tw-engine-498tokio": "^0.1.31"
     }
 }
