@@ -10,7 +10,6 @@ import {
     NearestFilter,
     RepeatWrapping,
     RGBAFormat,
-    RGBFormat,
     ShaderMaterial,
     WebGLRenderTarget
 } from "three/src/Three";
@@ -236,7 +235,6 @@ export class SSRPass extends Pass {
 
         // Mipmapped Color Buffer
         this._colorLod = new WebGLRenderTarget(1, 1, {
-            format: RGBFormat,
             minFilter: LinearMipMapLinearFilter,
             magFilter: LinearFilter,
             generateMipmaps: true

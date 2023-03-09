@@ -8,7 +8,6 @@ import {
     NearestFilter,
     RepeatWrapping,
     RGBAFormat,
-    RGBFormat,
     ShaderMaterial,
     WebGLRenderTarget
 } from "three/src/Three";
@@ -159,7 +158,6 @@ export class GTAOPass extends Pass {
             new WebGLRenderTarget(1, 1, {
                 minFilter: NearestFilter,
                 magFilter: NearestFilter,
-                format: RGBFormat,
                 type: HalfFloatType
             });
 
