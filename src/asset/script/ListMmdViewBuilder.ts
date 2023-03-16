@@ -175,6 +175,23 @@ export class ListMmdViewBuilder {
         button16.innerText = "flos(with subtitles)";
         button16.onclick = (): void => runGame(FlosWithSubtitleBootstrapper);
 
+        const button17 = document.createElement("button");
+        button17.className = "select_bootstrapper_button";
+        button17.innerText = "cinderella";
+        button17.onclick = (): void => runGame(MmdGenericBootstrapper, {
+            models: [
+                {
+                    modelUrl: "mmd/YYB Hatsune Miku_10th - faceforward/YYB Hatsune Miku_10th_v1.02 - faceforward-physedit.pmx",
+                    modelMotionUrl: ["mmd/cinderella/motion.vmd"]
+                }
+            ],
+            cameraMotionUrl: "mmd/cinderella/camera.vmd",
+            audioUrl: "mmd/cinderella/cinderella.mp3",
+            settings: {
+                forceAllInterpolateToCubic: true
+            }
+        } as MmdLoadParams);
+
         bootstrapperSelectPanel.appendChild(button1);
         bootstrapperSelectPanel.appendChild(button2);
         bootstrapperSelectPanel.appendChild(button3);
@@ -191,9 +208,10 @@ export class ListMmdViewBuilder {
         bootstrapperSelectPanel.appendChild(button14);
         bootstrapperSelectPanel.appendChild(button15);
         bootstrapperSelectPanel.appendChild(button16);
+        bootstrapperSelectPanel.appendChild(button17);
 
         document.body.appendChild(bootstrapperSelectPanel);
 
-        button16.onclick(new MouseEvent("click"));
+        button17.onclick(new MouseEvent("click"));
     }
 }
