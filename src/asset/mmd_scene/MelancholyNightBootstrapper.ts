@@ -29,7 +29,7 @@ import {
     WebGLRendererLoader
 } from "the-world-engine";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-import { GroundProjectedEnv } from "three/examples/jsm/objects/GroundProjectedEnv";
+import { GroundProjectedSkybox } from "three/examples/jsm/objects/GroundProjectedSkybox";
 import * as THREE from "three/src/Three";
 import { AnimationSequencePlayer } from "tw-engine-498tokio/dist/asset/script/animation/player/AnimationSequencePlayer";
 import { AudioPlayer } from "tw-engine-498tokio/dist/asset/script/audio/AudioPlayer";
@@ -151,7 +151,7 @@ export class MelancholyNightBootstrapper extends BaseBootstrapper {
                 .active(false)
                 .withComponent(class extends Component {
                     public onEnable(): void {
-                        const env = new GroundProjectedEnv(
+                        const env = new GroundProjectedSkybox(
                             assetManager.ref!.assets.get("nightSkyDome") as THREE.Texture,
                             {
                                 height: 50,
@@ -162,7 +162,7 @@ export class MelancholyNightBootstrapper extends BaseBootstrapper {
                         env.frustumCulled = false;
                         env.material.side = THREE.BackSide;
 
-                        const envContainer = this.gameObject.addComponent(Object3DContainer<GroundProjectedEnv>)!;
+                        const envContainer = this.gameObject.addComponent(Object3DContainer<GroundProjectedSkybox>)!;
                         envContainer.setObject3D(env, object3D => {
                             object3D.geometry.dispose();
                             object3D.material.dispose();
