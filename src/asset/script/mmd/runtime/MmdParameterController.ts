@@ -37,6 +37,7 @@ export class MmdParameterController {
                 if (texture.readyCallbacks) {
                     leftTextureCount += 1;
                     texture.readyCallbacks.push(() => {
+                        // TODO: fix transparent initialize
                         this.materialMorphs[i].texTransparent = material.transparent;
                         leftTextureCount -= 1;
                         if (leftTextureCount === 0) {
