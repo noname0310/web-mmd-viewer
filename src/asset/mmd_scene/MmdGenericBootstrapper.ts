@@ -121,7 +121,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
 
             .withChild(instantiater.buildGameObject("directional-light", new THREE.Vector3(-20, 30, 100))
                 .withComponent(Object3DContainer<THREE.DirectionalLight>, c => {
-                    const light = new THREE.DirectionalLight(0xffffff, 0.5);
+                    const light = new THREE.DirectionalLight(0xffffff, 0.55);
                     light.castShadow = true;
                     light.shadow.mapSize.width = 1024 * 8;
                     light.shadow.mapSize.height = 1024 * 8;
