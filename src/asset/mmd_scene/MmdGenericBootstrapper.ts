@@ -45,6 +45,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputColorSpace = THREE.NoColorSpace;
             return renderer;
         });
 

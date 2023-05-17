@@ -31,6 +31,7 @@ export class AsYouLikeItBootstrapper extends BaseBootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputColorSpace = THREE.NoColorSpace;
             return renderer;
         });
 
