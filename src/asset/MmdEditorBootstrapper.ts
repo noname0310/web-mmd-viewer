@@ -33,6 +33,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
             return renderer;
         });
 

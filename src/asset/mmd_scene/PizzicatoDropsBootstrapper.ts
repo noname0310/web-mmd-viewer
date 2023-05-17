@@ -31,7 +31,7 @@ export class PizzicatoDropsBootstrapper extends BaseBootstrapper {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            // renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.outputColorSpace = THREE.NoColorSpace;
             // renderer.toneMapping = THREE.ACESFilmicToneMapping;
             // renderer.toneMappingExposure = 0.5;
             return [new OutlineEffect(renderer), renderer.domElement] as const;

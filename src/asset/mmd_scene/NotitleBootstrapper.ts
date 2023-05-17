@@ -51,6 +51,7 @@ export class NotitleBootstrapper extends BaseBootstrapper {
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMappingExposure = 1.5;
+            renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
             return renderer;
         });
 

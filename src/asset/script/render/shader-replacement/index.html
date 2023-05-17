@@ -86,7 +86,7 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.shadowMap.enabled = true;
 				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-				renderer.outputEncoding = THREE.sRGBEncoding;
+				renderer.outputColorSpace= THREE.SRGBColorSpace;
 				renderer.setClearColor( 0x0d1113 );
 
 				document.body.appendChild( renderer.domElement );

@@ -45,7 +45,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.outputColorSpace = THREE.NoColorSpace;
+            renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
             return renderer;
         });
 
@@ -155,7 +155,7 @@ export class MmdGenericBootstrapper extends BaseBootstrapper<MmdLoadParams> {
                 .withComponent(Object3DContainer<THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhongMaterial>>, c => {
                     const mesh = new THREE.Mesh(
                         new THREE.PlaneGeometry(1000, 1000),
-                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(140, 140, 140)" })
+                        new THREE.MeshPhongMaterial({ color: 0xffffff, depthWrite: true, emissive: "rgb(190, 190, 190)" })
                     );
                     mesh.receiveShadow = true;
                     c.setObject3D(mesh, object3D => {

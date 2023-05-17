@@ -1,10 +1,11 @@
-import { Color, LinearEncoding } from "three/src/Three";
+import { Color, LinearEncoding, LinearSRGBColorSpace } from "three/src/Three";
 
 export class RendererState {
     public clearAlpha: number;
     public clearColor: Color;
     public renderTarget: THREE.WebGLRenderTarget | null;
     public outputEncoding: THREE.TextureEncoding;
+    public outputColorSpace: THREE.ColorSpace;
     public overrideMaterial: THREE.Material | null;
     public shadowsEnabled: boolean;
     public autoClear: boolean;
@@ -19,6 +20,7 @@ export class RendererState {
         this.clearColor = new Color();
         this.renderTarget = null;
         this.outputEncoding = LinearEncoding;
+        this.outputColorSpace = LinearSRGBColorSpace;
         this.overrideMaterial = null;
         this.shadowsEnabled = false;
 
@@ -39,6 +41,7 @@ export class RendererState {
 
             this.shadowsEnabled = renderer.shadowMap.enabled;
             this.outputEncoding = renderer.outputEncoding;
+            this.outputColorSpace = renderer.outputColorSpace;
             this.autoClear = renderer.autoClear;
             this.autoClearColor = renderer.autoClearColor;
             this.autoClearDepth = renderer.autoClearDepth;
@@ -60,6 +63,7 @@ export class RendererState {
 
             renderer.shadowMap.enabled = this.shadowsEnabled;
             renderer.outputEncoding = this.outputEncoding;
+            renderer.outputColorSpace = this.outputColorSpace;
             renderer.autoClear = this.autoClear;
             renderer.autoClearColor = this.autoClearColor;
             renderer.autoClearDepth = this.autoClearDepth;
