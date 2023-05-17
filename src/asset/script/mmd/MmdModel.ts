@@ -150,7 +150,7 @@ export class MmdModel extends Component {
                 materialOpacities.push(data.materials[i].diffuse[3]);
                 data.materials[i].diffuse[3] = 0;
             }
-            model = this._modelLoader.loadModelFromData(data, url, onProgress) as THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
+            const loadingModel = this._modelLoader.loadModelFromData(data, url, onProgress) as THREE.SkinnedMesh<THREE.BufferGeometry, THREE.Material[]>;
 
             // restore opacity, set opacity to material
             for (let i = 0; i < data.materials.length; ++i) {
@@ -158,7 +158,7 @@ export class MmdModel extends Component {
                 const materialData = data.materials[i];
                 materialData.diffuse[3] = materialOpacity;
 
-                const material = model.material[i];
+                const material = loadingModel.material[i];
                 material.opacity = materialOpacity;
 
                 if (data.metadata.format === "pmx" && ((materialData as PmxMaterialInfo).flag & 0x1) === 1) {
@@ -168,7 +168,7 @@ export class MmdModel extends Component {
                 }
             }
 
-            const parameterController = this._parameterController = new MmdParameterController(data, model);
+            const parameterController = this._parameterController = new MmdParameterController(data, loadingModel);
             const materialControllers = parameterController.materialMorphs;
             for (let i = 0; i < materialControllers.length; ++i) {
                 const materialController = materialControllers[i];
@@ -177,7 +177,10 @@ export class MmdModel extends Component {
                     materialController.renderSide = THREE.DoubleSide;
                 }
             }
-            parameterController.asyncTransparentInitialize(() => parameterController.apply());
+            parameterController.asyncTransparentInitialize(() => {
+                parameterController.apply();
+                model = loadingModel;
+            });
         }, onProgress);
         yield new WaitUntil(() => model !== null);
         this._object3DContainer!.setObject3D(model!, object3D => {
