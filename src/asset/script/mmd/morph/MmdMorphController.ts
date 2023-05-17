@@ -175,7 +175,7 @@ export class MmdMorphController {
         }
 
         const morphNameMap = this.mmdMorphNameMap;
-        computeBuffer.sort((a, b) => {
+        computeBuffer.sort((a, b) => { // consider to use OrderedSet instead (use js-sdsl)
             return morphNameMap.get(a.name)! - morphNameMap.get(b.name)!;
         });
 
