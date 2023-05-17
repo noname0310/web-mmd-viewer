@@ -157,12 +157,14 @@ export class MmdModel extends Component {
                 const materialOpacity = materialOpacities[i];
                 const materialData = data.materials[i];
                 materialData.diffuse[3] = materialOpacity;
-                model.material[i].opacity = materialOpacity;
+
+                const material = model.material[i];
+                material.opacity = materialOpacity;
 
                 if (data.metadata.format === "pmx" && ((materialData as PmxMaterialInfo).flag & 0x1) === 1) {
-                    model.material[i].side = THREE.DoubleSide;
+                    material.side = THREE.DoubleSide;
                 } else {
-                    model.material[i].side = materialOpacity === 1.0 ? THREE.FrontSide : THREE.DoubleSide;
+                    material.side = materialOpacity === 1.0 ? THREE.FrontSide : THREE.DoubleSide;
                 }
             }
 
