@@ -18,7 +18,7 @@ export interface MMDAnimationCameraParameter extends
 }
 
 export class MmdPlayer extends Component {
-    private readonly _helper = new MMDAnimationHelperOverride();
+    private readonly _helper = new MMDAnimationHelperOverride({ pmxAnimation: true } as any);
 
     private _isPlaying = false;
     private _elapsedTime = 0;
