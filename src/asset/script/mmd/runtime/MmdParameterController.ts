@@ -29,6 +29,9 @@ export class MmdParameterController {
     public asyncTransparentInitialize(onComplete?: () => void): void {
         const materials = this._skinnedMesh.material;
 
+        // todo: override entire model loading process to remove this garbage
+        const waitTime = 1500;
+
         let leftTextureCount = 0;
         for (let i = 0; i < materials.length; ++i) {
             const material = materials[i] as MMDToonMaterial;
@@ -36,9 +39,20 @@ export class MmdParameterController {
                 const texture = material.map as LoadingTexture;
                 if (texture.readyCallbacks) {
                     leftTextureCount += 1;
+
+                    const timeOutId = setTimeout(() => {
+                        console.warn(`Texture ${texture.name} is not loaded. It will be treated as opaque.`);
+                        this.materialMorphs[i].texTransparent = material.transparent;
+                        leftTextureCount -= 1;
+                        if (leftTextureCount === 0) {
+                            onComplete?.();
+                        }
+                    }, waitTime);
+
                     texture.readyCallbacks.push(() => {
                         this.materialMorphs[i].texTransparent = material.transparent;
                         leftTextureCount -= 1;
+                        clearTimeout(timeOutId);
                         if (leftTextureCount === 0) {
                             onComplete?.();
                         }
