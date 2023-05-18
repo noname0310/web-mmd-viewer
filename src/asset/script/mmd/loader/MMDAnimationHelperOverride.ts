@@ -14,6 +14,27 @@ type MMDAnimationHelperMixerOverride = MMDAnimationHelperMixer & {
 
 export class MMDAnimationHelperOverride extends MMDAnimationHelper {
     // eslint-disable-next-line @typescript-eslint/naming-convention
+    public _addMesh(mesh: THREE.SkinnedMesh, params: any): MMDAnimationHelperOverride {
+        if (this.meshes.includes(mesh)) {
+            throw new Error("THREE.MMDAnimationHelper._addMesh: "
+                + "SkinnedMesh '" + mesh.name + "' has already been added.");
+        }
+
+        this.meshes.push(mesh);
+        this.objects.set(mesh, { looped: false } as any);
+
+        (this as any)._setupMeshAnimation(mesh, params.animation);
+
+        const mmdUserData = mesh.geometry.userData.MMD as MmdUserData;
+
+        if (params.physics !== false && mmdUserData.rigidBodies.length > 0) {
+            (this as any)._setupMeshPhysics(mesh, params);
+        }
+
+        return this;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public _createMMDPhysics(mesh: THREE.SkinnedMesh, params: any): MMdPhysicsOverride {
 
         if (MMdPhysicsOverride === undefined) {
