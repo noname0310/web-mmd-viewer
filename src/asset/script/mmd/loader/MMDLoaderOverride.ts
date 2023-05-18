@@ -349,6 +349,9 @@ export class GeometryBuilder {
 
                 // TODO: it makes type error i think it is human error
                 const parentGrantEntry = grantEntryMap[(grantEntry as any).parentIndex] || rootEntry;
+                if (grantEntryMap[grantEntry.param?.parentIndex ?? -1] !== undefined) {
+                    console.warn("gramtEntryMap[grantEntry.param.parentIndex]", grantEntryMap[grantEntry.param!.parentIndex]);
+                }
                 //const parentGrantEntry = grantEntryMap[grantEntry.param.parentIndex] || rootEntry;
 
                 grantEntry.parent = parentGrantEntry;
