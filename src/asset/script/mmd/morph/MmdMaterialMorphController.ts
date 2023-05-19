@@ -23,21 +23,21 @@ export class MmdMaterialMorphController {
     public texTransparent: boolean | null;
     public renderSide: THREE.Side | null;
 
-    private _diffuse?: THREE.Color;
+    private _diffuse: THREE.Color | null;
     private _opacity: number;
-    private _specular?: THREE.Color;
-    private _shininess?: number;
-    private _emissive?: THREE.Color;
-    private _edgeColor?: [number, number, number, number];
-    private _edgeSize?: number;
+    private _specular: THREE.Color | null;
+    private _shininess: number | null;
+    private _emissive: THREE.Color | null;
+    private _edgeColor: [number, number, number, number] | null;
+    private _edgeSize: number | null;
 
-    public weightedDiffuse?: THREE.Color;
+    public weightedDiffuse: THREE.Color | null;
     public weightedOpacity: number;
-    public weightedSpecular?: THREE.Color;
-    public weightedShininess?: number;
-    public weightedEmissive?: THREE.Color;
-    public weightedEdgeColor?: [number, number, number, number];
-    public weightedEdgeSize?: number;
+    public weightedSpecular: THREE.Color | null;
+    public weightedShininess: number | null;
+    public weightedEmissive: THREE.Color | null;
+    public weightedEdgeColor: [number, number, number, number] | null;
+    public weightedEdgeSize: number | null;
 
     public constructor(material: MmdMaterialLike) {
         this._material = material;
@@ -47,8 +47,21 @@ export class MmdMaterialMorphController {
         this.texTransparent = null;
         this.renderSide = null;
 
+        this._diffuse = null;
         this._opacity = material.opacity;
+        this._specular = null;
+        this._shininess = null;
+        this._emissive = null;
+        this._edgeColor = null;
+        this._edgeSize = null;
+
+        this.weightedDiffuse = null;
         this.weightedOpacity = this._opacity;
+        this.weightedSpecular = null;
+        this.weightedShininess = null;
+        this.weightedEmissive = null;
+        this.weightedEdgeColor = null;
+        this.weightedEdgeSize = null;
 
         if (isExactMMdMaterial) {
             const diffuse = this._diffuse = new THREE.Color();
@@ -243,7 +256,7 @@ export class MmdMaterialMorphController {
         if (this._isExactMmdMaterial) {
             material.diffuse!.copy(this.weightedDiffuse!);
             material.specular!.copy(this.weightedSpecular!);
-            material.shininess = this.weightedShininess;
+            material.shininess = this.weightedShininess ?? undefined;
             material.emissive!.copy(this.weightedEmissive!);
 
             const outlineParameters = material.userData!.outlineParameters!;
