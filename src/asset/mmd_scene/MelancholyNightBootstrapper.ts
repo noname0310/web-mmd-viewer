@@ -286,6 +286,7 @@ export class MelancholyNightBootstrapper extends BaseBootstrapper {
                         light.shadow.camera.right = radius;
                         light.shadow.camera.near = 0.1;
                         light.shadow.camera.far = 600;
+                        light.shadow.bias = -0.0001;
                         c.setObject3D(light, object3D => object3D.dispose());
                     })
                     .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
@@ -402,6 +403,15 @@ export class MelancholyNightBootstrapper extends BaseBootstrapper {
                                 material.envMap = envMap;
                                 material.envMapIntensity = 0.1;
                                 material.needsUpdate = true;
+                            }
+
+                            {
+                                const skins = ["body01", "face01"];
+                                for (let i = 0; i < skins.length; ++i) {
+                                    const skin = converted.find(m => m.name === skins[i])!;
+                                    skin.color = new THREE.Color("#EBCCAB").lerp(new THREE.Color("#FFFFFF"), 0.7);
+                                    skin.needsUpdate = true;
+                                }
                             }
 
                             {
