@@ -126,6 +126,7 @@ export class MmdEditorBootstrapper extends Bootstrapper {
                     light.shadow.camera.right = radius;
                     light.shadow.camera.near = 0.1;
                     light.shadow.camera.far = 400;
+                    light.shadow.bias = -0.0001;
                     c.setObject3D(light, object3D => object3D.dispose());
                 })
                 .withComponent(Object3DContainer<THREE.CameraHelper>, c => {
