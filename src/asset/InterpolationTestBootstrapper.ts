@@ -46,7 +46,28 @@ export class InterpolationTestBootstrapper extends Bootstrapper {
                     };
                 }))
 
+            .withChild(instantiater.buildGameObject("babylon-hermite-interpolation-test")
+                .active(true)
+                .withComponent(InterpolateSampler, c => {
+                    function hermiteInterpolate(a: number, b: number, tangentA: number, tangentB: number, t: number): number {
+                        const squared = t * t;
+                        const cubed = t * squared;
+                        const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
+                        const part2 = -2.0 * cubed + 3.0 * squared;
+                        const part3 = cubed - 2.0 * squared + t;
+                        const part4 = cubed - squared;
+
+                        return a * part1 + b * part2 + tangentA * part3 + tangentB * part4;
+                    }
+
+                    c.sampleColor = "purple";
+                    c.interpolator = (t: number): number => {
+                        return hermiteInterpolate(0, 2, 3 * 2, 0, t);
+                    };
+                }))
+
             .withChild(instantiater.buildGameObject("mmd-interpolation-test")
+                .active(true)
                 .withComponent(InterpolateSampler, c => {
                     c.sampleColor = "green";
                     c.interpolator = (t: number): number => {
