@@ -1,5 +1,7 @@
 # web-mmd-viewer
 
+# This project is outdated. Please see [babylon-mmd-viewer](https://github.com/noname0310/babylon-mmd-viewer) which is the more stable and performant.
+
 A sample project using three.js and the-world-engine
 
 Through the-world-engine, you can build a scene of three.js in a declarative form.
